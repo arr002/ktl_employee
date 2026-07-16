@@ -1,0 +1,148 @@
+<ion-content [fullscreen]="true" class="bgWhite" color="light">
+  <div class="mainimg">
+    <ion-avatar class="image-center" (click)="takePicture()">
+      <img src="{{image}}">
+      <div class="person">{{name}}</div>
+    </ion-avatar>
+  </div>
+  <div style="clear: both;"></div>
+
+  <div class="maindiv">
+    <ion-grid style="padding-top: 45px;">
+
+      <ion-row>
+
+        <ion-col size="6" *ngFor="let homedata of  homescreendata" style="padding-bottom: 0%;" (click)="navigateRoute(homedata.id,homedata.route)">
+          <ion-avatar class="icon-center" >
+            <img src="assets/{{homedata.iconname}}">
+          </ion-avatar>
+          <p>{{homedata.itemname}}</p>
+        </ion-col>
+
+        <ion-col size="6" (click)="VanUploadBtn()" style="padding-bottom: 0%;">
+          <ion-avatar class="icon-center">
+            <img src="assets/vanupadddata.jpeg">
+          </ion-avatar>
+          <p>VAN Upload</p>
+        </ion-col>
+        
+        <!-- <ion-col size="6" [routerLink]="['/allattendance']" style="padding-bottom: 0%;">
+          <ion-avatar class="icon-center">
+            <img src="assets/attendance-icon.png">
+          </ion-avatar>
+          <p>All Attendances</p>
+        </ion-col>
+
+        <ion-col size="6" *ngFor="let homedata of  homescreendata" style="padding-bottom: 0%;">
+          <ion-avatar
+            *ngIf="buddyattendacne==1 || empmanager=='1' || department=='Sales' || department=='Admin' || manager_type=='Manager' || manager_type=='Branch Manager'"
+            class="icon-center" (click)="navigateRoute(homedata.id,homedata.route)">
+            <img src="assets/{{homedata.iconname}}">
+          </ion-avatar>
+          <p>{{homedata.itemname}}</p>
+        </ion-col>
+
+        <ion-col size="6" *ngIf="userid==33 || userid==6" userid [routerLink]="['/adminseal']" style="padding-bottom: 0%;">
+          <ion-avatar class="icon-center">
+            <img src="assets/suggesion.png">
+          </ion-avatar>
+          <p>Admin seal </p>
+        </ion-col>
+
+        <ion-col size="6" (click)="DRMTUploadBtn()" style="padding-bottom: 0%;">
+          <ion-avatar class="icon-center">
+            <img src="assets/ccsreportupload.jpeg">
+          </ion-avatar>
+          <p>CCS Report Upload</p>
+        </ion-col>
+
+        <ion-col size="6" (click)="VanUploadBtn()" style="padding-bottom: 0%;">
+          <ion-avatar class="icon-center">
+            <img src="assets/vanupadddata.jpeg">
+          </ion-avatar>
+          <p>VAN Upload</p>
+        </ion-col>
+
+        <ion-col size="6" (click)="logout()" style="padding-bottom: 0%;">
+          <ion-avatar class="icon-center">
+            <img src="assets/logout.png">
+          </ion-avatar>
+          <p>Logout</p>
+        </ion-col>   -->
+
+        <!-- <ion-col size="6" style="padding-bottom: 0%;" (click)="navigateRoute(26,'scancode')">
+          <ion-avatar class="icon-center">
+            <img src="assets/scancode.jpeg">
+          </ion-avatar>
+          <p>Scan Code</p>
+        </ion-col> -->
+
+     <!--    <ion-col size="6" (click)="selectDsrDrtr()" style="padding-bottom: 0%;display: none;">
+          <ion-avatar class="icon-center">
+            <img src="assets/suggesion.png">
+          </ion-avatar>
+          <p>Upload DSR/DRTR </p>
+        </ion-col>
+         <ion-col size="6" [routerLink]="['/dsrupload']" style="padding-bottom: 0%;">
+          <ion-avatar class="icon-center">
+            <img src="assets/dsr.png">
+          </ion-avatar>
+          <p>Upload DSR </p>
+        </ion-col>
+        <ion-col size="6" [routerLink]="['/drtrupload']" style="padding-bottom: 0%;">
+          <ion-avatar class="icon-center">
+            <img src="assets/dmrt.png">
+          </ion-avatar>
+          <p>Upload DRMT </p>
+        </ion-col>
+        <ion-col size="6" [routerLink]="['/tadaupload']" style="padding-bottom: 0%;">
+          <ion-avatar class="icon-center">
+            <img src="assets/tada.png">
+          </ion-avatar>
+          <p>Upload TADA </p>
+        </ion-col>
+          <ion-col size="6" [routerLink]="['/mytada']" style="padding-bottom: 0%;">
+          <ion-avatar class="icon-center">
+            <img src="assets/suggesion.png">
+          </ion-avatar>
+          <p>My TADA </p>
+        </ion-col>
+
+         <ion-col size="6" [routerLink]="['/dsrdrtrview']" style="padding-bottom: 0%;">
+          <ion-avatar class="icon-center" >
+            <img src="assets/suggesion.png">
+          </ion-avatar>
+          <p>DSR/DRTR Report</p>
+        </ion-col>
+                 
+        <ion-col size="6" [routerLink]="['/newsetclient']" style="padding-bottom: 0%; display: none;">
+          <ion-avatar class="icon-center" >
+            <img src="assets/suggesion.png">
+          </ion-avatar>
+          <p>New Set Client</p>
+        </ion-col> 
+
+        <ion-col size="6" [routerLink]="['/newsetclientemp']" style="padding-bottom: 0%;">
+          <ion-avatar class="icon-center" >
+            <img src="assets/suggesion.png">
+          </ion-avatar>
+          <p>New Set Client</p>
+        </ion-col> 
+
+        <ion-col size="6" [routerLink]="['/newsetstate']" style="padding-bottom: 0%;" >
+          <ion-avatar class="icon-center">
+          <img src="assets/thread1.png">
+        </ion-avatar><p>Inventory</p></ion-col>
+
+        <ion-col size="6"  userid [routerLink]="['/industrial']" style="padding-bottom: 0%;">
+          <ion-avatar class="icon-center">
+            <img src="assets/suggesion.png">
+          </ion-avatar>
+          <p>Industrial DSR </p>
+        </ion-col>
+ --> 
+
+      </ion-row>
+    </ion-grid>
+  </div>
+</ion-content>

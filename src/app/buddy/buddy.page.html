@@ -1,0 +1,22 @@
+<ion-header>
+  <ion-toolbar translucent>
+    <ion-buttons slot="start" color="none">
+            <ion-buttons slot="start" color="none">
+                <ion-back-button color="none" defaultHref="home"></ion-back-button>
+            </ion-buttons>
+        </ion-buttons>
+        <ion-title>Set Buddy</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="bg bgWhite" color="light">
+<ion-radio-group name="radio-group"  (ionChange)="radioTimeChange($event)">
+
+  <ion-item *ngFor="let clients of clientslist">
+    <ion-radio value="{{clients.id}}"></ion-radio>
+      <ion-label class="ion-text-wrap txtname">{{clients.name}}</ion-label>
+  </ion-item>
+  
+
+</ion-radio-group>
+</ion-content>

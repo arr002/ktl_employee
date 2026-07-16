@@ -1,0 +1,27 @@
+.inputclass {
+    margin: 5px;
+    height: 30px;
+    background: #fff;
+    border: 1px solid #bcbcbc;
+    padding: 5px;
+    border-radius: 7px;
+}
+.native {
+    background: #fff;
+    border-radius: 10px;
+    border: 1px solid #ccc;
+    padding: 10px !important;
+    height: 45px;
+    margin-top: 10px;
+    width: 100%;
+}
+.attupload {
+    text-align: center; 
+    padding: 20px 40px;
+}
+.imgwidth {
+    width: 50%;
+}
+.bgWhite {
+    --background: url('/assets/bgwhite.jpg') no-repeat center center / cover;
+}

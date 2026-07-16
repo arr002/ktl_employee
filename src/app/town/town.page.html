@@ -1,0 +1,15 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>{{title}}</ion-title>
+  </ion-toolbar>
+</ion-header>
+<ion-content>
+  <ion-toolbar>
+      <ion-searchbar animated="true" mode="ios" [(ngModel)]="searchTerm" (ionInput)="setFilterTown()" ></ion-searchbar>
+  </ion-toolbar>
+  <ion-list>
+    <ion-item class="ion-border" *ngFor="let item of itemss"  (click)="selectItem(item)" tappable>
+      <ion-label > {{ item?.town }}</ion-label>
+    </ion-item>
+  </ion-list>
+</ion-content>

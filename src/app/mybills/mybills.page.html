@@ -1,0 +1,103 @@
+<ion-header>
+  <ion-toolbar color="none">
+   <ion-buttons slot="start">
+              <ion-buttons slot="start">
+                  <ion-back-button defaultHref="home"></ion-back-button>
+              </ion-buttons>
+          </ion-buttons>
+      
+    <ion-title>
+    <div class="hcs">
+      <span>{{company}} <br/>{{masterid}}</span>
+    </div>
+     </ion-title>
+    </ion-toolbar>
+    <div class="head">
+  <ion-item>
+      <ion-icon class="download" name="cloud-download-outline"></ion-icon>
+  
+    Download Bills Details of the current financial year
+  </ion-item>
+  </div>
+  </ion-header>
+  
+  <ion-content color="light"  class="bgWhite">
+    <div class="maincat">
+    <ion-grid >
+      <ion-row class="rowcss" >
+        <ion-col size="4"></ion-col>
+        <ion-col size="4" class="cathead"><strong >My  Purchases</strong></ion-col>
+        <ion-col size="4" class="cathead"><strong >My Payments</strong></ion-col>
+       
+      </ion-row>
+       <ion-row class="rowcss" >
+        <ion-col size="4" class="cathead1"><strong >Current Month</strong></ion-col>
+        <ion-col size="4" class="cathead1">{{current_month_puchase}}</ion-col>
+        <ion-col size="4" class="cathead1">{{current_month_payment}}</ion-col>
+       
+      </ion-row>
+       <ion-row class="rowcss" >
+        <ion-col size="4" class="cathead1"><strong >Current Quarter</strong></ion-col>
+        <ion-col size="4" class="cathead1">{{current_quart_purchase}}</ion-col>
+        <ion-col size="4" class="cathead1">{{current_quart_payment}}</ion-col>
+       
+      </ion-row>
+       <ion-row class="rowcss" >
+        <ion-col size="4" class="cathead1"><strong >Last Quarter</strong></ion-col>
+        <ion-col size="4" class="cathead1">{{last_quart_purchase}}</ion-col>
+        <ion-col size="4" class="cathead1">{{last_quart_payment}}</ion-col>
+       
+      </ion-row>
+       <ion-row class="rowcss" >
+        <ion-col size="4" class="cathead1"><strong >Current Year</strong></ion-col>
+        <ion-col size="4" class="cathead1">{{year_puchase}}</ion-col>
+        <ion-col size="4" class="cathead1">{{year_payment}}</ion-col>
+       
+      </ion-row>
+      </ion-grid> 
+  </div>
+  
+  <div class="maincat">
+  
+  
+  
+  
+    <ion-item *ngIf="datalength!=0 && datalength!=-1" >
+      <ion-grid >
+      <ion-row >
+        <ion-col size="4"><strong class="cathead">Invoice No</strong></ion-col>
+        <ion-col size="3"><strong class="cathead">Date</strong></ion-col>
+        <ion-col size="4"><strong class="cathead">Invoice Amt</strong></ion-col>
+        <ion-col size="1"><strong class="cathead"></strong></ion-col>
+      </ion-row>
+      </ion-grid> 
+  
+    </ion-item>
+  <ion-item *ngFor="let prod of bills">
+    
+      <ion-grid>
+      <ion-row>
+  
+  <ion-col size="4"><span class="cat2">{{prod.inv_number}}</span>
+  </ion-col>
+  <ion-col size="3" class="catname"><span class="cat1">{{prod.date}}</span></ion-col>
+  
+  <!--<ion-col size="12" class="cat"><strong>Voucher Type:</strong> - <span class="cat1">{{prod.voucher_type}}</span></ion-col>
+  -->
+  
+  <ion-col size="4"><span class="cat4">{{prod.inv_amount}}</span></ion-col>
+  
+  <ion-col size="1"  (click)="download(prod.voucher,prod.ftp_file)"><ion-icon name="cloud-download-outline"></ion-icon></ion-col>
+   
+  
+      </ion-row>
+      </ion-grid>
+      
+   </ion-item> 
+   <div *ngIf="datalength==0" class="nodata">
+     You have no bills.
+   </div> 
+  </div>
+  </ion-content>
+  
+  

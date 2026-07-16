@@ -1,0 +1,43 @@
+<ion-header>
+  <ion-toolbar translucent>
+    <ion-buttons slot="start" color="none">
+            <ion-buttons slot="start" color="none">
+                <ion-back-button color="none" defaultHref="home"></ion-back-button>
+            </ion-buttons>
+        </ion-buttons>
+        <ion-title>
+
+<div class="hcs">
+<span>{{company}} <br/>{{masterid}}</span>
+</div>
+        </ion-title>
+  </ion-toolbar>
+</ion-header>
+    <div class="head"><strong>Outstanding:</strong> <i class="fa fa-rupee"></i> {{bal}} <br/><span class="updated"> updated as on ({{bdate}})</span></div>
+<ion-content class="bg bgWhite" color="light">
+
+
+
+    <ion-item  [routerLink]="['/accountstatement']">
+
+
+      <ion-icon class="mainicons" name="copy-outline"></ion-icon>
+     
+
+    	<div class="headings">Account Statement</div></ion-item>
+
+
+    <ion-item  [routerLink]="['/creditnotes']"><ion-icon class="mainicons" name="create-outline"></ion-icon><div class="headings">Credit Notes</div>
+    </ion-item>
+
+    <ion-item [routerLink]="['/mybills']"><ion-icon class="mainicons" name="document-text-outline"></ion-icon><div class="headings">My Bills</div>
+    </ion-item>
+
+
+
+    <ion-item [routerLink]="['/orderstatus']"><ion-icon class="mainicons" name="reload-outline"></ion-icon><div class="headings">Order Status</div></ion-item>
+    
+    <ion-item [routerLink]="['/order']"><ion-icon class="mainicons" name="cloud-upload-outline"></ion-icon><div class="headings">Upload Order</div></ion-item>
+ 
+
+</ion-content>

@@ -1,0 +1,35 @@
+.bg{
+    --background: url('/assets/setclientbg.png') no-repeat center center / cover;
+
+   
+}
+.bgWhite{--background: url('/assets/bgwhite.jpg') no-repeat center center / cover;}
+.calendar{
+  border: 1px solid #ccc;
+    padding: 7px 5px;
+    margin-top: 2px;
+    background:#ffffff;
+}
+.maindiv{margin-top:10px;}
+
+.spancol{color:#50c8ff;}
+.griditem {
+    width: 23%;
+    float: left;
+    display: inline;
+    
+
+position:relative;
+  background-color: rgba(255, 255, 255, 0.8);
+  border: 1px solid #ccc;
+  padding: 17px 10px;
+  font-size: 14px;
+  text-align: center;
+}
+
+// background{
+//   background: url("assets/attendance-icon.png")  no-repeat;
+// }
+
+
+

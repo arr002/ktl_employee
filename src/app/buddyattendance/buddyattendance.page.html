@@ -1,0 +1,44 @@
+<ion-header>
+  <ion-toolbar translucent>
+    <ion-buttons slot="start" color="none">
+            <ion-buttons slot="start" color="none">
+                <ion-back-button color="none" defaultHref="home"></ion-back-button>
+            </ion-buttons>
+        </ion-buttons>
+        <ion-title>Buddy Attendance </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="bg bgWhite" color="light">
+
+ <div id="container" >
+ 		<ion-col size="6"><strong>EmpId:</strong> {{empcode}}</ion-col>
+ 		<ion-col size="6"><strong>Emp Name:</strong> {{name}}</ion-col>
+
+<div class="dropdown">
+  <select [(ngModel)]="subject" class="native" (change)="optionSelected()">
+    <option value="" selected>Select an option</option>
+      <option value="In Office">In Office</option>
+      <option value="In field for office work" *ngIf="department=='Admin'">In field for office work</option>
+      <option value="Reached Customer"  *ngIf="department=='Sales'">Reached Customer</option>
+      <option value="Going to Customer" *ngIf="department=='Sales'">Going to Customer</option>
+      <option value="Half Day">Half Day</option>
+      <option value="Absent">Absent</option>
+      <option value="Present" *ngIf="department=='Admin'">Present</option>
+      <option value="Absent Without Information" *ngIf="department=='Admin'">Absent Without Information</option>
+      <option value="Approve Leave" *ngIf="department=='Admin'">Approve Leave</option>
+     
+  </select>
+  <h3> Please enter comments. (Optional)</h3>
+    <ion-textarea class="nativearea" rows="12"  [(ngModel)]="comment"></ion-textarea>
+   </div>
+
+
+ 	<div class="attupload">
+ 		<img class="imgwidth" src="assets/uploadattandence.png">
+    <h4 (click)="takePictureCamera()">Click to upload attendance with Camera</h4>
+    <h4 (click)="takePictureFile()">Click to upload attendance with Image</h4>
+ 	</div>
+ 	
+ </div>
+</ion-content>

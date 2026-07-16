@@ -1,0 +1,51 @@
+<ion-content class="bg" color="light">
+  <div class="mainimg">
+    <ion-avatar class="image-center">
+      <img src="assets/logo.png">
+
+    </ion-avatar>
+  </div>
+
+  <div id="maindiv">
+    <div class="welcome">Welcome to KTL Plus App</div>
+    <div class="card">
+      <ion-list lines="none" class="bg-transparent">
+        <ion-item color="none" lines="none">
+          <div>{{txtmsg}}</div>
+        </ion-item>
+        <ion-item *ngIf="!openotp" color="none" lines="none">
+          <ion-icon class="icon" name="phone-portrait-outline"></ion-icon>
+          <ion-input class="native" [(ngModel)]="phone" placeholder="Enter Your Mobile"></ion-input>
+
+        </ion-item>
+        <ion-item *ngIf="openotp" color="none" lines="none">
+          <ion-icon class="icon" name="document-outline"></ion-icon>
+          <ion-input class="native" [(ngModel)]="otp" placeholder="Enter OTP"></ion-input>
+        </ion-item>
+
+
+        <div class="countdown" *ngIf="optbut && openotp">
+          {{countdown}}
+
+        </div>
+
+      </ion-list>
+      <div class="buttcontainer">
+        <ion-button *ngIf="!optbut && openotp" color="light" class="butt" (click)="resendOTP()" expand="full">Resend OTP
+        </ion-button>
+        <ion-button *ngIf="!openotp" color="light" class="butt" (click)="login()" expand="full">Login to KTL Plus App
+        </ion-button>
+        <ion-button *ngIf="openotp" color="light" class="butt" (click)="checkOTP()" expand="full">Verify OTP
+        </ion-button>
+      </div>
+
+    </div>
+
+    <p>This app is solely for the use of <strong>KTL Employees</strong>.</p>
+    <p>Any unauthorized person is not permitted to enter the APP.</p>
+  </div>
+
+</ion-content>
+<ion-footer>
+  <h5>KTL - <span class="slogan">Manufacturers of Sewing Threads and Zip Fasteners</span></h5>
+</ion-footer>

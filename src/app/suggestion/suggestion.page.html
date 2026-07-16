@@ -1,0 +1,35 @@
+<ion-header>
+  <ion-toolbar translucent color="none">
+    <ion-buttons slot="start" color="dark">
+      <ion-buttons slot="start" color="dark">
+        <ion-back-button color="dark" defaultHref="home"></ion-back-button>
+      </ion-buttons>
+    </ion-buttons>
+    <ion-title>Complaint / Suggestion</ion-title>
+  </ion-toolbar>
+</ion-header>
+<ion-content color="light"  class="bgWhite">
+
+
+  <ion-content class="bg">
+    <div id="container">
+      <div class="maincat">
+
+        <h4>Please select and fill required fields</h4>
+
+        <ion-item>
+          <ion-label position="fixed" class="native" color="medium">Subject</ion-label>
+          <ion-input [(ngModel)]="subject"></ion-input>
+        </ion-item>
+
+        <ion-textarea class="nativearea" rows="12" [(ngModel)]="complaint"
+          placeholder="Enter Your Suggestion / Complaint"></ion-textarea>
+
+
+        <div class="mid">
+          <ion-button color="light" class="butt" (click)="send()" style="margin-top: 30px;">Submit</ion-button>
+        </div>
+
+      </div>
+    </div>
+  </ion-content>

@@ -1,0 +1,16 @@
+<ion-header>
+  <ion-toolbar translucent color="none">
+    <ion-buttons slot="start" >
+            <ion-buttons slot="start" color="dark">
+                <ion-back-button color="dark" defaultHref="home"></ion-back-button>
+            </ion-buttons>
+        </ion-buttons>
+        <ion-title>Tada</ion-title>
+  </ion-toolbar>
+</ion-header>
+<ion-content color="light"  class="bgWhite">
+
+  <ion-button style="height: 45px;margin: 10px;" expand="full" (click)="takePictureCamera()">Click to upload with Camera</ion-button>
+    <ion-button style="height: 45px;margin: 10px;" expand="full" (click)="takePictureFile()">Click to upload with Image</ion-button>
+
+</ion-content>

@@ -1,0 +1,51 @@
+.inputclass{
+    
+
+    border: 1px solid #ccc;
+    margin: 5px;
+    height: 30px;
+        background: #fff;
+    border: 1px solid #bcbcbc;
+    padding: 5px;
+   
+    border-radius: 7px;
+   
+
+}
+
+.imgwidth{width:20%;}
+td,th{
+        padding: 5px;
+    border: 1px solid #ccc;
+}
+
+.shadow-card {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Soft shadow */
+  border-radius: 10px; /* Optional: round the corners */
+  transition: box-shadow 0.3s ease;
+    border: 1px solid #ccc;
+    padding: 5px;
+    margin-top: 16px !important;
+}
+
+.shadow-card:hover {
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3); /* Elevated shadow on hover */
+}
+
+.divstyle {
+    padding: 11px;
+    font-weight: bold !important;
+    font-size: 16px !important;
+}
+
+
+ion-card {
+  border-radius: 15px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  transition: transform 0.2s;
+
+  &:hover {
+    transform: scale(1.02);
+  }
+  
+}

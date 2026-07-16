@@ -1,0 +1,7 @@
+{
+  "name": "ktkAppsNew1",
+  "integrations": {
+    "cordova": {}
+  },
+  "type": "angular"
+}

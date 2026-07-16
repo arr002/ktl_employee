@@ -1,0 +1,26 @@
+<ion-header>
+  <ion-toolbar translucent color="none">
+    <ion-buttons slot="start" >
+            <ion-buttons slot="start" color="dark">
+                <ion-back-button color="dark" defaultHref="home"></ion-back-button>
+            </ion-buttons>
+        </ion-buttons>
+        <ion-title>Circulars / Notices</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="bg bgWhite" color="light">
+<div *ngFor="let prod of offers;">
+
+  <div class="dealerbanner">
+    <h3 text-wrap>{{prod.title}}</h3>
+     <img src="{{prod.image}}"/>
+    <p text-wrap [innerHTML]="prod.details"></p>
+    
+  <ion-button (click)="accept(prod.id)" expand="full"></ion-button>
+</div>
+  
+  </div>
+
+  <div *ngIf="offers?.length==0" class="pad"><h3>No Circular / Notices.</h3></div> 
+</ion-content>

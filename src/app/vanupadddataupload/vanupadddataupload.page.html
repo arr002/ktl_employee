@@ -1,0 +1,126 @@
+<!-- <ion-header>
+  <ion-toolbar>
+    <ion-title *ngIf="mode==0">Cons Data</ion-title>
+    <ion-title *ngIf="mode==1">Sold Data</ion-title>
+  </ion-toolbar>
+</ion-header> -->
+
+<ion-content>
+  <div class="divstyle">Sold Data of Customer</div>
+  <ion-item>
+    <ion-label>Sold Brands</ion-label>
+    <ion-select style="width:100%;" placeholder="Select Option" [(ngModel)]="brands" class="native"
+      (ionChange)="onBrandChange($event)">
+      <ion-select-option value="{{item.value}}" *ngFor="let item of brandArr;">{{item.name}}</ion-select-option>
+    </ion-select>
+  </ion-item>
+  <ion-item>
+    <table style="width:100%">
+      <tr>
+        <th></th>
+        <th style='width: 50% !important'>Article</th>
+        <th>Qty</th>
+        <th></th>
+      </tr>
+      <tr *ngFor="let articlesd of articlesdata; index as i">
+        <td><input type="checkbox" [(ngModel)]='articlesd[0]'></td>
+        <td>{{articlesd[1]}}</td>
+        <td><input type="number" style="width:50px !important;background:#fff !important" [(ngModel)]='articlesd[2]'
+            (focusout)='calculate(i)'></td>
+        <td>{{articlesd[4]}}</td>
+      </tr>
+      <tr>
+        <td></td>
+        <td></td>
+        <td>Total</td>
+        <td>{{GT}}</td>
+      </tr>
+    </table>
+  </ion-item>
+  <ion-item>
+    <ion-button color="danger" expand="full" (click)="addDrtr()">Add Sold Data </ion-button>
+  </ion-item>
+
+  <div style="border:1px solid #ccc; padding:5px;">
+    <table style="width:100%; border: 1px solid #ccc; padding: 5px;">
+      <tr>
+        <th>Brand</th>
+        <th>Article</th>
+        <th>Qty</th>
+        <th>Rate</th>
+        <th>Sales</th>
+        <th></th>
+      </tr>
+      <tr style="height: 20px;" *ngFor="let item of data; let i = index;">
+        <td>{{item.branch_name}}</td>
+        <td>{{item.name}}</td>
+        <td>{{item.qty}}</td>
+        <td>{{item.itemvalue}}</td>
+        <td>{{item.price}}</td>
+        <td><ion-icon name="trash-outline" color="danger" (click)="delItem(i)">></ion-icon></td>
+      </tr>
+    </table>
+  </div>
+
+
+  <div class="divstyle">Booked Data of Customer</div>
+  <ion-item>
+    <ion-label>Booked Brands</ion-label>
+    <ion-select style="width:100%;" placeholder="Select Option" [(ngModel)]="brands1" class="native"
+      (ionChange)="onBrandChange1($event)">
+      <ion-select-option value="{{item.value}}" *ngFor="let item of brandArr1;">{{item.name}}</ion-select-option>
+    </ion-select>
+  </ion-item>
+  <ion-item>
+    <table style="width:100%">
+      <tr>
+        <th></th>
+        <th style='width: 50% !important'>Article</th>
+        <th>Qty</th>
+        <th></th>
+      </tr>
+      <tr *ngFor="let articlesd of articlesdata1; index as i">
+        <td><input type="checkbox" [(ngModel)]='articlesd[0]'></td>
+        <td>{{articlesd[1]}}</td>
+        <td><input type="number" style="width:50px !important;background:#fff !important" [(ngModel)]='articlesd[2]'
+            (focusout)='calculate1(i)'></td>
+        <td>{{articlesd[4]}}</td>
+      </tr>
+      <tr>
+        <td></td>
+        <td></td>
+        <td>Total</td>
+        <td>{{GT1}}</td>
+      </tr>
+    </table>
+  </ion-item>
+  <ion-item>
+    <ion-button color="danger" expand="full" (click)="addDrtr1()">Add Booked Data </ion-button>
+  </ion-item>
+
+  <div style="border:1px solid #ccc; padding:5px;">
+    <table style="width:100%; border: 1px solid #ccc; padding: 5px;">
+      <tr>
+        <th>Brand</th>
+        <th>Article</th>
+        <th>Qty</th>
+        <th>Rate</th>
+        <th>Sales</th>
+        <th></th>
+      </tr>
+      <tr style="height: 20px;" *ngFor="let item of data1; let i = index;">
+        <td>{{item.branch_name}}</td>
+        <td>{{item.name}}</td>
+        <td>{{item.qty}}</td>
+        <td>{{item.itemvalue}}</td>
+        <td>{{item.price}}</td>
+        <td><ion-icon name="trash-outline" color="danger" (click)="delItem1(i)">></ion-icon></td>
+      </tr>
+    </table>
+  </div>
+
+</ion-content>
+<ion-footer>
+  <ion-button color="danger" expand="full" (click)="postData()"
+    style="height: 3.3rem; margin-bottom: 10px !important;">Submit </ion-button>
+</ion-footer>

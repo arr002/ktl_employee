@@ -1,0 +1,34 @@
+
+
+
+<ion-header>
+  <ion-toolbar translucent>
+    <ion-buttons slot="start">
+            <ion-buttons slot="start" color="none">
+                <ion-back-button color="none" defaultHref="home"></ion-back-button>
+            </ion-buttons>
+        </ion-buttons>
+        <ion-title>Inventory</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+
+
+<div class="head">Click Article to Download Inventory</div>
+<ion-content color="light">
+
+  <ion-toolbar>
+      <ion-searchbar animated="true" mode="ios" [(ngModel)]="searchTerm" (ionInput)="setFilterTown()" ></ion-searchbar>
+  </ion-toolbar>
+	
+<ion-item *ngFor="let prod of article" (click)="downloadPDF(prod.id)">
+ 	
+    <ion-avatar slot="start">
+    <img src="assets/thread3.png">
+  </ion-avatar>
+  <ion-label>
+   {{prod.article_name}}
+  </ion-label>
+    
+ </ion-item>  
+</ion-content>

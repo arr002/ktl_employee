@@ -1,0 +1,63 @@
+<ion-header>
+  <ion-toolbar translucent>
+    <ion-buttons slot="start" color="none">
+      <ion-buttons slot="start" color="none">
+        <ion-back-button color="none" defaultHref="home"></ion-back-button>
+      </ion-buttons>
+    </ion-buttons>
+    <ion-title>Mark Attendance</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="bg bgWhite" color="light">
+  <ion-radio-group name="radio-group" (ionChange)="radioTimeChange($event)">
+
+    <ion-item *ngFor="let clients of clientslist;">
+      <ion-row>
+        <ion-col size="4" class="items"><strong>Emp Code</strong></ion-col>
+        <ion-col class="items" size="5">
+          <ion-label class="ion-text-wrap txtname">{{clients.employee_code}}</ion-label>
+        </ion-col>
+        <ion-col size="3">
+          <ion-button shape="round" fill="outline" color="primary" (click)="openImg(clients.image)">View</ion-button>
+        </ion-col>
+        <ion-col size="4" class="items"><strong>Emp Name</strong></ion-col>
+        <ion-col class="items" size="8">
+          <ion-label class="ion-text-wrap txtname">{{clients.name}}</ion-label>
+        </ion-col>
+
+        <ion-col size="4" class="items"><strong>Date</strong></ion-col>
+        <ion-col class="items" size="8">
+          <ion-label class="ion-text-wrap txtname">{{clients.logintime}}</ion-label>
+        </ion-col>
+
+        <ion-col size="4" class="items"><strong>Comment</strong></ion-col>
+        <ion-col class="items" size="8">
+          <ion-label class="ion-text-wrap txtname">{{clients.comment}}</ion-label>
+        </ion-col>
+
+        <ion-col size="4" class="items"><strong>Position</strong></ion-col>
+        <ion-col class="items" size="8">
+          <ion-label class="ion-text-wrap txtname">{{clients.position}}</ion-label>
+        </ion-col>
+
+        <ion-col size="2">
+          <ion-button fill="outline" shape="round" color="success" (click)="mark(clients.att_id,1)">Full</ion-button>
+        </ion-col>
+        <ion-col size="3">
+          <ion-button fill="outline" shape="round" color="dark" (click)="mark(clients.att_id,0.5)">Half</ion-button>
+        </ion-col>
+
+        <ion-col size="3" (click)="mark(clients.att_id,0)">
+          <ion-button shape="round" fill="outline" color="danger">Absent</ion-button>
+        </ion-col>
+        <ion-col size="4">
+          <ion-button shape="round" fill="outline" color="primary" (click)="mark(clients.att_id,2)">Approve L.
+          </ion-button>
+        </ion-col>
+      </ion-row>
+    </ion-item>
+
+
+  </ion-radio-group>
+</ion-content>

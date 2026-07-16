@@ -1,0 +1,33 @@
+<ion-header>
+  <ion-toolbar translucent color="none">
+    <ion-buttons slot="start">
+      <ion-buttons slot="start" color="dark">
+        <ion-back-button color="dark" defaultHref="home"></ion-back-button>
+      </ion-buttons>
+    </ion-buttons>
+    <ion-title>New Set Client Cust</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content color="light"  class="bgWhite">
+  
+  <div >
+    <ion-searchbar [(ngModel)]="search" (ionChange)="updateSearchResults($event)" (ioncancel)="testcancel()" [ngModelOptions]="{standalone:true}"
+      >
+    </ion-searchbar>
+  </div>
+  <ion-list>
+    
+    <ion-radio-group name="radio-group" (ionChange)="radioTimeChange($event)">
+    <ion-item *ngFor="let customer of customerList">
+      <ion-radio value="{{customer.id}}"></ion-radio>
+      <ion-label>{{customer.client_name}}</ion-label>
+    </ion-item>
+    </ion-radio-group>
+  </ion-list>
+
+  <ion-infinite-scroll threshold="100px" (ionInfinite)="loadMoreData($event)">
+    <ion-infinite-scroll-content loadingSpinner="bubbles" loadingText="Loading more data...">
+    </ion-infinite-scroll-content>
+  </ion-infinite-scroll>
+</ion-content>

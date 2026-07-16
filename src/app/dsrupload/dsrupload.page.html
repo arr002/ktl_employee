@@ -1,0 +1,187 @@
+<ion-header>
+  <ion-toolbar translucent>
+    <ion-buttons slot="start" color="none">
+            <ion-buttons slot="start" color="none">
+                <ion-back-button color="none" defaultHref="home"></ion-back-button>
+            </ion-buttons>
+        </ion-buttons>
+        <ion-title>DSR Data Upload</ion-title>
+         <ion-buttons slot="end" color="none" (click)="openCal()">
+            Date Request
+        </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content color="light"  class="bgWhite" style="height: 60%;">
+
+
+<ion-item style="margin-top: 20px !important;" *ngIf="reqdate">
+    <ion-label>Select Date</ion-label>
+    <ion-datetime   [max]="maxdate" [min]="mindate" pickerFormat="YYYY-MM-DD" [(ngModel)]="datetime"></ion-datetime>
+  </ion-item> 
+
+ <ion-item>
+
+      <ion-label color="secondary">HQ</ion-label>
+      <ion-label color="dark">Haridwar</ion-label>
+    </ion-item>
+     <ion-item>
+
+      <ion-label color="secondary">User Name</ion-label>
+      <ion-label color="dark">{{username}}</ion-label>
+    </ion-item>
+<ion-item style="margin-top: 20px !important;">
+    <ion-label>Select Uploading Date</ion-label>
+    <ion-select (ionChange)="dateChangeDrop()" style="width:100%;" placeholder="Select Option" [(ngModel)]="dateSelect"
+      class="native">
+       <ion-select-option *ngFor="let item of daterequest" value="{{item}}">{{item}}</ion-select-option>
+    </ion-select>
+  </ion-item>
+
+
+  <ion-item>
+
+
+    <ion-label>Select Option</ion-label>
+    <ion-select (ionChange)="getSealStatus()" style="width:100%;" placeholder="Select Option" [(ngModel)]="fieldtype"
+      class="native">
+      <ion-select-option value="Office">In Office</ion-select-option>
+      <ion-select-option value="InField">In Field</ion-select-option>
+      <ion-select-option value="InFieldandOffice">In Office And Field </ion-select-option>
+      <ion-select-option value="Leave">On Leave</ion-select-option>
+      <ion-select-option value="Holiday">Announced Holiday</ion-select-option>
+    </ion-select>
+
+  </ion-item>
+
+
+
+  <ion-item *ngIf="towndata">
+
+
+    <ion-label>Select Option</ion-label>
+    <ion-select (ionChange)="getSealStatus()" style="width:100%;" placeholder="Select Option" [(ngModel)]="activity"
+      class="native">
+      <ion-select-option value="Visit">Visit</ion-select-option>
+      <ion-select-option value="Phone">Phone</ion-select-option>
+      
+    </ion-select>
+
+  </ion-item>
+
+<ion-item *ngIf="towndata">
+  <ion-label>Select Town</ion-label>
+ 
+  <ion-button expand="full" color="white" (click)="openPopOver()">Select Town</ion-button>
+
+</ion-item>
+<div class="town">{{townname}}</div>
+   <!-- <ion-item *ngIf="towndata">
+
+    <ion-label>Select Town</ion-label>
+    <ion-select (ionChange)="getCustomerList()" style="width:100%;" placeholder="Select Option" [(ngModel)]="townselected" class="native">
+      <ion-select-option *ngFor="let item of towndatalist" value="{{item.town}}" >{{item.town}}</ion-select-option>
+    </ion-select>
+
+  </ion-item> -->
+  <div *ngIf="townlist">
+     <ion-item>
+       <ion-label>Select Customer</ion-label>
+        <ion-button expand="full" color="white" (click)="openPopOverCustomer()">Select Customer</ion-button>
+   <!--  <ion-select (ionChange)="openModal()" style="width:100%;" placeholder="Select Option" [(ngModel)]="clientselected" class="native">
+      <ion-select-option *ngFor="let citem of customerdatalist" [value]="citem" >{{citem.client_name}}</ion-select-option>
+    </ion-select> -->
+    
+     </ion-item>
+    <div class="town">{{customername}}</div>
+  </div>
+</ion-content>
+<ion-content color="light"  class="bgWhite" style="height: 40%; margin-top:20px ;" *ngIf="townlist">
+  <div class="divstyle">Added Customers</div>
+  <div *ngFor="let item of dataadded; let i = index;">
+   <ion-item>
+
+      <ion-label color="primary">{{item.clientname}}</ion-label>
+      <ion-icon name="trash-outline" style="padding-right: 20px;" color="danger" (click)="delItem(i)"></ion-icon>
+       <ion-icon name="create-outline" color="primary" (click)="editItem(i)"></ion-icon>
+     
+    </ion-item>
+
+<ion-item>
+    <ion-grid>
+<ion-row>
+  <ion-col size="3">
+      <ion-label class="fintbold" color="dark">Zip</ion-label>
+    </ion-col>
+    <ion-col size="3">
+      <ion-label class="inputclass">{{ item.zip }}</ion-label>
+    </ion-col>
+    <ion-col size="3">
+      <ion-label  class="fintbold" color="dark">Thread</ion-label>
+       </ion-col>
+    <ion-col size="3">
+      <ion-label class="inputclass" >{{ item.thread }}</ion-label>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+    </ion-item>
+ 
+<ion-item>
+  <ion-grid>
+<ion-row>
+  <ion-col size="6">
+      <ion-label class="fintbold" color="dark">Payment Collected</ion-label>
+       </ion-col>
+    <ion-col size="6">
+      <ion-label class="inputclass" >{{ item.collection }}</ion-label>
+      </ion-col>
+   
+ <ion-col size="4">
+
+    <ion-label class="fintbold" color="dark">Current Issue</ion-label>
+   
+</ion-col>
+<ion-col size="8">
+ <ion-label class="inputclass" >{{ item.issue }}</ion-label>
+</ion-col>
+</ion-row>
+</ion-grid>
+
+  </ion-item>
+  <ion-item>
+ 
+  <ion-label class="fintbold" color="dark" style="background: #fff;">Remarks</ion-label>
+   
+     
+     <ion-label>{{ item.remarks }}</ion-label>
+
+
+    </ion-item>
+
+</div>
+
+
+
+
+</ion-content>
+<ion-content class="bgWhite" *ngIf="fieldtype=='Office' || fieldtype=='Leave' || fieldtype=='Holiday'">
+    <ion-grid>
+<ion-row>
+  <ion-col size="12">
+    <ion-label  class="fintbold" color="dark">Enter Remarks</ion-label>
+    <textarea cols="40" rows="5" [(ngModel)]="remarks" style="background: #fff;"></textarea>
+  </ion-col>
+</ion-row>
+</ion-grid>
+</ion-content>
+<ion-footer style="background: #fff;">
+  <ion-grid>
+    <ion-row>
+      <ion-col>
+        <ion-button color="danger" expand="full" (click)="uploadDSR()">
+          Upload DSR </ion-button>
+      </ion-col>
+
+    </ion-row>
+  </ion-grid>
+</ion-footer>

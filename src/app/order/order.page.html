@@ -1,0 +1,26 @@
+<ion-header>
+<ion-toolbar color="danger">
+ <ion-buttons slot="start">
+            <ion-buttons slot="start">
+                <ion-back-button defaultHref="home"></ion-back-button>
+            </ion-buttons>
+        </ion-buttons>
+      <ion-title>
+  <div class="hcs">Order
+    <span> <br/></span>
+  </div>
+   </ion-title>
+     
+  </ion-toolbar>
+</ion-header>
+
+<ion-content color="light">
+<div class='mainhead'>
+	<div class="subhead">
+    <div class="head">Take Image and Upload Your Order</div>
+
+	<ion-icon class="mainicons" name="cloud-upload-outline"></ion-icon>
+	</div>
+	 <ion-button  color="danger"  (click)="takePicture()" expand="full">Upload</ion-button>
+</div>
+</ion-content>

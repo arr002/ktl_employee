@@ -1,0 +1,47 @@
+<ion-header>
+  <ion-toolbar translucent>
+    <ion-buttons slot="start" color="none">
+            <ion-buttons slot="start" color="none">
+                <ion-back-button color="none" defaultHref="home"></ion-back-button>
+            </ion-buttons>
+        </ion-buttons>
+        <ion-title>My TADA</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content color="light"  class="bgWhite" style="height: 50%;">
+    <ion-item>
+         <ion-label  color="secondary">Click to Select Date</ion-label>
+     <ion-datetime #myPicker displayFormat="MM-YYYY" [(ngModel)]="dateSelect" min="2023-01-09" value="Select DateTime" (ionChange)="updateMyDate(myPicker.value)" > </ion-datetime>
+    </ion-item>
+    <table style="width:100%">
+      <tr style="background:#b5f3eb"><th>Date</th><th>Type</th><th>Amt</th><th>Status</th></tr>
+      <tr  *ngFor="let item of daterequest"><td>{{item.date_submit}}</td><td>{{item.travel_type}}</td><td>{{item.travelAmt}}</td><td><strong>{{getStatus(item.approval_status)}}</strong></td></tr>
+
+
+    </table>
+    </ion-content>
+    <ion-header>
+      <ion-toolbar translucent>
+        <ion-buttons slot="start" color="none">
+                <ion-buttons slot="start" color="none">
+                    <ion-back-button color="none" defaultHref="home"></ion-back-button>
+                </ion-buttons>
+            </ion-buttons>
+            <ion-title>My TADA</ion-title>
+      </ion-toolbar>
+    </ion-header>
+    
+    <ion-content color="light"  class="bgWhite" style="height: 50%;">
+        <ion-item>
+             <ion-label  color="secondary">Click to Select Date</ion-label>
+         <ion-datetime #myPicker displayFormat="MM-YYYY" [(ngModel)]="dateSelect" min="2023-01-09" value="Select DateTime" (ionChange)="updateMyDate(myPicker.value)" > </ion-datetime>
+        </ion-item>
+        <table style="width:100%">
+          <tr style="background:#b5f3eb"><th>Date</th><th>Type</th><th>Amt</th><th>Status</th></tr>
+          <tr  *ngFor="let item of daterequest"><td>{{item.date_submit}}</td><td>{{item.travel_type}}</td><td>{{item.travelAmt}}</td><td><strong>{{getStatus(item.approval_status)}}</strong></td></tr>
+    
+    
+        </table>
+        </ion-content>
+    

@@ -1,0 +1,56 @@
+<ion-header>
+  <ion-toolbar color="none">
+   <ion-buttons slot="start">
+              <ion-buttons slot="start">
+                  <ion-back-button defaultHref="home"></ion-back-button>
+              </ion-buttons>
+          </ion-buttons>
+      
+  
+  
+         <ion-title>
+    <div class="hcs">
+      <span>{{company}} <br/>{{masterid}}</span>
+    </div>
+     </ion-title>
+    </ion-toolbar>
+  
+    <div class="head">
+  <ion-item>
+    <ion-icon class="download" name="aperture-outline"></ion-icon>
+      
+    Orders uploaded and status of orders
+  </ion-item>
+  </div>
+  </ion-header>
+  
+  <ion-content class="bg bgWhite" color="light">
+  <ion-list>
+    <ion-item *ngFor="let post of orders">
+      
+      <ion-grid>
+      <ion-row>
+  
+  
+  <ion-col size="9" class="catname"><strong>Order  No.</strong> - ORD{{post.id}}</ion-col>
+  <ion-col size="3" class="cat2" *ngIf="!post.amount && post.status=='1'">Pending</ion-col>
+  <ion-col size="3" class="cat3" *ngIf="post.amount && post.status=='1'">Invoiced</ion-col>
+  <ion-col size="3" class="cat3" *ngIf="post.status=='0'">Dispatched - {{ post.dispatch_date}}</ion-col>
+  <ion-col size="12" class="cat"><strong>Invoice No:</strong> - <span class="cat1">{{post.invoice_no}}</span></ion-col>
+  
+  <ion-col size="12"><strong>Amount:</strong>- <i class="fa fa-rupee"></i><span class="cat1">{{post.amount}}</span>
+  </ion-col>
+  <ion-col size="1"><ion-icon name="calendar"></ion-icon></ion-col>
+   <ion-col size="7" class="cat1">{{post.created_at}}</ion-col>
+  <ion-col size="4" class="imgview" (click)="openImg(post.image,post.client_id)">View Order</ion-col>
+   
+  
+      </ion-row>
+      </ion-grid>
+    </ion-item>
+  
+  <div *ngIf="orders?.length==0" class="pad"><h3>No Order booked yet.</h3></div> 
+  </ion-list>
+  </ion-content>
+  
+  

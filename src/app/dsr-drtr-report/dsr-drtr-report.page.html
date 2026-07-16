@@ -1,0 +1,102 @@
+<ion-header>
+  <ion-toolbar translucent>
+    <ion-buttons slot="start">
+      <div *ngIf="disable==false">
+
+        <ion-icon style="font-size: 25px;" name="arrow-back-outline" [routerLink]="['/home']"></ion-icon>
+
+      </div>
+      <div  *ngIf="disable!=false">
+
+        <ion-back-button defaultHref="branchmanagers"></ion-back-button>
+      </div>
+    </ion-buttons>
+    <ion-title>DSR/DRTR Report</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="bg bgWhite" color="light">
+  <div class="maindiv">
+
+    <ion-row>
+
+      <ion-col size="4" (click)="cal(-1)">
+        <ion-button shape="round" fill="outline" color="primary">Previous</ion-button>
+      </ion-col>
+
+      <ion-col size="4" (click)="cal(0)">
+        <ion-button shape="round" fill="outline" color="primary">Current</ion-button>
+      </ion-col>
+
+      <ion-col size="4" (click)="cal(1)">
+        <ion-button shape="round" fill="outline" color="primary">Next</ion-button>
+      </ion-col>
+
+    </ion-row>
+    <div style="padding-left: 10px;width: 100%;margin-right: 2px;">
+      <h4 style="padding-left: 10px;width: 100%;margin-right: 2px;">Attendance : - {{month}}
+
+      </h4>
+      <span style="margin-left: 10px;"><span style="font-size: 17px;">DRTR <ion-icon
+            style="color: red;margin-right: 10px;" name="ellipse">
+
+          </ion-icon></span>
+
+        <span style="font-size: 17px;margin-right: 2px;">DSR <ion-icon style="color: black;margin-right: 10px;"
+            name="ellipse">
+
+          </ion-icon></span>
+
+
+      </span>
+    </div>
+
+
+
+    <ul class="gridcontainer" *ngFor="let clients of clientslist">
+
+      <div class="griditem"> {{clients.day}}
+
+        <div *ngFor="let stat of clients.status">
+
+          <div *ngIf="stat=='DRTR' && clients.status.length==1">
+
+            <!-- <img src="assets/drtr.jpg"> -->
+            <ion-icon style="color: red;" name="ellipse">
+
+            </ion-icon>
+
+          </div>
+          <div *ngIf="stat=='DSR' && clients.status.length==1">
+
+            <!-- <img src="assets/dsr.jpg"> -->
+            <ion-icon style="color: black;" name="ellipse"></ion-icon>
+          </div>
+
+        </div>
+
+        <div *ngIf="clients.status.length>1">
+
+          <!-- <img src="assets/dsrdrtr.jpg"> -->
+          <ion-icon style="color: red;" name="ellipse">
+          </ion-icon>
+          <ion-icon style="color: black;" name="ellipse">
+          </ion-icon>
+        </div>
+
+        <div *ngIf="clients.status.length==0">
+          <ion-icon name="ellipse-outline" style="color: white;">
+          </ion-icon>
+          <!-- <img src="assets/dsrdrtrnone.jpg"> -->
+        </div>
+
+
+      </div>
+
+    </ul>
+
+  </div>
+
+
+
+</ion-content>

@@ -1,0 +1,94 @@
+.maincat{
+    padding: 5px;
+      border: 1px solid #f5f5f5;
+      box-shadow:1px 1px #ccc;
+  
+      border-radius: 5px;
+  }
+  .bgWhite{--background: url('/assets/bgwhite.jpg') no-repeat center center / cover;}
+  .catname{
+     color: #4432DC;
+      font-size: 16px;
+      line-height: 5px;
+      font-weight: 600;
+      }
+  .butt{height:30px; color:#000;}
+  .cat{
+      font-size: 15px;
+      color: #000;
+      font-weight: 600;
+      }
+      strong{
+      font-size: 13px;
+      color: #000;
+      font-weight: bold;
+      }
+  .imgview{font-size:14px; border:1px solid #ccc; padding:5px; border-radius:10px; text-align:center;}
+  .cat1{
+      font-size: 13px;
+      color: #000;
+      font-weight: 600;
+      }
+  .cat2{
+      font-size: 13px;
+      color: #0B7203;
+      font-weight: 600;
+      }
+      .cat3{
+      font-size: 13px;
+      color: #4D4D4D;
+      font-weight: 600;
+      }
+  .imgwidth{
+      width:100%;
+  }
+  ion-icon{
+      float: right;
+      margin-top: 2px;
+      font-size: 25px;
+      font-weight: 800;
+      padding-top:3px;
+  }
+  .pad{padding:10px;text-align:center;}
+  .price{float:right;}
+  .itemtext{font-weight:bold;font-size:18px; color:#f00;}
+  .native {
+     background: #fbfbfb;
+      border-radius: 5px 5px 5px 5px;
+      border: 1px solid #e2e2e2;
+     
+  
+  }
+  .itemname{color:#000;}
+  ion-icon {
+      float: right;
+      margin-top: -6px;
+      font-size: 20px;
+      font-weight: 800;
+      color: #4432DC;
+  }
+  
+  .hcs {margin-top:0px; font-size:14px;}
+  .hcs span{font-size:14px;float:right ;color:#FC5D48; font-weight:800;vertical-align: middle;margin-top: 5px;}
+   img{  padding-right:10px; float:right;}
+  
+   .head{color: #1d1d1d;
+      font-size: 12px;
+      margin: 5px 0px;
+      line-height: 23px;
+      border: 1px solid #C8F8F8;
+      padding: 10px;
+     margin:0px 5px;;
+  
+      font-weight: bold;
+      background:#E9F7F7;
+      border-radius:10px;
+  
+  }
+  .download{font-size:30px; color:#028EFF; padding-right:10px;}
+  
+  .bg{
+      --background: url('/assets/orderbg.png') no-repeat center center / cover;
+  
+     
+  }

@@ -1,0 +1,30 @@
+<ion-header>
+  <ion-toolbar translucent>
+    <ion-buttons slot="start" color="none">
+            <ion-buttons slot="start" color="none">
+                <ion-back-button color="none" defaultHref="home"></ion-back-button>
+            </ion-buttons>
+        </ion-buttons>
+        <ion-title>Set Client </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="bg bgWhite" color="light">
+
+  <ion-searchbar  #searchbar
+    [(ngModel)]="search"  (keypress)="updateSearchResults($event.keyCode)"
+    [ngModelOptions]="{standalone:true}" 
+    >
+  </ion-searchbar>
+
+
+<ion-radio-group name="radio-group"  (ionChange)="radioTimeChange($event)">
+
+  <ion-item *ngFor="let clients of clientslist">
+    <ion-radio value="{{clients.clientid}}"></ion-radio>
+      <ion-label class="ion-text-wrap txtname">{{clients.client_name}}</ion-label>
+  </ion-item>
+  
+
+</ion-radio-group>
+</ion-content>

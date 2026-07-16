@@ -1,0 +1,42 @@
+<ion-header>
+  <ion-toolbar translucent>
+    <ion-buttons slot="start" color="none">
+            <ion-buttons slot="start" color="none">
+                <ion-back-button color="none" defaultHref="home"></ion-back-button>
+            </ion-buttons>
+        </ion-buttons>
+        <ion-title>Profile</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="bg bgWhite" color="light">
+  <div class="mainimg">
+   <ion-avatar class="image-center" (click)="takePicture()">
+  <img src="{{image}}">
+  <div class="person">{{name}}</div>
+</ion-avatar>
+
+</div>
+
+ <div id="container">
+
+<ion-row>
+	<ion-col size="4"><div class="message1"><ion-icon name="finger-print-outline"></ion-icon>Emp Code</div></ion-col>
+	<ion-col size="8"><div class="message">{{empcode}}</div></ion-col>
+	<ion-col size="4"><div class="message1"><ion-icon name="call-outline"></ion-icon>Phone</div></ion-col>
+	<ion-col size="8"><div class="message">{{phone}}</div></ion-col>
+	<ion-col size="4"><div class="message1"><ion-icon name="grid-outline"></ion-icon>Depart.</div></ion-col>
+	<ion-col size="8"><div class="message">{{department}}</div></ion-col>
+	<ion-col size="4"><div class="message1"><ion-icon name="body-outline"></ion-icon>Desig.</div></ion-col>
+	<ion-col size="8"><div class="message">{{designation}}</div></ion-col>
+	<ion-col size="4"><div class="message1"><ion-icon name="git-network-outline"></ion-icon>Branch</div></ion-col>
+	<ion-col size="8"><div class="message">{{branchname}}</div></ion-col>
+	<ion-col size="4"><div class="message1"><ion-icon name="calendar-outline"></ion-icon>DOB</div></ion-col>
+	<ion-col size="8"><div class="message">{{dob}}</div></ion-col>
+	<ion-col size="4"><div class="message1"><ion-icon name="calendar-outline"></ion-icon>DOJ</div></ion-col>
+	<ion-col size="8"><div class="message">{{doj}}</div></ion-col>
+	<ion-col size="4"><div class="message1"><ion-icon name="location-outline"></ion-icon>Address</div></ion-col>
+	<ion-col size="8"><div class="message">{{address}}</div></ion-col>
+	</ion-row>
+</div>
+</ion-content>

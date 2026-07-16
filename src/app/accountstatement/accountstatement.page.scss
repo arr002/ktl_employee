@@ -1,0 +1,86 @@
+.bgWhite{
+    --background: url('/assets/bgwhite.jpg') no-repeat center center / cover;
+
+   
+}
+.maincat{padding:5px;}
+
+ion-item {
+--highlight-color-focused: none;
+ --highlight-color: none;
+ --ion-input-highlight-color-valid:none;
+ --highlight-background:none;
+}
+.item-interactive.ion-valid{
+--highlight-background: none;
+}
+.hcs {margin-top:0px; font-size:14px;}
+.hcs span{font-size:14px;float:right ;color:#FC5D48; font-weight:800;vertical-align: middle;margin-top: 5px;}
+
+ion-fab-list{width: 250px;}
+ion-radio{--color-checked: #4432DC;}
+.txtname{color: #000;
+  font-size: 14px;
+  padding-left: 10px;
+  font-weight: 500;vericle-align:middle;
+
+}
+.head{color: #1d1d1d;
+  font-size: 12px;
+  margin: 5px 0px;
+  line-height: 23px;
+  border: 1px solid #C8F8F8;
+  padding: 10px;
+ margin:0px 5px;;
+
+  font-weight: bold;
+  background:#DFE9F5;
+  border-radius:10px;
+
+}
+.download{font-size:30px; color:#028EFF; padding-right:10px;}
+.head1{color: #4432DC;
+  font-size: 16px;
+  margin: 0px 0px;
+  line-height:23px;
+  border-top:1px solid #ffffff;
+  padding: 10px;
+  font-weight: bold;
+  background: #f5f5f5;
+}
+i{margin:0px 3px;}
+ion-col{padding-top:15px;}
+.cat2{font-weight:800; color:#4432DC; font-size:12px;text-align:center;}
+.cathead{font-weight:800; color:#000000; font-size:12px; text-align:center;}
+.imgview{font-size:14px; border:1px solid #ccc; padding:5px; border-radius:10px; text-align:center;}
+.cat1{
+  font-size: 12px;
+  color: #000;
+  font-weight: 600;
+  text-align:center;
+  }
+
+  .cat3{
+  font-size: 12px;
+  color: #4D4D4D;
+  font-weight: 600;
+
+  }
+
+.nodata{font-size:20px;font-weight:800;text-align:center; padding:20px 10px; border:1px solid #ccc; width:100%;}
+
+
+img{  padding-right:10px; float:right;}
+.instructions{padding:5px; margin:5px;border:1px solid #ccc; background:f5f5f5;}
+.instructions p{font-size:12px; color:#444;}
+.instructions .redcol{font-size:12px;color:#4432DC; font-weight:800;}
+.native {
+  background: #f5f5f5;
+  border-radius: 0px 10px 10px 0px;;
+  border: 1px solid #ccc;
+  padding: 10px !important;
+  height: 45px;
+  margin-top: 10px;
+  font-weight: bolder;
+}
+

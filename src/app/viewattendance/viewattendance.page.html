@@ -1,0 +1,69 @@
+<ion-header>
+  <ion-toolbar translucent>
+    <ion-buttons slot="start" color="none">
+            <ion-buttons slot="start" color="none">
+                <ion-back-button color="none" defaultHref="home"></ion-back-button>
+            </ion-buttons>
+        </ion-buttons>
+        <ion-title>View Attendance</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="bgWhite">
+
+  <ion-item color="none" lines="none">
+
+    <ion-datetime displayFormat="DD-MM-YYYY" style="width:100%;" class="native" [(ngModel)]="date"
+      placeholder="DD-MM-YYYY"></ion-datetime>
+
+  </ion-item>
+
+  <ion-item>
+    <ion-label>Select Manager</ion-label>
+    <ion-select style="width:100%;" placeholder="Select Managers" [(ngModel)]="manager" class="native">
+      <ion-select-option *ngFor="let prod of managers" value="{{prod.id}}">{{prod.name}}
+      </ion-select-option>
+
+    </ion-select>
+  </ion-item>
+  <ion-button style="height: 45px;margin: 10px;" expand="full" (click)="viewattendace()">View Attendance</ion-button>
+
+
+  <div *ngFor="let list of teamattendacne">
+    <ion-list>
+      <ion-item >
+        <ion-grid>
+        <ion-row >
+          <ion-col size="6">Branch Name :</ion-col>
+          <ion-col size="6">{{list.branch_name}}</ion-col>
+        </ion-row>
+        <ion-row >
+          <ion-col size="6">Department</ion-col> 
+          <ion-col size="6">{{list.department}} </ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col size="6">Name </ion-col> 
+          <ion-col size="6">{{list.name}} </ion-col>
+        </ion-row>
+        <ion-row >
+          <ion-col size="6">Position</ion-col>
+          <ion-col size="6"> {{list.position}} </ion-col>
+        </ion-row>
+        <ion-row >
+          <ion-col size="6">Attendance</ion-col>
+          <ion-col size="6" *ngIf="list.attandence == '1.0'"> P </ion-col>
+          <ion-col size="6" *ngIf="list.attandence == '0.5'"> H </ion-col>
+          <ion-col size="6" *ngIf="list.attandence == '0.0'"> A </ion-col>
+        </ion-row>
+      </ion-grid>
+        
+      </ion-item>
+
+
+    </ion-list>
+  </div>
+
+
+
+
+</ion-content>

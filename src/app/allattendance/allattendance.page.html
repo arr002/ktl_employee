@@ -1,0 +1,69 @@
+<ion-header>
+  <ion-toolbar translucent>
+    <ion-buttons slot="start" color="none">
+      <ion-buttons slot="start" color="none">
+        <ion-back-button color="none" defaultHref="home"></ion-back-button>
+      </ion-buttons>
+    </ion-buttons>
+    <ion-title>All Attendance </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="bg bgWhite" color="light">
+
+
+  <div class="maindiv">
+    <ion-grid>
+
+      <ion-row>
+
+        <ion-col size="6" [routerLink]="['/attandence']">
+
+          <ion-avatar class="icon-center">
+            <img src="assets/attendance-icon.png">
+          </ion-avatar>
+          <p>Mark My Attendance</p>
+        </ion-col>
+
+        <ion-col size="6" [routerLink]="['/myattendance']">
+          <ion-avatar class="icon-center">
+            <img src="assets/myattendance.png">
+          </ion-avatar>
+          <p>My Attendance Details</p>
+        </ion-col>
+
+        <ion-col size="6" *ngIf="empmanager=='1'" [routerLink]="['/buddy']">
+          <ion-avatar class="icon-center">
+            <img src="assets/buddy.png">
+          </ion-avatar>
+          <p>Buddy Attendance</p>
+        </ion-col>
+
+        <ion-col size="6" *ngIf="empmanager=='1'" [routerLink]="['/markattendance']">
+          <ion-avatar class="icon-center">
+            <img src="assets/mark.png">
+          </ion-avatar>
+          <p>Approve Attendance</p>
+        </ion-col>
+        <ion-col size="6" *ngIf="empmanager=='1'" [routerLink]="['/editattendance']">
+          <ion-avatar class="icon-center">
+            <img src="assets/editattendance.png">
+          </ion-avatar>
+          <p>Edit Attendance</p>
+        </ion-col>
+
+        <ion-col size="6" (click)='checkmanagerid()'>
+          <ion-avatar class="icon-center">
+            <img src="assets/clientdashboard.png">
+          </ion-avatar>
+          <p>View Attendance</p>
+        </ion-col>
+
+
+
+
+      </ion-row>
+    </ion-grid>
+  </div>
+
+</ion-content>

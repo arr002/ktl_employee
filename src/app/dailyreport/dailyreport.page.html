@@ -1,0 +1,64 @@
+<ion-header>
+  <ion-toolbar translucent color="none">
+    <ion-buttons slot="start">
+      <ion-buttons slot="start" color="dark">
+        <ion-back-button color="dark" defaultHref="home"></ion-back-button>
+      </ion-buttons>
+    </ion-buttons>
+    <ion-title>Daily Seal</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="bg bgWhite" color="light">
+
+  <ion-list lines="none">
+    <ion-item color="none" lines="none">
+
+      <ion-input class="native" [(ngModel)]="name" placeholder="Enter Your Name"></ion-input>
+
+    </ion-item>
+
+
+    <!-- <ion-item>
+
+      <ion-label>Select Branch</ion-label>
+      <ion-select style="width:100%;" placeholder="Select Branch" [(ngModel)]="branch" class="native">
+        <ion-select-option *ngFor="let prod of branches" value="{{prod.branch_code}}">{{prod.branch_name}}
+        </ion-select-option>
+      </ion-select>
+
+    </ion-item> -->
+
+    <ion-item color="none" lines="none">
+
+      <ion-datetime displayFormat="DD-MM-YYYY" style="width:100%;" class="native" [(ngModel)]="date"
+        placeholder="DD-MM-YYYY"></ion-datetime>
+
+    </ion-item>
+    <ion-item color="none" lines="none">
+
+      <ion-datetime displayFormat="H:mm" style="width:100%;" class="native" [(ngModel)]="time" placeholder="H:mm">
+      </ion-datetime>
+
+    </ion-item>
+
+    <!-- <ion-item>
+      <ion-label>Select Seal</ion-label>
+      <ion-select style="width:100%;" placeholder="Select Seal" [(ngModel)]="seal" class="native">
+        <ion-select-option selected value="Opening">Opening</ion-select-option>
+        <ion-select-option value="Closing">Closing</ion-select-option>
+
+      </ion-select>
+    </ion-item> -->
+    <ion-item color="none" lines="none">
+
+      <ion-input class="native" [(ngModel)]="sealno" placeholder="Enter Seal No."></ion-input>
+
+    </ion-item>
+    <p></p>
+    <ion-button style="height: 45px;margin: 10px;" expand="full" (click)="takePictureCamera()">Click to upload Seal with
+      Camera</ion-button>
+    <ion-button style="height: 45px;margin: 10px;" expand="full" (click)="takePictureFile()">Click to upload Seal with
+      Image</ion-button>
+  </ion-list>
+</ion-content>

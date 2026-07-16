@@ -1,0 +1,20 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="home"></ion-back-button>
+    </ion-buttons>
+    <ion-title>States</ion-title>
+
+  </ion-toolbar>
+
+</ion-header>
+
+<ion-content color="light"  class="bgWhite">
+  <ion-list>
+    <ion-item *ngFor="let states of Managerstates">
+      <ion-label (click)="navigateTo(states.branch_code)">{{states.branch_name}}</ion-label>
+    </ion-item>
+  </ion-list>
+
+  
+</ion-content>

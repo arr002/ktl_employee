@@ -1,0 +1,444 @@
+<ion-header>
+  <ion-toolbar translucent>
+    <ion-buttons slot="start" color="none">
+      <ion-buttons slot="start" color="none">
+        <ion-back-button color="none" defaultHref="home"></ion-back-button>
+      </ion-buttons>
+    </ion-buttons>
+    <ion-title style="font-size: large;">VAN Upload</ion-title>
+
+    <!-- <ion-buttons slot="end" color="none" (click)="openCal()">
+      Date Request
+    </ion-buttons> -->
+  </ion-toolbar>
+</ion-header>
+
+<ion-content color="light" class="bgWhite" style="height: 70%; padding-bottom: 22px !important;">
+
+  <ion-item style="margin-top: 20px !important;" *ngIf="reqdate">
+    <ion-label>Select Date</ion-label>
+    <ion-datetime [max]="maxdate" [min]="mindate" pickerFormat="YYYY-MM-DD" [(ngModel)]="datetime"></ion-datetime>
+  </ion-item>
+  
+  <!-- <ion-item>
+    <ion-label color="secondary">HQ</ion-label>
+    <ion-label color="dark">Haridwar</ion-label>
+  </ion-item> -->
+
+<!-- <ion-item (click)="openDatePicker()">
+  <ion-label>Start Date</ion-label>
+  <ion-input [value]="formattedDate" readonly></ion-input>
+</ion-item> -->
+
+<!-- <ion-modal [isOpen]="showDatePicker" (didDismiss)="closeDatePicker()" style="z-index: 20002;
+    height: 60%;
+    width: 90%;
+    margin-left: 16px;
+    margin-top: 40%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    border-radius: 8px;">
+  <ng-template>
+    <ion-content>
+      <ion-datetime
+        [(ngModel)]="selectedDate"
+        display-format="MMM dd, yyyy h:mm a"
+        (ionChange)="onDateSelected($event)">
+      </ion-datetime>
+      <ion-button expand="full" (click)="confirmDate()">Done</ion-button>
+    </ion-content>
+  </ng-template>
+</ion-modal> -->
+
+
+<!-- <ion-modal [isOpen]="showDatePicker1" (didDismiss)="closeDatePicker1()" style="z-index: 20002;
+    height: 60%;
+    width: 90%;
+    margin-left: 16px;
+    margin-top: 40%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    border-radius: 8px;">
+  <ng-template>
+    <ion-content>
+      <ion-datetime
+        [(ngModel)]="selectedDate1"
+        display-format="MMM dd, yyyy h:mm a"
+        (ionChange)="onDateSelected1($event)">
+      </ion-datetime>
+      <ion-button expand="full" (click)="confirmDate1()">Done</ion-button>
+    </ion-content>
+  </ng-template>
+</ion-modal> -->
+
+
+  <!-- <ion-row>
+    <ion-col size="12">
+      <ion-item>
+        <ion-label color="secondary">Start Date</ion-label>
+      </ion-item>
+    </ion-col>
+    <ion-col size="6">
+      <ion-item color="none" lines="none">
+        <ion-input type="date" displayFormat="DD-MM-YYYY" style="width:100%;" [(ngModel)]="startDate"
+          placeholder="DD-MM-YYYY"></ion-input>
+      </ion-item>
+    </ion-col>
+    <ion-col size="6">
+      <ion-item color="none" lines="none">
+        <ion-input type="time" displayFormat="H:mm" style="width:100%;" [(ngModel)]="start_time"
+          placeholder="H:mm"></ion-input>
+      </ion-item>
+    </ion-col>
+  </ion-row>
+
+  <ion-row>
+    <ion-col size="12">
+      <ion-item>
+        <ion-label color="secondary">End Date</ion-label>
+      </ion-item>
+    </ion-col>
+    <ion-col size="6">
+      <ion-item color="none" lines="none">
+        <ion-input type="date" displayFormat="DD-MM-YYYY" style="width:100%;" [(ngModel)]="startDate"
+          placeholder="DD-MM-YYYY"></ion-input>
+      </ion-item>
+    </ion-col>
+    <ion-col size="6">
+      <ion-item color="none" lines="none">
+        <ion-input type="time" displayFormat="H:mm" style="width:100%;" [(ngModel)]="start_time"
+          placeholder="H:mm"></ion-input>
+      </ion-item>
+    </ion-col>
+  </ion-row> -->
+
+  <ion-item>
+    <ion-label color="secondary">User Name</ion-label>
+    <ion-label color="dark">{{username}}</ion-label>
+  </ion-item>
+
+  <ion-item>
+    <ion-label color="secondary">Dealer Name</ion-label>
+    <ion-label color="dark">{{dealer_name}}</ion-label>
+  </ion-item>
+
+  <ion-item>
+    <ion-label color="secondary">Claimed Amount</ion-label>
+    <ion-label color="dark">{{claimed_amount}}</ion-label>
+  </ion-item>
+
+  <ion-item>
+    <ion-label color="secondary">Address</ion-label>
+    <ion-label color="dark">{{address}}</ion-label>
+  </ion-item>
+
+     <!-- <ion-row style="background: #fff;">
+        <ion-col size="4">
+          <ion-label color="secondary" style="padding-top: 11px !important;">Claimed Amount</ion-label>
+        </ion-col>
+        <ion-col size="8">
+          <ion-input class="inputclass" [(ngModel)]="claimed_amount" style="text-indent: 11px !important;"></ion-input>
+        </ion-col>
+      </ion-row> -->
+
+      <!-- <ion-row style="background: #fff;">
+        <ion-col size="4">
+          <ion-label color="secondary" style="padding-top: 11px !important;">Address</ion-label>
+        </ion-col>
+        <ion-col size="8">
+          <ion-input class="inputclass" [(ngModel)]="address" style="text-indent: 11px !important;" placeholder="Enter your address"></ion-input>
+        </ion-col>
+      </ion-row> -->
+
+  <!-- <ion-item>
+    <ion-label color="secondary">Address</ion-label>
+    <ion-textarea [(ngModel)]="address" style="text-indent: 1px !important;" rows="4" autoGrow="true" placeholder="Enter your address" style="    margin: 5px;
+    background: #fff;
+    border: 1px solid #bcbcbc;
+    padding: 5px;
+    border-radius: 7px;"></ion-textarea>
+  </ion-item> -->
+
+
+  <ion-item style="margin-top: 20px !important;">
+    <ion-label>Van No.</ion-label>
+    <ion-select style="width:100%;" placeholder="Select Option" [(ngModel)]="van_no" class="native" (ionChange)="onBrandChange($event)">
+      <ion-select-option value="1">1</ion-select-option>
+      <ion-select-option value="2">2</ion-select-option>
+      <ion-select-option value="3">3</ion-select-option>
+    </ion-select>
+  </ion-item>
+
+  <ion-item>
+    <ion-label color="secondary">Payment Collected</ion-label>
+    <ion-input class="inputclass" [(ngModel)]="payment_collected" style="text-indent: 11px !important; width: 50% !important;"></ion-input>
+  </ion-item>
+  
+
+  <ion-item >
+    <ion-label>Select Uploading Date</ion-label>
+    <ion-select (ionChange)="dateChangeDrop()" style="width:100%;" placeholder="Select Option" [(ngModel)]="dateSelect"
+      class="native">
+      <ion-select-option *ngFor="let item of daterequest" value="{{item}}">{{item}}</ion-select-option>
+    </ion-select>
+  </ion-item>
+
+    <!-- <ion-row style="background-color: #fff !important;">
+    <ion-col size="4">
+      <ion-item>
+        <ion-label>Start Time</ion-label>
+      </ion-item>
+    </ion-col>
+    <ion-col size="8">
+      <ion-item >
+        <ion-input type="time" [(ngModel)]="start_time"></ion-input>
+      </ion-item>
+    </ion-col>
+  </ion-row>
+
+  <ion-row style="background-color: #fff !important;">
+    <ion-col size="4">
+      <ion-item>
+        <ion-label>End Time</ion-label>
+      </ion-item>
+    </ion-col>
+    <ion-col size="8">
+      <ion-item >
+        <ion-input type="time" [(ngModel)]="end_time" ></ion-input>  
+      </ion-item>
+    </ion-col>
+  </ion-row> -->
+
+
+  <ion-item>
+  <ion-label>Start Time</ion-label>
+  <ion-select [(ngModel)]="selectedHourStart" interface="popover">
+    <ion-select-option *ngFor="let h of hoursStart" [value]="h">{{ h }}</ion-select-option>
+  </ion-select>
+  :
+  <ion-select [(ngModel)]="selectedMinuteStart" interface="popover">
+    <ion-select-option *ngFor="let m of minutesStart" [value]="m">{{ m }}</ion-select-option>
+  </ion-select>
+  <ion-select [(ngModel)]="selectedAmPmStart" interface="popover">
+    <ion-select-option value="AM">AM</ion-select-option>
+    <ion-select-option value="PM">PM</ion-select-option>
+  </ion-select>
+</ion-item>
+
+<ion-item>
+  <ion-label>End Time</ion-label>
+  <ion-select [(ngModel)]="selectedHourEnd" interface="popover">
+    <ion-select-option *ngFor="let h of hoursEnd" [value]="h">{{ h }}</ion-select-option>
+  </ion-select>
+  :
+  <ion-select [(ngModel)]="selectedMinuteEnd" interface="popover">
+    <ion-select-option *ngFor="let m of minutesEnd" [value]="m">{{ m }}</ion-select-option>
+  </ion-select>
+  <ion-select [(ngModel)]="selectedAmPmEnd" interface="popover">
+    <ion-select-option value="AM">AM</ion-select-option>
+    <ion-select-option value="PM">PM</ion-select-option>
+  </ion-select>
+</ion-item>
+
+
+  <ion-item>
+    <ion-label>Customer Type</ion-label>
+    <ion-select style="width:100%;" placeholder="Select Option" [(ngModel)]="visitType" class="native">
+      <ion-select-option value="D">New Dealer</ion-select-option>
+      <ion-select-option value="M">Manufacturer</ion-select-option>
+      <ion-select-option value="R">Retailer</ion-select-option>
+      <ion-select-option value="T">Tailor</ion-select-option>
+    </ion-select>
+  </ion-item>
+
+  <ion-item>
+    <ion-label>Select District</ion-label>
+
+    <ion-button expand="full" color="white" (click)="openPopOverDistrict()">{{townnameDistrict}}</ion-button>
+
+  </ion-item>
+
+  <ion-item>
+    <ion-label>Select City</ion-label>
+
+    <ion-button expand="full" color="white" (click)="openPopOverCity()">{{townname}}</ion-button>
+
+  </ion-item>
+
+  <!-- <ion-row>
+  <ion-col size="4">
+      <ion-label  color="secondary">Town Name</ion-label>
+    </ion-col>
+    <ion-col size="8">
+      <ion-input class="inputclass" [(ngModel)]="townname"></ion-input>
+    </ion-col>
+    </ion-row> -->
+
+  <ion-item>
+    <ion-grid>
+
+       <ion-row>
+        <ion-col size="4">
+          <ion-label color="secondary" style="padding-top: 11px !important;">Vehicle No.</ion-label>
+        </ion-col>
+        <ion-col size="8">
+          <ion-input class="inputclass" [(ngModel)]="vechicle_numer" style="text-indent: 11px !important;"></ion-input>
+        </ion-col>
+      </ion-row>
+
+      <ion-row>
+        <ion-col size="4">
+          <ion-label color="secondary" style="padding-top: 11px !important;">Kms</ion-label>
+        </ion-col>
+        <ion-col size="8">
+          <ion-input type="tel" inputmode="numeric" class="inputclass" [(ngModel)]="distanceKms" style="text-indent: 11px !important;" style="text-indent: 11px !important;" maxlength="10" pattern="^[0-9]{10}$">
+          </ion-input>
+        </ion-col>
+      </ion-row>
+
+      <ion-row>
+        <ion-col size="4">
+          <ion-label color="secondary" style="padding-top: 11px !important;">Name</ion-label>
+        </ion-col>
+        <ion-col size="8">
+          <ion-input class="inputclass" [(ngModel)]="name" style="text-indent: 11px !important;"></ion-input>
+        </ion-col>
+      </ion-row>
+
+      <ion-row>
+        <ion-col size="4">
+          <ion-label color="secondary" style="padding-top: 11px !important;">Phone</ion-label>
+        </ion-col>
+        <ion-col size="8">
+          <ion-input type="tel" inputmode="numeric" class="inputclass" [(ngModel)]="phone" (focusout)='getclientname()'
+            style="text-indent: 11px !important;" maxlength="10" (keydown)="onKeyDown($event)" (keyup)="onKeyUp($event)"
+            (ionInput)="validatePhone($event)" pattern="^[0-9]{10}$"></ion-input>
+        </ion-col>
+      </ion-row>
+
+    </ion-grid>
+
+
+  </ion-item>
+
+  <ion-row>
+    <ion-col size="5">
+      <ion-item>
+        <ion-button color="danger" expand="full" (click)="openModal(0)">Add Data </ion-button>
+      </ion-item>
+    </ion-col>
+    <ion-col size="5">
+      <!-- <ion-item>
+        <ion-button color="success" expand="full" (click)="openModal(1)">Sold Data </ion-button>
+      </ion-item> -->
+    </ion-col>
+    <ion-col size="2"></ion-col>
+  </ion-row>
+
+  <ion-card *ngFor="let itemFinal of finalSubmitData; let iAll = index;">
+    <ion-card-header>
+      <ion-row>
+        <ion-col size="10">
+          <ion-card-title>Name : {{ itemFinal.name }} </ion-card-title>
+          <ion-card-subtitle>Phone : {{ itemFinal.phone }} </ion-card-subtitle>
+        </ion-col>
+        <ion-col size="2">
+          <ion-icon name="trash-outline" color="danger" (click)="delItem(iAll,-1,iAll)" style="font-size: 28px !important;">></ion-icon>
+        </ion-col>
+      </ion-row>
+    </ion-card-header>
+    <ion-card-content>
+  <ion-grid class="shadow-card">
+    <div class="divstyle">Booked Data of Customer</div>
+    <div style="border:1px solid #ccc; padding:5px;" *ngFor="let item of itemFinal.customer; let i = index;">
+      <ion-item>
+        <ion-label color="primary">{{ item.name }}</ion-label>
+        <ion-icon name="trash-outline" color="danger" (click)="delItem(i,0,iAll)">></ion-icon>
+      </ion-item>
+      <table style="width:100%; border: 1px solid #ccc; padding: 5px;">
+        <tr>
+          <th>Brand</th>
+          <th>Article</th>
+          <th>Qty</th>
+          <th>Price</th>
+          <th>T. Sale</th>
+        </tr>
+        <tr *ngFor="let items of item.data">
+          <td>{{items.branch_name}}</td>
+          <td>{{items.name}}</td>
+          <td>{{items.qty}}</td>
+          <td>{{items.itemvalue}}</td>
+          <td>{{items.price}}</td>
+        </tr>
+      </table>
+    </div>
+  </ion-grid>
+
+  <ion-grid class="shadow-card" style="margin-bottom: 11px !important;" *ngIf="itemFinal.customerSold.length != 0">
+    <div class="divstyle">Sold Data of Customer</div>
+    <div style="border:1px solid #ccc; padding:5px;" *ngFor="let item of itemFinal.customerSold; let i = index;">
+      <ion-item>
+        <ion-label color="primary">{{ item.name }}</ion-label>
+        <ion-icon name="trash-outline" color="danger" (click)="delItem(i,1,iAll)">></ion-icon>
+      </ion-item>
+      <table style="width:100%; border: 1px solid #ccc; padding: 5px;">
+        <tr>
+          <th>Brand</th>
+          <th>Article</th>
+          <th>Qty</th>
+          <th>Price</th>
+          <th>T. Sale</th>
+        </tr>
+        <tr *ngFor="let items of item.data">
+          <td>{{items.branch_name}}</td>
+          <td>{{items.name}}</td>
+          <td>{{items.qty}}</td>
+          <td>{{items.itemvalue}}</td>
+          <td>{{items.price}}</td>
+        </tr>
+      </table>
+    </div>
+  </ion-grid>
+
+
+    </ion-card-content>
+  </ion-card>
+
+
+  <!-- <ion-item>
+    <ion-label class="fintbold" color="dark">Remarks</ion-label>
+    <ion-input class="inputclass" [(ngModel)]="comment"></ion-input>
+  </ion-item>
+  <ion-item style="display: none;">
+    <ion-label class="fintbold" color="dark">Take Selfie</ion-label>
+    <img (click)="takePicture()" class="imgwidth" src="assets/uploadattandence.png">
+  </ion-item> -->
+
+  <ion-grid>
+    <ion-row>
+      <ion-col size="6"></ion-col>
+      <ion-col size="6">
+        <ion-button color="success" expand="full" (click)="downloadBtn()">
+          <ion-icon name="download" style="margin-top: -6px; padding-right: 5px !important;"></ion-icon>
+          Download
+        </ion-button>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+
+</ion-content>
+
+
+<ion-footer>
+  <ion-grid>
+    <ion-row>
+      <ion-col>
+        <ion-button color="danger" expand="full" (click)="uploadDRMT()">Upload VAN</ion-button>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</ion-footer>

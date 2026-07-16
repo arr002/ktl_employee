@@ -1,0 +1,195 @@
+<ion-header>
+  <ion-toolbar translucent>
+    <ion-buttons slot="start" color="none">
+      <ion-buttons slot="start" color="none">
+        <ion-back-button color="none" defaultHref="home"></ion-back-button>
+      </ion-buttons>
+    </ion-buttons>
+    <ion-title style="font-size: large;">CCS Report Upload</ion-title>
+
+    <ion-buttons slot="end" color="none" (click)="openCal()">
+      Date Request
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content color="light" class="bgWhite" style="height: 70%; padding-bottom: 22px !important;">
+
+  <ion-item style="margin-top: 20px !important;" *ngIf="reqdate">
+    <ion-label>Select Date</ion-label>
+    <ion-datetime [max]="maxdate" [min]="mindate" pickerFormat="YYYY-MM-DD" [(ngModel)]="datetime"></ion-datetime>
+  </ion-item>
+  <!-- <ion-item>
+
+    <ion-label color="secondary">HQ</ion-label>
+    <ion-label color="dark">Haridwar</ion-label>
+  </ion-item> -->
+  <ion-item>
+
+    <ion-label color="secondary">User Name</ion-label>
+    <ion-label color="dark">{{username}}</ion-label>
+  </ion-item>
+  <ion-item>
+
+    <ion-label color="secondary">Dealer Name</ion-label>
+    <ion-label color="dark">{{ DealerName }}</ion-label>
+  </ion-item>
+  <ion-item style="margin-top: 20px !important;">
+    <ion-label>Select Uploading Date</ion-label>
+    <ion-select (ionChange)="dateChangeDrop()" style="width:100%;" placeholder="Select Option" [(ngModel)]="dateSelect"
+      class="native">
+      <ion-select-option *ngFor="let item of daterequest" value="{{item}}">{{item}}</ion-select-option>
+    </ion-select>
+  </ion-item>
+  <ion-item>
+
+    <ion-label>Customer Type</ion-label>
+    <ion-select style="width:100%;" placeholder="Select Option" [(ngModel)]="visitType" class="native">
+      <ion-select-option value="D">New Dealer</ion-select-option>
+      <ion-select-option value="M">Manufacturer</ion-select-option>
+      <ion-select-option value="R">Retailer</ion-select-option>
+      <ion-select-option value="T">Tailor</ion-select-option>
+    </ion-select>
+
+  </ion-item>
+
+  <ion-item>
+    <ion-label>Select District</ion-label>
+
+    <ion-button expand="full" color="white" (click)="openPopOverDistrict()">{{townnameDistrict}}</ion-button>
+
+  </ion-item>
+
+  <ion-item>
+    <ion-label>Select City</ion-label>
+
+    <ion-button expand="full" color="white" (click)="openPopOverCity()">{{townname}}</ion-button>
+
+  </ion-item>
+
+  <!-- <ion-row>
+  <ion-col size="4">
+      <ion-label  color="secondary">Town Name</ion-label>
+    </ion-col>
+    <ion-col size="8">
+      <ion-input class="inputclass" [(ngModel)]="townname"></ion-input>
+    </ion-col>
+    </ion-row> -->
+
+  <ion-item>
+    <ion-grid>
+
+      <ion-row>
+        <ion-col size="4">
+          <ion-label color="secondary" style="padding-top: 11px !important;">Name</ion-label>
+        </ion-col>
+        <ion-col size="8">
+          <ion-input class="inputclass" [(ngModel)]="name" style="text-indent: 11px !important;"></ion-input>
+        </ion-col>
+      </ion-row>
+
+      <ion-row>
+        <ion-col size="4">
+          <ion-label color="secondary" style="padding-top: 11px !important;">Phone</ion-label>
+        </ion-col>
+        <ion-col size="8">
+          <ion-input type="tel" inputmode="numeric" class="inputclass" [(ngModel)]="phone" (focusout)='getclientname()'
+            style="text-indent: 11px !important;" maxlength="10" (keydown)="onKeyDown($event)" (keyup)="onKeyUp($event)"
+            (ionInput)="validatePhone($event)" pattern="^[0-9]{10}$"></ion-input>
+        </ion-col>
+      </ion-row>
+
+    </ion-grid>
+
+
+  </ion-item>
+
+  <ion-row>
+    <ion-col size="5">
+      <ion-item>
+        <ion-button color="danger" expand="full" (click)="openModal(0)">Add Data </ion-button>
+      </ion-item>
+    </ion-col>
+    <ion-col size="7"></ion-col>
+  </ion-row>
+
+  <ion-card *ngFor="let itemFinal of finalSubmitData; let iAll = index;">
+    <ion-card-header>
+      <ion-row>
+        <ion-col size="10">
+          <ion-card-title>Name : {{ itemFinal.name }} </ion-card-title>
+          <ion-card-subtitle>Phone : {{ itemFinal.phone }} </ion-card-subtitle>
+        </ion-col>
+        <ion-col size="2">
+          <ion-icon name="trash-outline" color="danger" (click)="delItem(iAll,-1,iAll)" style="font-size: 28px !important;">></ion-icon>
+        </ion-col>
+      </ion-row>
+    </ion-card-header>
+
+    <ion-card-content>
+      <ion-grid class="shadow-card">
+        <div class="divstyle">Cons Data of Customer</div>
+        <div style="border:1px solid #ccc; padding:5px;" *ngFor="let item of itemFinal.customer; let iCons = index;">
+          <ion-item>
+            <ion-label color="primary">{{ item.name }}</ion-label>
+            <ion-icon name="trash-outline" color="danger" (click)="delItem(iCons,0,iAll)">></ion-icon>
+          </ion-item>
+          <table style="width:100%; border: 1px solid #ccc; padding: 5px;">
+            <tr>
+              <th>Brand</th>
+              <th>Article</th>
+              <th>Qty</th>
+              <th>Price</th>
+              <th>T. Sale</th>
+            </tr>
+            <tr *ngFor="let items of item.data">
+              <td>{{items.branch_name}}</td>
+              <td>{{items.name}}</td>
+              <td>{{items.qty}}</td>
+              <td>{{items.itemvalue}}</td>
+              <td>{{items.price}}</td>
+            </tr>
+          </table>
+        </div>
+      </ion-grid>
+
+      <ion-grid class="shadow-card" style="margin-bottom: 11px !important;" *ngIf="itemFinal.customerSold.length != 0">
+        <div class="divstyle">Sold Data of Customer</div>
+        <div style="border:1px solid #ccc; padding:5px;" *ngFor="let item of itemFinal.customerSold; let iSold = index;">
+          <ion-item>
+            <ion-label color="primary">{{ item.name }}</ion-label>
+            <ion-icon name="trash-outline" color="danger" (click)="delItem(iSold,1,iAll)">></ion-icon>
+          </ion-item>
+          <table style="width:100%; border: 1px solid #ccc; padding: 5px;">
+            <tr>
+              <th>Brand</th>
+              <th>Article</th>
+              <th>Qty</th>
+              <th>Price</th>
+              <th>T. Sale</th>
+            </tr>
+            <tr *ngFor="let items of item.data">
+              <td>{{items.branch_name}}</td>
+              <td>{{items.name}}</td>
+              <td>{{items.qty}}</td>
+              <td>{{items.itemvalue}}</td>
+              <td>{{items.price}}</td>
+            </tr>
+          </table>
+        </div>
+      </ion-grid>
+
+    </ion-card-content>
+  </ion-card>
+
+</ion-content>
+
+<ion-footer>
+  <ion-grid>
+    <ion-row>
+      <ion-col>
+        <ion-button color="danger" expand="full" (click)="uploadDRMT()">Upload CCS Report</ion-button>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</ion-footer>

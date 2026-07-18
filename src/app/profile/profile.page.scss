@@ -1,56 +1,162 @@
-#container {
-    text-align: center;
-  
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 65%;
-    transform: translateY(-50%);
+:host {
+  --profile-accent: #f69102;
+  --profile-accent-deep: #de6817;
+  --profile-ink: #1f2933;
+  --profile-muted: #6b7280;
+  --profile-line: #eceff3;
+  --profile-surface: #ffffff;
+}
+
+.profile-toolbar {
+  --background: #ffffff;
+  --color: var(--profile-ink);
+  --border-width: 0;
+  --min-height: 52px;
+
+  ion-back-button {
+    --color: var(--profile-accent-deep);
   }
-  
-  #container strong {
-    font-size: 20px;
-    line-height: 26px;
+
+  ion-title {
+    font-weight: 700;
+    font-size: 1.05rem;
+    letter-spacing: 0.01em;
   }
-  
-  #container p {
+}
+
+.profile-content {
+  --background: linear-gradient(180deg, #fff7eb 0%, #f3f4f6 42%, #eef1f5 100%);
+}
+
+.profile-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 28px 20px 18px;
+  text-align: center;
+}
+
+.avatar-wrap {
+  position: relative;
+  width: 118px;
+  height: 118px;
+  margin-bottom: 14px;
+  cursor: pointer;
+}
+
+.profile-avatar {
+  width: 118px;
+  height: 118px;
+  border: 3px solid #ffffff;
+  box-shadow: 0 10px 28px rgba(222, 104, 23, 0.22);
+  background: #ffffff;
+
+  img {
+    object-fit: cover;
+  }
+}
+
+.camera-badge {
+  position: absolute;
+  right: 2px;
+  bottom: 2px;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--profile-accent), var(--profile-accent-deep));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+
+  ion-icon {
+    color: #ffffff;
     font-size: 16px;
-    color:#fff; margin-bottom:10px; font-weight:400;padding:5px 0px
-   
   }
-  
-  #container a {
-    text-decoration: none;
+}
+
+.profile-name {
+  margin: 0;
+  color: var(--profile-ink);
+  font-size: 1.45rem;
+  font-weight: 700;
+  line-height: 1.25;
+  text-transform: capitalize;
+}
+
+.profile-role {
+  margin: 6px 0 0;
+  color: var(--profile-accent-deep);
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+.profile-meta {
+  margin: 4px 0 0;
+  color: var(--profile-muted);
+  font-size: 0.82rem;
+  font-weight: 500;
+}
+
+.profile-card {
+  margin: 8px 16px 28px;
+  padding: 6px 4px;
+  background: var(--profile-surface);
+  border-radius: 22px;
+  box-shadow: 0 8px 28px rgba(31, 41, 51, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+}
+
+.info-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 14px;
+  border-bottom: 1px solid var(--profile-line);
+
+  &.last {
+    border-bottom: none;
   }
-  .bg{
-      --background: url('/assets/profilebg.png') no-repeat center center / cover;
-  
-     
+}
+
+.info-icon {
+  flex: 0 0 38px;
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  background: rgba(246, 145, 2, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  ion-icon {
+    color: var(--profile-accent-deep);
+    font-size: 18px;
   }
-  .mainimg{text-align:center; margin-top:50px;}
-  .image-center{
-  margin:0 auto;
-      padding: 5px;
-      background: #fff;
-      width: 150px;  
-      height: 150px;  
-  
-  }
-  
-  .icon-center{
-  margin:0 auto;
-      padding: 5px;
-      background: #fff;
-   
-  }
-  ion-icon{color: #de6817; font-weight:800;
-      font-size: 14px; padding-right:5px; margin-top:0px; verticle-align:center}
-  .head{}
-  .welcome{font-size:20px;font-weight:800; color:#fff; background:#FDC75B; padding:10px; margin-bottom:30px}
-  .person{color:#fff; font-size:20px; margin-top:10px;}
-  
-  .message{background:#F6F5F5; padding:10px; border-radius:0px 20px 20px 0px; border:1px solid #C6C5C5; margin:0px; color:#000; text-align:left;}
-  ion-icon{color:#F69102;}
-  .message1{background:#F6F5F5; padding:10px; border-radius:20px 0px 0px 20px; border:1px solid #C6C5C5; margin:0px; color:#424500; font-weight:600; text-align:left;}
-  .space{margin:20px;}
-  
+}
+
+.info-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding-top: 2px;
+}
+
+.info-label {
+  color: var(--profile-muted);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.info-value {
+  color: var(--profile-ink);
+  font-size: 0.98rem;
+  font-weight: 600;
+  line-height: 1.35;
+  word-break: break-word;
+}

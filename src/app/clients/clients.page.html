@@ -1,10 +1,24 @@
 <ion-header>
   <ion-toolbar>
     <ion-title>Select Client</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="close()">Close</ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content color="light"  class="bgWhite">
+
+<div *ngIf="isLoading" class="ion-text-center ion-padding">
+  <ion-spinner></ion-spinner>
+  <p>Loading clients...</p>
+</div>
+
+<div *ngIf="!isLoading && (!customers || customers.length === 0)" class="ion-text-center ion-padding">
+  <p>No clients found.</p>
+  <ion-button (click)="close()">Go Back</ion-button>
+</div>
+
 <ion-radio-group name="radio-group" [(ngModel)]="selectedRadioGroup" (ionChange)="radioGroupChange($event)">
 <ion-item *ngFor="let prod of customers">
  	

@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { MenuController, ToastController, Platform, NavController, ModalController, ActionSheetController } from '@ionic/angular';
+import { MenuController, ToastController, Platform, NavController, ModalController, ActionSheetController, AlertController } from '@ionic/angular';
 import { ActivatedRoute, Router } from '@angular/router';
 import { LoadingController } from '@ionic/angular';
 import { Observable } from 'rxjs';
@@ -55,12 +55,15 @@ export class AttandencePage implements OnInit {
     sourceType: this.camera.PictureSourceType.PHOTOLIBRARY
   };
   options: CameraOptions = {
-    quality: 100,
+    quality: 80,
     allowEdit: false,
     targetWidth: 800,
     cameraDirection: 1, // Will be overridden in takePicture()
     saveToPhotoAlbum: false,
-    destinationType: 1, // FILE_URI
+    correctOrientation: true,
+    // DATA_URL (base64) avoids file:// resolution, which silently fails on
+    // newer Android (scoped storage), especially Samsung devices
+    destinationType: 0, // DATA_URL
     encodingType: 0, // JPEG
     mediaType: 0, // PICTURE
     sourceType: 1 // CAMERA
@@ -70,6 +73,7 @@ export class AttandencePage implements OnInit {
 
   constructor(public menuCtrl: MenuController,
     public actionsheetCtrl: ActionSheetController,
+    public alertCtrl: AlertController,
     public loadingCtrl: LoadingController,
     private http: HttpClient,
     public toastCtrl: ToastController,
@@ -133,6 +137,13 @@ export class AttandencePage implements OnInit {
       this.presentToast("Please select drop down option.", 4000, "bottom");
       return;
     }
+
+    // Camera plugin only works inside the native app; use a file input in the browser
+    if (!this.platform.is('cordova')) {
+      this.pickImageInBrowser(false);
+      return;
+    }
+
     this.camera.getPicture(this.optionsGallery).then((imageData) => {
       let base64Image = 'data:image/jpeg;base64,' + imageData;
       // alert(base64Image);
@@ -140,8 +151,107 @@ export class AttandencePage implements OnInit {
       this.readFileGallery(base64Image);
 
     }, (err) => {
-      // Handle error
+      if (err && String(err).toLowerCase().indexOf('cancel') === -1 && String(err).indexOf('No Image Selected') === -1) {
+        this.presentToast('Could not open gallery: ' + err, 4000, 'bottom');
+      }
     });
+  }
+
+  // Gallery: standard file picker. Camera: live webcam overlay (works on laptop + phone browsers).
+  pickImageInBrowser(useCamera: boolean) {
+    if (useCamera) {
+      this.openLaptopCamera();
+      return;
+    }
+
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = () => {
+      if (input.files && input.files.length > 0) {
+        this.readFile(input.files[0]);
+      }
+    };
+    input.click();
+  }
+
+  async openLaptopCamera() {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      this.presentToast('Camera is not supported in this browser.', 4000, 'bottom');
+      return;
+    }
+
+    let stream: MediaStream;
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'user' },
+        audio: false
+      });
+    } catch (err) {
+      this.presentToast('Please allow camera access in the browser, then try again.', 5000, 'bottom');
+      return;
+    }
+
+    const overlay = document.createElement('div');
+    overlay.id = 'ktl-camera-overlay';
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:99999;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;';
+
+    const video = document.createElement('video');
+    video.autoplay = true;
+    video.playsInline = true;
+    video.muted = true;
+    video.srcObject = stream;
+    video.style.cssText = 'max-width:100%;max-height:70vh;width:100%;object-fit:cover;';
+
+    const btnRow = document.createElement('div');
+    btnRow.style.cssText = 'display:flex;gap:16px;margin-top:20px;';
+
+    const captureBtn = document.createElement('button');
+    captureBtn.textContent = 'Capture';
+    captureBtn.style.cssText = 'padding:12px 28px;border:0;border-radius:24px;background:#279CFF;color:#fff;font-size:16px;cursor:pointer;';
+
+    const cancelBtn = document.createElement('button');
+    cancelBtn.textContent = 'Cancel';
+    cancelBtn.style.cssText = 'padding:12px 28px;border:0;border-radius:24px;background:#666;color:#fff;font-size:16px;cursor:pointer;';
+
+    const stopCamera = () => {
+      stream.getTracks().forEach(t => t.stop());
+      if (overlay.parentNode) {
+        overlay.parentNode.removeChild(overlay);
+      }
+    };
+
+    cancelBtn.onclick = () => stopCamera();
+
+    captureBtn.onclick = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = video.videoWidth || 640;
+      canvas.height = video.videoHeight || 480;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        stopCamera();
+        this.presentToast('Could not capture photo. Please try again.', 4000, 'bottom');
+        return;
+      }
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      stopCamera();
+      canvas.toBlob((blob) => {
+        if (!blob) {
+          this.presentToast('Could not capture photo. Please try again.', 4000, 'bottom');
+          return;
+        }
+        // Use browser File (Cordova File plugin shadows the global File type)
+        const BrowserFile = (window as any).File;
+        const file = new BrowserFile([blob], 'attendance_' + Date.now() + '.jpg', { type: 'image/jpeg' });
+        this.readFile(file);
+      }, 'image/jpeg', 0.9);
+    };
+
+    btnRow.appendChild(cancelBtn);
+    btnRow.appendChild(captureBtn);
+    overlay.appendChild(video);
+    overlay.appendChild(btnRow);
+    document.body.appendChild(overlay);
   }
 
   async readFileGallery(file: any) {
@@ -183,7 +293,7 @@ export class AttandencePage implements OnInit {
       
       this.presentToast(data.message, 4000, "bottom");
     }, error => {
-
+      this.dismiss();
       this.presentToast('Please check your internet Connection.', 3000, 'middle')
       this.presentToast("Error uploading. Please try again.", 4000, "bottom");
      
@@ -205,9 +315,13 @@ export class AttandencePage implements OnInit {
 
     popover.onDidDismiss()
       .then((result) => {
-        // JSON.stringify(result['data']))
-
-        this.client = result['data'].client;
+        if (result && result['data'] && result['data'].client) {
+          this.client = result['data'].client;
+        } else {
+          // Modal was closed without choosing a client; reset the dropdown
+          this.client = '';
+          this.subject = '';
+        }
       });
 
     return await popover.present();
@@ -294,49 +408,57 @@ export class AttandencePage implements OnInit {
         //this.image=data.image;
         this.presentToast(data.message, 4000, "bottom");
       }, error => {
+        this.dismiss();
         this.presentToast('Please check your internet Connection.', 3000, 'middle')
         this.presentToast("Error uploading. Please try again.", 4000, "bottom");
-        //this.loader.dismiss();
         //this.toast.presentToast("Check internet connection");
       });
     };
     reader.readAsArrayBuffer(file);
   }
 
-  takePicture() {
+  async takePicture() {
     if (!this.subject) {
       this.presentToast("Please select drop down option.", 4000, "bottom");
       return;
     }
-    
+
+    // Camera plugin only works inside the native app; use a file input in the browser
+    if (!this.platform.is('cordova')) {
+      this.pickImageInBrowser(true);
+      return;
+    }
+
+    // The CAMERA permission is declared in the manifest, so it MUST be granted
+    // at runtime before opening the camera, otherwise it silently fails.
+    const allowed = await this.ensureCameraPermission();
+    if (!allowed) {
+      return;
+    }
+
     // Explicitly set to front camera before opening
     this.options.cameraDirection = this.camera.Direction.FRONT;
     
     this.camera.getPicture(this.options).then((imageData) => {
-      // this.file.resolveLocalFilesystemUrl(imageData).then((entry: FileEntry) => {
-      //   entry.file(file => {
-      //     console.log(file);
-      //     this.readFile(file);
-      //   });
-      // });
-      this.file.resolveLocalFilesystemUrl(imageData).then((entry: any) => {
-        if (entry.isFile) {
-          const fileEntry = entry as FileEntry;
-          fileEntry.file(file => {
-            console.log('File object:', file);
-            this.readFile(file);
-          }, error => {
-            console.error('Error getting file:', error);
-          });
-        } else {
-          console.error('Entry is not a file.');
-        }
-      }, error => {
-        console.error('Error resolving file system URL', error);
-      });
+      // Same base64 upload path as the gallery flow
+      const base64Image = 'data:image/jpeg;base64,' + imageData;
+      this.readFileGallery(base64Image);
     }, (err) => {
-      // Handle error
+      const errText = String(err || '');
+      if (errText && errText.toLowerCase().indexOf('cancel') === -1 && errText.indexOf('No Image Selected') === -1) {
+        this.showCameraError(errText);
+      }
     });
+  }
+
+  async showCameraError(errText: string) {
+    const alert = await this.alertCtrl.create({
+      header: 'Camera Error',
+      message: 'The camera could not be opened: ' + errText +
+        '. Please make sure camera permission is allowed in Phone Settings > Apps > KTL Plus > Permissions.',
+      buttons: ['OK']
+    });
+    await alert.present();
   }
 
   presentToast(msg: any, durat: any, pos: any) {
@@ -387,6 +509,72 @@ export class AttandencePage implements OnInit {
 
   }
 
+
+  // Checks CAMERA permission and keeps insisting until the user grants it.
+  async ensureCameraPermission(): Promise<boolean> {
+    try {
+      const status = await this.androidPermissions.checkPermission(
+        this.androidPermissions.PERMISSION.CAMERA
+      );
+      if (status.hasPermission) {
+        return true;
+      }
+
+      const request = await this.androidPermissions.requestPermission(
+        this.androidPermissions.PERMISSION.CAMERA
+      );
+      if (request.hasPermission) {
+        return true;
+      }
+
+      // User denied: keep insisting with a blocking alert until granted
+      return await this.showCameraPermissionAlert();
+    } catch (error) {
+      console.error('Camera permission check error:', error);
+      // If the permission plugin itself fails, let the camera plugin try anyway
+      return true;
+    }
+  }
+
+  showCameraPermissionAlert(): Promise<boolean> {
+    return new Promise(async (resolve) => {
+      const alert = await this.alertCtrl.create({
+        header: 'Camera Permission Required',
+        message: 'Attendance photo cannot be taken without camera access. ' +
+          'Please allow the camera permission. If no permission popup appears, enable it manually: ' +
+          'Phone Settings > Apps > KTL Plus > Permissions > Camera > Allow.',
+        backdropDismiss: false,
+        buttons: [
+          {
+            text: 'Cancel',
+            role: 'cancel',
+            handler: () => {
+              this.presentToast('Camera permission is required to upload attendance.', 4000, 'bottom');
+              resolve(false);
+            }
+          },
+          {
+            text: 'Allow Camera',
+            handler: () => {
+              this.androidPermissions.requestPermission(
+                this.androidPermissions.PERMISSION.CAMERA
+              ).then((result) => {
+                if (result.hasPermission) {
+                  resolve(true);
+                } else {
+                  // Still denied: insist again
+                  this.showCameraPermissionAlert().then(resolve);
+                }
+              }, () => {
+                this.showCameraPermissionAlert().then(resolve);
+              });
+            }
+          }
+        ]
+      });
+      await alert.present();
+    });
+  }
 
   async getLocation(): Promise<boolean> {
     try {

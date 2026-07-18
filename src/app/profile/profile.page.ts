@@ -63,6 +63,19 @@ export class ProfilePage implements OnInit {
             
   }
 
+formatDateToDMY(dateStr: any): string {
+  if (!dateStr) {
+    return '';
+  }
+  const value = String(dateStr).trim();
+  const parts = value.split('-');
+  // API sends YYYY-MM-DD → show dd-MM-yyyy
+  if (parts.length === 3 && parts[0].length === 4) {
+    return `${parts[2]}-${parts[1]}-${parts[0]}`;
+  }
+  return value;
+}
+
 getProfile(userid:any){
 	let headers = new HttpHeaders(); 
    			headers.append("Accept", 'application/json');
@@ -75,12 +88,13 @@ getProfile(userid:any){
 		        this.name=data.data.name;
 		        this.empcode=data.data.employee_code;
 				this.phone=data.data.phone;
-				this.address=data.data.address;
+				this.address=data.data.address?data.data.address:'-';
 				this.department=data.data.department;
 				this.designation=data.data.designation;
 				this.branchname=data.data.branch_name;
-				this.dob=data.data.dob;
-				this.doj=data.data.doj;
+				this.dob=this.formatDateToDMY(data.data.dob);
+        this.doj=this.formatDateToDMY(data.data.doj);
+		
 		        if (data.image_path=='')
 		        {
 		        this.image='assets/profile.jpg';

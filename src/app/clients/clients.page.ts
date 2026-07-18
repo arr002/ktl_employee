@@ -22,6 +22,7 @@ export class ClientsPage implements OnInit {
    customers:any;
     url=environment.SERVER_URL;
     selectedRadioGroup:any;
+    isLoading = true;
     constructor(public menuCtrl: MenuController,public loadingCtrl: LoadingController,private  http:HttpClient,public toastCtrl: ToastController,private platform: Platform, private router: Router,public route: ActivatedRoute,public str:Storage,public popoverController:ModalController ) { 
            
   
@@ -43,16 +44,29 @@ export class ClientsPage implements OnInit {
           
           this.http.post(this.url + 'employee-customer-details' ,datap,{headers:headers}).subscribe((data:any)=>{
          
-           // if(data.status){
-          
-              this.customers=data.data;
+              this.customers = data && data.data ? data.data : [];
+              this.isLoading = false;
               
-              
-            //}else{
-              //this.presentToast(res.message,3000,'middle')
-            //}
-          }, err => { JSON.stringify(err) })
+          }, err => {
+              this.isLoading = false;
+              this.customers = [];
+              this.presentToast('Unable to load clients. Please check your internet connection.', 3000, 'bottom');
+          })
      }
+
+  close() {
+    this.popoverController.dismiss();
+  }
+
+  presentToast(msg:any, durat:any, pos:any) {
+    this.toastCtrl.create({
+      message: msg,
+      duration: durat,
+      position: pos
+    }).then((toastData) => {
+      toastData.present();
+    });
+  }
   radioGroupChange(event:any) {
   
     

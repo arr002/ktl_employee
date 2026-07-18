@@ -1,42 +1,110 @@
-<ion-header>
-  <ion-toolbar translucent>
-    <ion-buttons slot="start" color="none">
-            <ion-buttons slot="start" color="none">
-                <ion-back-button color="none" defaultHref="home"></ion-back-button>
-            </ion-buttons>
-        </ion-buttons>
-        <ion-title>Profile</ion-title>
+<ion-header class="ion-no-border">
+  <ion-toolbar class="profile-toolbar">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="home" text=""></ion-back-button>
+    </ion-buttons>
+    <ion-title>Profile</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="bg bgWhite" color="light">
-  <div class="mainimg">
-   <ion-avatar class="image-center" (click)="takePicture()">
-  <img src="{{image}}">
-  <div class="person">{{name}}</div>
-</ion-avatar>
+<ion-content class="profile-content" [fullscreen]="true">
+  <div class="profile-hero">
+    <div class="avatar-wrap" (click)="takePicture()">
+      <ion-avatar class="profile-avatar">
+        <img [src]="image || 'assets/profile.jpg'" [alt]="name || 'Profile'">
+      </ion-avatar>
+      <span class="camera-badge" aria-hidden="true">
+        <ion-icon name="camera"></ion-icon>
+      </span>
+    </div>
+    <h1 class="profile-name">{{ name || '—' }}</h1>
+    <p class="profile-role" *ngIf="designation">{{ designation }}</p>
+    <p class="profile-meta" *ngIf="department || branchname">
+      <span *ngIf="department">{{ department }}</span>
+      <span *ngIf="department && branchname"> · </span>
+      <span *ngIf="branchname">{{ branchname }}</span>
+    </p>
+  </div>
 
-</div>
+  <div class="profile-card">
+    <div class="info-row">
+      <div class="info-icon">
+        <ion-icon name="finger-print-outline"></ion-icon>
+      </div>
+      <div class="info-text">
+        <span class="info-label">Emp Code</span>
+        <span class="info-value">{{ empcode || '—' }}</span>
+      </div>
+    </div>
 
- <div id="container">
+    <div class="info-row">
+      <div class="info-icon">
+        <ion-icon name="call-outline"></ion-icon>
+      </div>
+      <div class="info-text">
+        <span class="info-label">Phone</span>
+        <span class="info-value">{{ phone || '—' }}</span>
+      </div>
+    </div>
 
-<ion-row>
-	<ion-col size="4"><div class="message1"><ion-icon name="finger-print-outline"></ion-icon>Emp Code</div></ion-col>
-	<ion-col size="8"><div class="message">{{empcode}}</div></ion-col>
-	<ion-col size="4"><div class="message1"><ion-icon name="call-outline"></ion-icon>Phone</div></ion-col>
-	<ion-col size="8"><div class="message">{{phone}}</div></ion-col>
-	<ion-col size="4"><div class="message1"><ion-icon name="grid-outline"></ion-icon>Depart.</div></ion-col>
-	<ion-col size="8"><div class="message">{{department}}</div></ion-col>
-	<ion-col size="4"><div class="message1"><ion-icon name="body-outline"></ion-icon>Desig.</div></ion-col>
-	<ion-col size="8"><div class="message">{{designation}}</div></ion-col>
-	<ion-col size="4"><div class="message1"><ion-icon name="git-network-outline"></ion-icon>Branch</div></ion-col>
-	<ion-col size="8"><div class="message">{{branchname}}</div></ion-col>
-	<ion-col size="4"><div class="message1"><ion-icon name="calendar-outline"></ion-icon>DOB</div></ion-col>
-	<ion-col size="8"><div class="message">{{dob}}</div></ion-col>
-	<ion-col size="4"><div class="message1"><ion-icon name="calendar-outline"></ion-icon>DOJ</div></ion-col>
-	<ion-col size="8"><div class="message">{{doj}}</div></ion-col>
-	<ion-col size="4"><div class="message1"><ion-icon name="location-outline"></ion-icon>Address</div></ion-col>
-	<ion-col size="8"><div class="message">{{address}}</div></ion-col>
-	</ion-row>
-</div>
+    <div class="info-row">
+      <div class="info-icon">
+        <ion-icon name="grid-outline"></ion-icon>
+      </div>
+      <div class="info-text">
+        <span class="info-label">Department</span>
+        <span class="info-value">{{ department || '—' }}</span>
+      </div>
+    </div>
+
+    <div class="info-row">
+      <div class="info-icon">
+        <ion-icon name="briefcase-outline"></ion-icon>
+      </div>
+      <div class="info-text">
+        <span class="info-label">Designation</span>
+        <span class="info-value">{{ designation || '—' }}</span>
+      </div>
+    </div>
+
+    <div class="info-row">
+      <div class="info-icon">
+        <ion-icon name="git-network-outline"></ion-icon>
+      </div>
+      <div class="info-text">
+        <span class="info-label">Branch</span>
+        <span class="info-value">{{ branchname || '—' }}</span>
+      </div>
+    </div>
+
+    <div class="info-row">
+      <div class="info-icon">
+        <ion-icon name="gift-outline"></ion-icon>
+      </div>
+      <div class="info-text">
+        <span class="info-label">Date of Birth</span>
+        <span class="info-value">{{ dob || '—' }}</span>
+      </div>
+    </div>
+
+    <div class="info-row">
+      <div class="info-icon">
+        <ion-icon name="calendar-outline"></ion-icon>
+      </div>
+      <div class="info-text">
+        <span class="info-label">Date of Joining</span>
+        <span class="info-value">{{ doj || '—' }}</span>
+      </div>
+    </div>
+
+    <div class="info-row last">
+      <div class="info-icon">
+        <ion-icon name="location-outline"></ion-icon>
+      </div>
+      <div class="info-text">
+        <span class="info-label">Address</span>
+        <span class="info-value">{{ address || '—' }}</span>
+      </div>
+    </div>
+  </div>
 </ion-content>

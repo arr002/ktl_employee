@@ -177,7 +177,13 @@ getHomescreen(value:any) {
 
     if (data.status) {
 
-      this.homescreendata = data.result;
+      this.homescreendata = (data.result || []).map((item: any) => {
+        const name = (item.itemname || '').toString().trim().toLowerCase().replace(/\s+/g, '');
+        if (name === 'allattendance' || name === 'allattandance') {
+          return { ...item, itemname: 'All Attendance' };
+        }
+        return item;
+      });
     } else {
 
     }

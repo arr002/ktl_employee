@@ -182,7 +182,15 @@ getHomescreen(value:any) {
         if (name === 'allattendance' || name === 'allattandance') {
           return { ...item, itemname: 'All Attendance' };
         }
+        if (name.includes('compaints') || name.includes('suggestion/compaints')) {
+          return { ...item, itemname: 'Suggestion/Complaints' };
+        }
         return item;
+      }).filter((item: any) => {
+        const name = (item.itemname || '').toString().trim().toLowerCase();
+        const route = (item.route || '').toString().trim().toLowerCase();
+        // Logout and My Profile live in the side panel — hide menu tile duplicates
+        return item.id != 31 && name !== 'logout' && name !== 'my profile' && route !== 'profile';
       });
     } else {
 
@@ -253,7 +261,34 @@ VanUploadBtn() {
   this.router.navigate(['vanupadddata']);
 }
 
+openMenu() {
+  this.menuCtrl.enable(true, 'home-menu');
+  this.menuCtrl.open('home-menu');
+}
+
+reloadHome() {
+  this.getProfile(this.userid);
+  this.getHomescreen(this.userid);
+}
+
+doRefresh(event: any) {
+  this.getProfile(this.userid);
+  this.getHomescreen(this.userid);
+  setTimeout(() => event.target.complete(), 1200);
+}
+
+async openMyProfile() {
+  await this.menuCtrl.close('home-menu');
+  this.navctrl.navigateRoot('profile');
+}
+
+changeProfilePhoto() {
+  this.menuCtrl.close('home-menu');
+  this.takePicture();
+}
+
 async logout() {
+    await this.menuCtrl.close('home-menu');
     const alert = await this.alertCtrl.create({
       header: 'Warning', message: 'Are you sure want to logout?',
       buttons: [

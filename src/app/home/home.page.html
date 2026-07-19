@@ -1,148 +1,76 @@
-<ion-content [fullscreen]="true" class="bgWhite" color="light">
-  <div class="mainimg">
-    <ion-avatar class="image-center" (click)="takePicture()">
-      <img src="{{image}}">
-      <div class="person">{{name}}</div>
-    </ion-avatar>
-  </div>
-  <div style="clear: both;"></div>
+<ion-menu contentId="home-main" menuId="home-menu" side="start" class="home-side-menu">
+  <ion-content class="side-menu-content">
+    <div class="side-profile">
+      <ion-avatar class="side-avatar">
+        <img [src]="image" alt="Profile">
+      </ion-avatar>
+      <h2 class="side-name">{{name}}</h2>
+      <p class="side-role" *ngIf="designation || department">{{designation}}<span *ngIf="designation && department"> · </span>{{department}}</p>
+      <p class="side-branch" *ngIf="branchname">{{branchname}}</p>
+    </div>
 
-  <div class="maindiv">
-    <ion-grid style="padding-top: 45px;">
+    <div class="side-actions">
+      <button type="button" class="side-item" (click)="openMyProfile()">
+        <ion-icon name="person-outline"></ion-icon>
+        <span>My Profile</span>
+      </button>
 
-      <ion-row>
+      <button type="button" class="side-item" (click)="changeProfilePhoto()">
+        <ion-icon name="camera-outline"></ion-icon>
+        <span>Change Photo</span>
+      </button>
 
-        <ion-col size="6" *ngFor="let homedata of  homescreendata" style="padding-bottom: 0%;" (click)="navigateRoute(homedata.id,homedata.route)">
-          <ion-avatar class="icon-center" >
-            <img src="assets/{{homedata.iconname}}">
-          </ion-avatar>
-          <p>{{homedata.itemname}}</p>
-        </ion-col>
+      <button type="button" class="side-item side-logout" (click)="logout()">
+        <ion-icon name="log-out-outline"></ion-icon>
+        <span>Logout</span>
+      </button>
+    </div>
+  </ion-content>
+</ion-menu>
 
-        <ion-col size="6" (click)="VanUploadBtn()" style="padding-bottom: 0%;">
-          <ion-avatar class="icon-center">
-            <img src="assets/vanupadddata.jpeg">
-          </ion-avatar>
-          <p>VAN Upload</p>
-        </ion-col>
-        
-        <!-- <ion-col size="6" [routerLink]="['/allattendance']" style="padding-bottom: 0%;">
-          <ion-avatar class="icon-center">
-            <img src="assets/attendance-icon.png">
-          </ion-avatar>
-          <p>All Attendances</p>
-        </ion-col>
+<div class="ion-page" id="home-main">
+  <ion-content [fullscreen]="true" class="home-page">
+    <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
+      <ion-refresher-content pulling-text="Pull to refresh" refreshing-spinner="crescent"></ion-refresher-content>
+    </ion-refresher>
 
-        <ion-col size="6" *ngFor="let homedata of  homescreendata" style="padding-bottom: 0%;">
-          <ion-avatar
-            *ngIf="buddyattendacne==1 || empmanager=='1' || department=='Sales' || department=='Admin' || manager_type=='Manager' || manager_type=='Branch Manager'"
-            class="icon-center" (click)="navigateRoute(homedata.id,homedata.route)">
-            <img src="assets/{{homedata.iconname}}">
-          </ion-avatar>
-          <p>{{homedata.itemname}}</p>
-        </ion-col>
+    <div class="home-header">
+      <div class="header-glow" aria-hidden="true"></div>
+      <button type="button" class="menu-toggle" (click)="openMenu()" aria-label="Open menu">
+        <ion-icon name="menu-outline"></ion-icon>
+      </button>
+      <ion-avatar class="profile-avatar" (click)="takePicture()">
+        <img [src]="image" alt="Profile">
+      </ion-avatar>
+      <h1 class="profile-name">{{name}}</h1>
+      <p class="profile-caption">Tap photo to update</p>
+    </div>
 
-        <ion-col size="6" *ngIf="userid==33 || userid==6" userid [routerLink]="['/adminseal']" style="padding-bottom: 0%;">
-          <ion-avatar class="icon-center">
-            <img src="assets/suggesion.png">
-          </ion-avatar>
-          <p>Admin seal </p>
-        </ion-col>
+    <div class="menu-wrap">
+      <button type="button" class="menu-retry" *ngIf="!homescreendata || homescreendata.length === 0" (click)="reloadHome()">
+        <ion-icon name="refresh-outline"></ion-icon>
+        <span>Menu could not load. Tap to retry.</span>
+      </button>
 
-        <ion-col size="6" (click)="DRMTUploadBtn()" style="padding-bottom: 0%;">
-          <ion-avatar class="icon-center">
-            <img src="assets/ccsreportupload.jpeg">
-          </ion-avatar>
-          <p>CCS Report Upload</p>
-        </ion-col>
+      <div class="menu-grid">
+        <button
+          type="button"
+          class="menu-tile"
+          *ngFor="let homedata of homescreendata"
+          (click)="navigateRoute(homedata.id, homedata.route)">
+          <span class="menu-icon">
+            <img [src]="'assets/' + homedata.iconname" [alt]="homedata.itemname">
+          </span>
+          <span class="menu-label">{{homedata.itemname}}</span>
+        </button>
 
-        <ion-col size="6" (click)="VanUploadBtn()" style="padding-bottom: 0%;">
-          <ion-avatar class="icon-center">
-            <img src="assets/vanupadddata.jpeg">
-          </ion-avatar>
-          <p>VAN Upload</p>
-        </ion-col>
-
-        <ion-col size="6" (click)="logout()" style="padding-bottom: 0%;">
-          <ion-avatar class="icon-center">
-            <img src="assets/logout.png">
-          </ion-avatar>
-          <p>Logout</p>
-        </ion-col>   -->
-
-        <!-- <ion-col size="6" style="padding-bottom: 0%;" (click)="navigateRoute(26,'scancode')">
-          <ion-avatar class="icon-center">
-            <img src="assets/scancode.jpeg">
-          </ion-avatar>
-          <p>Scan Code</p>
-        </ion-col> -->
-
-     <!--    <ion-col size="6" (click)="selectDsrDrtr()" style="padding-bottom: 0%;display: none;">
-          <ion-avatar class="icon-center">
-            <img src="assets/suggesion.png">
-          </ion-avatar>
-          <p>Upload DSR/DRTR </p>
-        </ion-col>
-         <ion-col size="6" [routerLink]="['/dsrupload']" style="padding-bottom: 0%;">
-          <ion-avatar class="icon-center">
-            <img src="assets/dsr.png">
-          </ion-avatar>
-          <p>Upload DSR </p>
-        </ion-col>
-        <ion-col size="6" [routerLink]="['/drtrupload']" style="padding-bottom: 0%;">
-          <ion-avatar class="icon-center">
-            <img src="assets/dmrt.png">
-          </ion-avatar>
-          <p>Upload DRMT </p>
-        </ion-col>
-        <ion-col size="6" [routerLink]="['/tadaupload']" style="padding-bottom: 0%;">
-          <ion-avatar class="icon-center">
-            <img src="assets/tada.png">
-          </ion-avatar>
-          <p>Upload TADA </p>
-        </ion-col>
-          <ion-col size="6" [routerLink]="['/mytada']" style="padding-bottom: 0%;">
-          <ion-avatar class="icon-center">
-            <img src="assets/suggesion.png">
-          </ion-avatar>
-          <p>My TADA </p>
-        </ion-col>
-
-         <ion-col size="6" [routerLink]="['/dsrdrtrview']" style="padding-bottom: 0%;">
-          <ion-avatar class="icon-center" >
-            <img src="assets/suggesion.png">
-          </ion-avatar>
-          <p>DSR/DRTR Report</p>
-        </ion-col>
-                 
-        <ion-col size="6" [routerLink]="['/newsetclient']" style="padding-bottom: 0%; display: none;">
-          <ion-avatar class="icon-center" >
-            <img src="assets/suggesion.png">
-          </ion-avatar>
-          <p>New Set Client</p>
-        </ion-col> 
-
-        <ion-col size="6" [routerLink]="['/newsetclientemp']" style="padding-bottom: 0%;">
-          <ion-avatar class="icon-center" >
-            <img src="assets/suggesion.png">
-          </ion-avatar>
-          <p>New Set Client</p>
-        </ion-col> 
-
-        <ion-col size="6" [routerLink]="['/newsetstate']" style="padding-bottom: 0%;" >
-          <ion-avatar class="icon-center">
-          <img src="assets/thread1.png">
-        </ion-avatar><p>Inventory</p></ion-col>
-
-        <ion-col size="6"  userid [routerLink]="['/industrial']" style="padding-bottom: 0%;">
-          <ion-avatar class="icon-center">
-            <img src="assets/suggesion.png">
-          </ion-avatar>
-          <p>Industrial DSR </p>
-        </ion-col>
- --> 
-
-      </ion-row>
-    </ion-grid>
-  </div>
-</ion-content>
+        <button type="button" class="menu-tile" (click)="VanUploadBtn()">
+          <span class="menu-icon">
+            <img src="assets/vanupadddata.jpeg" alt="VAN Upload">
+          </span>
+          <span class="menu-label">VAN Upload</span>
+        </button>
+      </div>
+    </div>
+  </ion-content>
+</div>

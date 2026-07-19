@@ -71,6 +71,7 @@ export class HomePage {
   url = environment.SERVER_URL;
   manager_type: any;
   homescreendata: any;
+  groupedmenu: any[] = [];
   buddyattendacne: any;
   constructor(public menuCtrl: MenuController,
     private navctrl: NavController,
@@ -192,10 +193,39 @@ getHomescreen(value:any) {
         // Logout and My Profile live in the side panel — hide menu tile duplicates
         return item.id != 31 && name !== 'logout' && name !== 'my profile' && route !== 'profile';
       });
+
+      this.groupedmenu = this.buildGroups(this.homescreendata);
     } else {
 
     }
   }, err => { this.presentToast('Please check your internet Connection.', 3000, 'middle') })
+}
+
+buildGroups(items: any[]) {
+  const sections = [
+    { title: 'Attendance', routes: ['allattendance', 'markattendance', 'myattendance', 'buddyattendance', 'viewattendance', 'editattendance', 'attandence'] },
+    { title: 'Reports & DSR', routes: ['dsrupload', 'industrial', 'dsrdrtrview', 'drtrupload', 'ccsreportupload', 'opn-clsdailyseal'] },
+    { title: 'Payroll & TADA', routes: ['payroll', 'tada', 'tadaupload', 'mytada'] },
+    { title: 'Sales & Clients', routes: ['newsetclient', 'newsetclientemp', 'newsetstate', 'vanupadddata', 'scancode', 'shopbanner', 'courier'] }
+  ];
+
+  const used = new Set<any>();
+  const groups = sections.map(sec => {
+    const groupItems = (items || []).filter((item: any) => {
+      const route = (item.route || '').toString().trim().toLowerCase();
+      if (sec.routes.indexOf(route) !== -1) {
+        used.add(item);
+        return true;
+      }
+      return false;
+    });
+    return { title: sec.title, items: groupItems };
+  });
+
+  const rest = (items || []).filter((item: any) => !used.has(item));
+  groups.push({ title: 'General', items: rest });
+
+  return groups.filter(g => g.items.length > 0);
 }
 
 async presentModal() {

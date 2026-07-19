@@ -52,24 +52,22 @@
         <span>Menu could not load. Tap to retry.</span>
       </button>
 
-      <div class="menu-grid">
-        <button
-          type="button"
-          class="menu-tile"
-          *ngFor="let homedata of homescreendata"
-          (click)="navigateRoute(homedata.id, homedata.route)">
-          <span class="menu-icon">
-            <img [src]="'assets/' + homedata.iconname" [alt]="homedata.itemname">
-          </span>
-          <span class="menu-label">{{homedata.itemname}}</span>
-        </button>
-
-        <button type="button" class="menu-tile" (click)="VanUploadBtn()">
-          <span class="menu-icon">
-            <img src="assets/vanupadddata.jpeg" alt="VAN Upload">
-          </span>
-          <span class="menu-label">VAN Upload</span>
-        </button>
+      <div class="menu-section" *ngFor="let group of groupedmenu">
+        <h2 class="section-title">{{group.title}}</h2>
+        <div class="section-panel">
+          <div class="menu-grid">
+            <button
+              type="button"
+              class="menu-tile"
+              *ngFor="let homedata of group.items"
+              (click)="navigateRoute(homedata.id, homedata.route)">
+              <span class="menu-icon">
+                <img [src]="'assets/' + homedata.iconname" [alt]="homedata.itemname">
+              </span>
+              <span class="menu-label">{{homedata.itemname}}</span>
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   </ion-content>

@@ -15,7 +15,7 @@
 .home-header {
   position: relative;
   overflow: hidden;
-  padding: 36px 24px 52px;
+  padding: 36px 24px 28px;
   text-align: center;
   background:
     radial-gradient(circle at 18% 20%, rgba(255, 255, 255, 0.22), transparent 42%),
@@ -187,7 +187,7 @@
 }
 
 .menu-wrap {
-  margin-top: -28px;
+  margin-top: 16px;
   padding: 0 14px 28px;
   position: relative;
   z-index: 2;
@@ -215,57 +215,76 @@
   font-size: 20px;
 }
 
+.menu-section {
+  margin-bottom: 18px;
+}
+
+.section-title {
+  margin: 0 6px 8px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--home-muted);
+}
+
+.section-panel {
+  background: var(--home-surface);
+  border-radius: 20px;
+  padding: 12px;
+  box-shadow: 0 8px 20px rgba(27, 42, 58, 0.08);
+}
+
 .menu-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
 }
 
 .menu-tile {
   appearance: none;
   border: 0;
-  background: var(--home-surface);
-  border-radius: 18px;
-  min-height: 132px;
-  padding: 16px 12px 14px;
+  background: #f6f9fb;
+  border-radius: 14px;
+  min-height: 92px;
+  padding: 10px 6px 8px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  box-shadow: 0 8px 20px rgba(27, 42, 58, 0.08);
-  transition: transform 140ms ease, box-shadow 140ms ease, background 140ms ease;
+  gap: 6px;
+  transition: transform 140ms ease, background 140ms ease;
   cursor: pointer;
 }
 
 .menu-tile:active {
   transform: translateY(1px) scale(0.98);
-  box-shadow: 0 4px 12px rgba(27, 42, 58, 0.1);
-  background: #f8fbfd;
+  background: #e9f1f6;
 }
 
 .menu-icon {
-  width: 64px;
-  height: 64px;
-  border-radius: 18px;
-  background: var(--home-accent-soft);
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: #fff;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  box-shadow: 0 3px 8px rgba(27, 42, 58, 0.08);
 }
 
 .menu-icon img {
-  width: 42px;
-  height: 42px;
+  width: 28px;
+  height: 28px;
   object-fit: contain;
 }
 
 .menu-label {
   color: var(--home-ink);
-  font-size: 0.92rem;
+  font-size: 0.72rem;
   font-weight: 600;
-  line-height: 1.25;
+  line-height: 1.2;
   text-align: center;
   max-width: 100%;
 }

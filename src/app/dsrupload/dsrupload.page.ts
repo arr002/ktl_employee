@@ -86,9 +86,8 @@ export class DsruploadPage implements OnInit {
       this.townname = selectedTown;
       this.customername = '';
       this.clientselected = null;
-      this.customerdatalist = [];
-      this.dataadded = [];
-      this.getCustomerList();
+      // Keep already-added customer records when town changes
+      this.getCustomerList(true);
     }
   }
 
@@ -127,8 +126,16 @@ export class DsruploadPage implements OnInit {
     if (data && data.client_name) {
       this.clientselected = data;
       this.customername = data.client_name;
-      this.openModal();
+      // Wait for customer modal to fully close before opening DSR form (needed for 2nd+ add)
+      setTimeout(() => this.openModal(), 350);
     }
+  }
+
+  /** Add another customer record without changing town */
+  addAnotherCustomer() {
+    this.customername = '';
+    this.clientselected = null;
+    this.openPopOverCustomer();
   }
 
   getDateRequest() {
@@ -174,6 +181,11 @@ export class DsruploadPage implements OnInit {
   dateChangeDrop() { }
 
   async openModal() {
+    if (!this.clientselected || !this.clientselected.client_name) {
+      this.presentToast('Please select a customer first', 3000, 'bottom');
+      return;
+    }
+
     const modal = await this.modalCtrl.create({
       component: DsrpopupPage,
       cssClass: 'dsrmodal',
@@ -185,26 +197,61 @@ export class DsruploadPage implements OnInit {
       }
     });
 
-    modal.onDidDismiss().then((result) => {
-      if (result && result.data) {
-        this.dataadded.push(result.data);
-      }
-    });
-
     await modal.present();
+    const result = await modal.onDidDismiss();
+
+    if (result && result.data) {
+      // Always append — supports multiple customer records
+      this.dataadded = [...this.dataadded, result.data];
+      this.customername = '';
+      this.clientselected = null;
+      this.presentToast(
+        'Added (' + this.dataadded.length + '). Tap Add Another Customer for more.',
+        3000,
+        'bottom'
+      );
+    }
   }
 
   getSealStatus() {
     if (this.fieldtype === 'InField' || this.fieldtype === 'InFieldandOffice') {
       this.towndata = true;
     } else {
+      // Office / Leave / Holiday — only remarks; clear all field visit data
       this.towndata = false;
       this.townlist = false;
+      this.clearFieldVisitData();
     }
   }
 
-  delItem(i: any) {
-    this.dataadded.splice(i, 1);
+  /** Clears town/customer/visit records so they stay blank for Office/Leave/Holiday */
+  clearFieldVisitData() {
+    this.activity = 'Visit';
+    this.townname = '';
+    this.townselected = null;
+    this.customername = '';
+    this.clientselected = null;
+    this.customerdatalist = [];
+    this.dataadded = [];
+  }
+
+  async delItem(i: any) {
+    const name = this.dataadded[i]?.clientname || 'this record';
+    const alert = await this.alertController.create({
+      header: 'Confirm Delete',
+      message: 'Are you sure you want to remove ' + name + '?',
+      buttons: [
+        { text: 'NO', role: 'cancel' },
+        {
+          text: 'YES',
+          handler: () => {
+            this.dataadded.splice(i, 1);
+            this.dataadded = [...this.dataadded];
+          }
+        }
+      ]
+    });
+    await alert.present();
   }
 
   editItem(i: any) {
@@ -265,7 +312,7 @@ export class DsruploadPage implements OnInit {
     });
   }
 
-  getCustomerList() {
+  getCustomerList(openPicker = true) {
     const headers = new HttpHeaders();
     headers.append('Accept', 'application/json');
     headers.append('Content-Type', 'application/json');
@@ -278,12 +325,12 @@ export class DsruploadPage implements OnInit {
       return;
     }
 
-    const applyCustomers = (list: any[], openPicker: boolean) => {
+    const applyCustomers = (list: any[], shouldOpen: boolean) => {
       this.customerdatalist = list || [];
       this.townlist = true;
       if (!this.customerdatalist.length) {
         this.presentToast('No customers found for ' + town, 3000, 'bottom');
-      } else if (openPicker) {
+      } else if (shouldOpen) {
         this.openPopOverCustomer();
       }
     };
@@ -292,7 +339,7 @@ export class DsruploadPage implements OnInit {
 
     this.apiCache.get<any[]>(cacheKey).then((cached) => {
       if (cached) {
-        applyCustomers(cached, true);
+        applyCustomers(cached, openPicker);
         return;
       }
 
@@ -300,7 +347,7 @@ export class DsruploadPage implements OnInit {
       this.http.post(this.url + 'get-customers-data', datap, { headers }).subscribe((data: any) => {
         const list = data && data.data ? data.data : [];
         this.apiCache.set(cacheKey, list);
-        applyCustomers(list, true);
+        applyCustomers(list, openPicker);
       }, () => {
         this.customerdatalist = [];
         this.townlist = false;
@@ -320,7 +367,22 @@ export class DsruploadPage implements OnInit {
   }
 
   async uploadDSR() {
-    if (this.fieldtype === 'InField' && (!this.dataadded || this.dataadded.length === 0)) {
+    const remarksOnly = this.isRemarksOnlyType();
+
+    if (!this.fieldtype) {
+      this.presentToast('Please select an option', 4000, 'bottom');
+      return;
+    }
+
+    if (remarksOnly) {
+      if (!this.remarks || !String(this.remarks).trim()) {
+        this.presentToast('Please enter remarks', 4000, 'bottom');
+        return;
+      }
+    } else if (
+      (this.fieldtype === 'InField' || this.fieldtype === 'InFieldandOffice') &&
+      (!this.dataadded || this.dataadded.length === 0)
+    ) {
       this.presentToast('Please enter customer details', 4000, 'bottom');
       return;
     }
@@ -347,18 +409,33 @@ export class DsruploadPage implements OnInit {
     await alert.present();
   }
 
+  isRemarksOnlyType(): boolean {
+    return this.fieldtype === 'Office' || this.fieldtype === 'Leave' || this.fieldtype === 'Holiday';
+  }
+
   proceedUploadDSR() {
     const headers = new HttpHeaders();
     headers.append('Accept', 'application/json');
     headers.append('Content-Type', 'application/json');
 
-    const datap = {
-      appuser_id: this.userid,
-      date: this.dateSelect,
-      type: this.fieldtype,
-      data: this.dataadded,
-      remarks: this.remarks
-    };
+    // Office / Leave / Holiday: send only remarks (no town/customer data)
+    const datap = this.isRemarksOnlyType()
+      ? {
+          appuser_id: this.userid,
+          date: this.dateSelect,
+          type: this.fieldtype,
+          data: [],
+          remarks: this.remarks || ''
+        }
+      : {
+          appuser_id: this.userid,
+          date: this.dateSelect,
+          type: this.fieldtype,
+          data: this.dataadded,
+          remarks: this.remarks || ''
+        };
+
+    console.log('adddsrdata payload', datap);
 
     this.http.post(this.url + 'adddsrdata', datap, { headers }).subscribe((data: any) => {
       this.presentToast(data.message, 4000, 'bottom');

@@ -73,13 +73,21 @@
   </ion-item>
 
   <div *ngIf="townlist" class="added-section">
-    <div class="divstyle">Added Customers</div>
+    <div class="divstyle">Added Customers ({{ dataadded?.length || 0 }})</div>
+    <ion-button
+      *ngIf="customerdatalist?.length"
+      expand="block"
+      color="primary"
+      class="add-another-btn"
+      (click)="addAnotherCustomer()">
+      Add Another Customer
+    </ion-button>
     <div *ngIf="!dataadded?.length" class="empty-hint">
-      Tap Select Customer, choose a customer, then fill DSR details.
+      Tap Select Customer / Add Another Customer, fill details, then add more before Upload DSR.
     </div>
     <div *ngFor="let item of dataadded; let i = index;">
       <ion-item>
-        <ion-label color="primary">{{item.clientname}}</ion-label>
+        <ion-label color="primary">{{ i + 1 }}. {{item.clientname}}</ion-label>
         <ion-icon name="trash-outline" style="padding-right: 20px;" color="danger" (click)="delItem(i)"></ion-icon>
         <ion-icon name="create-outline" color="primary" (click)="editItem(i)"></ion-icon>
       </ion-item>

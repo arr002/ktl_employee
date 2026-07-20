@@ -1,12 +1,12 @@
 import { Component, OnInit } from '@angular/core';
-
-import { MenuController, ToastController, Platform, NavController, NavParams,ModalController, PopoverController, ActionSheetController, AlertController } from '@ionic/angular';
-import { HttpClient , HttpHeaders } from '@angular/common/http';
+import { ToastController, NavController, ModalController, AlertController } from '@ionic/angular';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { DsrpopupPage } from '../dsrpopup/dsrpopup.page';
 import { TownPage } from '../town/town.page';
 import { CustomerPage } from '../customer/customer.page';
 import { Storage } from '@ionic/storage';
 import { environment } from '../../environments/environment';
+import { ApiCacheService } from '../api-cache.service';
 
 @Component({
   selector: 'app-dsrupload',
@@ -16,291 +16,353 @@ import { environment } from '../../environments/environment';
 })
 export class DsruploadPage implements OnInit {
 
-
-  towndata:boolean=false;
-  townlist:boolean=false;
-  townselected:any;
-  clientselected:any;
-  towndatalist:any;
-  customerdatalist:any;
-  fieldtype:any;
-  activity:any='Visit';
-  userid:any;
-  dateSelect:any;
-  daterequest:any;
-  dataadded:any[]=[];
-  reqdate=false;
-  datetime:any;
+  towndata = false;
+  townlist = false;
+  townselected: any;
+  clientselected: any;
+  towndatalist: any[] = [];
+  customerdatalist: any[] = [];
+  fieldtype: any;
+  activity: any = 'Visit';
+  userid: any;
+  dateSelect: any;
+  daterequest: any;
+  dataadded: any[] = [];
+  reqdate = false;
+  datetime: any;
   mindate: any;
-  username:any;
-  maxdate:any;
-  remarks:any='';
-  townname:any;
-  customername:any;
-  url=environment.SERVER_URL;
-  recdata={
-      id:'',
-      zip:'',
-      thread:'',
-      collection:'',
-      issue:'',
-      remarks:'',
-      clientname:'',
-  
-     }
-  
-    constructor(private modalCtrl: ModalController,private popoverController: PopoverController,private navctrl: NavController,private  http:HttpClient,public str:Storage,   public toastCtrl: ToastController, public alertController: AlertController) { 
-  
-  this.str.get('id').then((value) => { 
-                    this.userid=value;
-        
-                  this.getTowns();
-                  this.getDateRequest();
-  
-                  });
-  
-  this.str.get('username').then((value) => { 
-                    this.username=value;
-        
-                  
-                  });
-   
-    }
-  
-  
-   async openPopOver() {
-    const popover = await this.popoverController.create({
-      component: TownPage,
-     
-      translucent: false,
-      componentProps: {
-        title: "Bank Account",
-        items: this.towndatalist,
-      }
+  username: any;
+  maxdate: any;
+  remarks: any = '';
+  townname: any = '';
+  customername: any = '';
+  url = environment.SERVER_URL;
+  recdata = {
+    id: '',
+    zip: '',
+    thread: '',
+    collection: '',
+    issue: '',
+    remarks: '',
+    clientname: '',
+  };
+
+  constructor(
+    private modalCtrl: ModalController,
+    private navctrl: NavController,
+    private http: HttpClient,
+    public str: Storage,
+    public toastCtrl: ToastController,
+    public alertController: AlertController,
+    private apiCache: ApiCacheService
+  ) {
+    this.str.get('id').then((value) => {
+      this.userid = value;
+      this.getTowns();
+      this.getDateRequest();
     });
-     
-     await popover.present();
-     
-     // Listen for onDidDismiss
-     const { data } = await popover.onDidDismiss();
-     
-     if (data !== null) {
-      console.log(data);
-      this.townselected=data;
-     this.townname=data.selectedItem;
-      this.getCustomerList();
-       // this.form.patchValue({ bank: data?.selectedItem });
-       // this.dataReturned = data?.selectedItem;
-       // this.memo = this?.dataReturned + "/" + this.memo;
-     }
-   }
-  async openPopOverCustomer() {
-    const popover = await this.popoverController.create({
-      component: CustomerPage,
-        
-      translucent: false,
-      componentProps: {
-        title: "Bank Account",
-        items: this.customerdatalist,
-      }
+
+    this.str.get('username').then((value) => {
+      this.username = value;
     });
-     
-     await popover.present();
-     
-     // Listen for onDidDismiss
-     const { data } = await popover.onDidDismiss();
-     
-     if (data !== null) {
-      console.log(data);
-      this.clientselected=data;
-   
-     this.customername=data.client_name;
-      this.openModal();
-       // this.form.patchValue({ bank: data?.selectedItem });
-       // this.dataReturned = data?.selectedItem;
-       // this.memo = this?.dataReturned + "/" + this.memo;
-     }
-   }
-  
-  
-  getDateRequest(){
-     let headers = new HttpHeaders(); 
-          headers.append("Accept", 'application/json');
-          headers.append('Content-Type', 'application/json' );
-         
-          let datap = {appuser_id:this.userid,typerequest:'DSR'};
-          console.log(datap);
-          this.http.post(this.url + 'getdaterequested' ,datap,{headers:headers}).subscribe((data:any)=>{
-          console.log(data);
-            this.daterequest=data.data;
-              
-          }, err => {  })
-  
   }
-    ngOnInit() {
-      this.datetime = new Date().toISOString();
-      let date=new Date();
-      let daten=new Date();
-      date.setDate(date.getDate() - 1);
-      daten.setDate(daten.getDate() - 3);
-      
-      this.mindate = daten.toISOString();
-      this.maxdate = date.toISOString();
-    }
-  
-    openCal(){
-  
-  this.reqdate=true;
-  
-    }
-  
-    dateChangeDrop(){}
-  
-    async openModal() {
-     
-    console.log("clien ====" + this.clientselected.client_name);
-     
-      const modal = await this.modalCtrl.create({
-        component: DsrpopupPage,
-        cssClass: 'dsrmodal',
-        componentProps: { value: this.clientselected.client_name ,mode:'add',id:this.clientselected.id,activity:this.activity }
-        
-      });
-       modal.onDidDismiss()
-        .then((data) => {
-          console.log(data);
-         this.dataadded.push(data.data);
-      });
-      modal.present();
-    }
-    getSealStatus(){
-  
-      if (this.fieldtype=='InField' || this.fieldtype=='InFieldandOffice'){
-  
-        this.towndata=true;
+
+  // Open town picker → on select load customers for that town
+  async openPopOver() {
+    const modal = await this.modalCtrl.create({
+      component: TownPage,
+      componentProps: {
+        title: 'Select Town',
+        items: this.towndatalist || [],
       }
-      else{
-       this.towndata=false; 
-       this.townlist=false;
+    });
+
+    await modal.present();
+    const { data } = await modal.onDidDismiss();
+
+    const selectedTown = this.normalizeTownName(data);
+    if (selectedTown) {
+      this.townselected = selectedTown;
+      this.townname = selectedTown;
+      this.customername = '';
+      this.clientselected = null;
+      this.customerdatalist = [];
+      this.dataadded = [];
+      this.getCustomerList();
+    }
+  }
+
+  /** Ensures town is always a plain string for API calls */
+  normalizeTownName(value: any): string {
+    if (!value) {
+      return '';
+    }
+    if (typeof value === 'string') {
+      return value;
+    }
+    if (typeof value === 'object') {
+      return value.selectedItem || value.town || value.name || '';
+    }
+    return String(value);
+  }
+
+  // Open customer picker → on select open DSR detail form
+  async openPopOverCustomer() {
+    if (!this.customerdatalist?.length) {
+      this.presentToast('No customers found for this town', 3000, 'bottom');
+      return;
+    }
+
+    const modal = await this.modalCtrl.create({
+      component: CustomerPage,
+      componentProps: {
+        title: 'Select Customer',
+        items: this.customerdatalist || [],
       }
+    });
+
+    await modal.present();
+    const { data } = await modal.onDidDismiss();
+
+    if (data && data.client_name) {
+      this.clientselected = data;
+      this.customername = data.client_name;
+      this.openModal();
     }
-    getTownlist(){
-  
-        this.townlist=true;
-      
+  }
+
+  getDateRequest() {
+    const applyDates = (list: any) => {
+      this.daterequest = list;
+    };
+
+    const loadFromApi = () => {
+      const headers = new HttpHeaders();
+      headers.append('Accept', 'application/json');
+      headers.append('Content-Type', 'application/json');
+
+      const datap = { appuser_id: this.userid, typerequest: 'DSR' };
+      this.http.post(this.url + 'getdaterequested', datap, { headers }).subscribe((data: any) => {
+        this.daterequest = data.data;
+        this.apiCache.set(this.apiCache.datesKey(this.userid), this.daterequest);
+      }, () => { });
+    };
+
+    this.apiCache.get<any>(this.apiCache.datesKey(this.userid)).then((cached) => {
+      if (cached) {
+        applyDates(cached);
+        return;
+      }
+      loadFromApi();
+    });
+  }
+
+  ngOnInit() {
+    this.datetime = new Date().toISOString();
+    const date = new Date();
+    const daten = new Date();
+    date.setDate(date.getDate() - 1);
+    daten.setDate(daten.getDate() - 3);
+    this.mindate = daten.toISOString();
+    this.maxdate = date.toISOString();
+  }
+
+  openCal() {
+    this.reqdate = true;
+  }
+
+  dateChangeDrop() { }
+
+  async openModal() {
+    const modal = await this.modalCtrl.create({
+      component: DsrpopupPage,
+      cssClass: 'dsrmodal',
+      componentProps: {
+        value: this.clientselected.client_name,
+        mode: 'add',
+        id: this.clientselected.id,
+        activity: this.activity
+      }
+    });
+
+    modal.onDidDismiss().then((result) => {
+      if (result && result.data) {
+        this.dataadded.push(result.data);
+      }
+    });
+
+    await modal.present();
+  }
+
+  getSealStatus() {
+    if (this.fieldtype === 'InField' || this.fieldtype === 'InFieldandOffice') {
+      this.towndata = true;
+    } else {
+      this.towndata = false;
+      this.townlist = false;
     }
-    delItem(i:any){
-      
-      this.dataadded.splice(i, 1);
+  }
+
+  delItem(i: any) {
+    this.dataadded.splice(i, 1);
+  }
+
+  editItem(i: any) {
+    this.openModalEdit(i);
+  }
+
+  async openModalEdit(i: any) {
+    const modal = await this.modalCtrl.create({
+      component: DsrpopupPage,
+      cssClass: 'dsrmodal',
+      componentProps: {
+        data: this.dataadded[i],
+        id: i,
+        mode: 'edit',
+        activity: this.activity
+      },
+      backdropDismiss: false
+    });
+
+    modal.onDidDismiss().then((result) => {
+      if (result && result.data) {
+        this.recdata = result.data;
+        const recid: number = parseInt(this.recdata.id, 10);
+        this.dataadded[recid as number] = this.recdata;
+      }
+    });
+
+    await modal.present();
+  }
+
+  getTowns() {
+    const applyTowns = (list: any[]) => {
+      this.towndatalist = list || [];
+    };
+
+    const loadFromApi = () => {
+      const headers = new HttpHeaders();
+      headers.append('Accept', 'application/json');
+      headers.append('Content-Type', 'application/json');
+
+      const datap = { appuser_id: this.userid };
+      this.http.post(this.url + 'getcustomertown', datap, { headers }).subscribe((data: any) => {
+        const list = data && data.data ? data.data : [];
+        this.towndatalist = list.map((item: any) => ({
+          ...item,
+          town: item.town || item.name
+        }));
+        this.apiCache.set(this.apiCache.townsKey(this.userid), this.towndatalist);
+      }, () => { });
+    };
+
+    this.apiCache.get<any[]>(this.apiCache.townsKey(this.userid)).then((cached) => {
+      if (cached && cached.length) {
+        applyTowns(cached);
+        return;
+      }
+      loadFromApi();
+    });
+  }
+
+  getCustomerList() {
+    const headers = new HttpHeaders();
+    headers.append('Accept', 'application/json');
+    headers.append('Content-Type', 'application/json');
+
+    const town = this.normalizeTownName(this.townname || this.townselected);
+    console.log('getCustomerList payload', { appuser_id: this.userid, town });
+
+    if (!town) {
+      this.presentToast('Please select a town first', 3000, 'bottom');
+      return;
     }
-    editItem(i:any){
-      this.openModalEdit(i);
-    }
-  
-   async openModalEdit(i:any) {
-  
-      const modal = await this.modalCtrl.create({
-        component: DsrpopupPage,
-        cssClass: 'dsrmodal',
-        componentProps: { data: this.dataadded[i],id:i,mode:'edit',activity:this.activity },
-        backdropDismiss:false
-      });
-       modal.onDidDismiss()
-        .then((data) => {
-  
-        
-          this.recdata=data.data;
-          let recid : number = parseInt(this.recdata.id);
-          this.dataadded[recid as number]=this.recdata;
-          
-      });
-      modal.present();
-    }
-  
-  
-  
-    getTowns(){
-  
-      let headers = new HttpHeaders(); 
-          headers.append("Accept", 'application/json');
-          headers.append('Content-Type', 'application/json' );
-         console.log(this.userid);
-          let datap = {appuser_id:this.userid};
-          this.http.post(this.url + 'getcustomertown' ,datap,{headers:headers}).subscribe((data:any)=>{
-          console.log(data);
-            this.towndatalist=data.data;
-              
-          }, err => {  })
-    }
-  
-  
-    getCustomerList(){
-  
-      let headers = new HttpHeaders(); 
-          headers.append("Accept", 'application/json');
-          headers.append('Content-Type', 'application/json' );
-         
-          let datap = {appuser_id:this.userid,town:this.townselected};
-          console.log(datap);
-          this.http.post(this.url + 'get-customers-data' ,datap,{headers:headers}).subscribe((data:any)=>{
-          console.log(data.data);
-            this.customerdatalist=data.data;
-              this.townlist=true;
-          }, err => {  })
-    }
-    presentToast(msg: any, durat: any, pos: any) {
-      let toast = this.toastCtrl.create({
-        message: msg,
-        duration: durat,
-        position: pos
-      }).then((toastData) => {
-        console.log(toastData);
-        toastData.present();
-      });
-      //await this.toastCtrl.create({ message:msg, duration:durat, position:pos }).present();
-    }
-    async uploadDSR() {
-      if(this.fieldtype=="InField" && (this.customerdatalist=='' || this.customerdatalist==null )){
-         this.presentToast("Please enter customer details", 4000, "bottom");
-         return;
+
+    const applyCustomers = (list: any[], openPicker: boolean) => {
+      this.customerdatalist = list || [];
+      this.townlist = true;
+      if (!this.customerdatalist.length) {
+        this.presentToast('No customers found for ' + town, 3000, 'bottom');
+      } else if (openPicker) {
+        this.openPopOverCustomer();
+      }
+    };
+
+    const cacheKey = this.apiCache.customersKey(this.userid, town);
+
+    this.apiCache.get<any[]>(cacheKey).then((cached) => {
+      if (cached) {
+        applyCustomers(cached, true);
+        return;
       }
 
-      const alert = await this.alertController.create({
-        header: 'Confirm',
-        message: 'Are you sure you want to upload this data?',
-        buttons: [
-          {
-            text: 'NO',
-            role: 'cancel',
-            cssClass: 'secondary',
-            handler: () => {
-              console.log('Upload cancelled');
-            }
-          }, {
-            text: 'YES',
-            handler: () => {
-              this.proceedUploadDSR();
-            }
+      const datap = { appuser_id: this.userid, town };
+      this.http.post(this.url + 'get-customers-data', datap, { headers }).subscribe((data: any) => {
+        const list = data && data.data ? data.data : [];
+        this.apiCache.set(cacheKey, list);
+        applyCustomers(list, true);
+      }, () => {
+        this.customerdatalist = [];
+        this.townlist = false;
+        this.presentToast('Unable to load customers', 3000, 'bottom');
+      });
+    });
+  }
+
+  presentToast(msg: any, durat: any, pos: any) {
+    this.toastCtrl.create({
+      message: msg,
+      duration: durat,
+      position: pos
+    }).then((toastData) => {
+      toastData.present();
+    });
+  }
+
+  async uploadDSR() {
+    if (this.fieldtype === 'InField' && (!this.dataadded || this.dataadded.length === 0)) {
+      this.presentToast('Please enter customer details', 4000, 'bottom');
+      return;
+    }
+
+    const alert = await this.alertController.create({
+      header: 'Confirm',
+      message: 'Are you sure you want to upload this data?',
+      buttons: [
+        {
+          text: 'NO',
+          role: 'cancel',
+          cssClass: 'secondary',
+          handler: () => { }
+        },
+        {
+          text: 'YES',
+          handler: () => {
+            this.proceedUploadDSR();
           }
-        ]
-      });
+        }
+      ]
+    });
 
-      await alert.present();
-    }
+    await alert.present();
+  }
 
-    proceedUploadDSR() {
-          let headers = new HttpHeaders(); 
-          headers.append("Accept", 'application/json');
-          headers.append('Content-Type', 'application/json' );
-         
-          let datap = {appuser_id:this.userid,date:this.dateSelect,type:this.fieldtype,data:this.dataadded,remarks:this.remarks};
-          console.log(datap);
-          this.http.post(this.url + 'adddsrdata' ,datap,{headers:headers}).subscribe((data:any)=>{
-         this.presentToast(data.message, 4000, "bottom");
-           // this.customerdatalist=data.data;
-             // this.townlist=true;
-             this.navctrl.navigateRoot('home');
-          }, err => {  })
-    }
+  proceedUploadDSR() {
+    const headers = new HttpHeaders();
+    headers.append('Accept', 'application/json');
+    headers.append('Content-Type', 'application/json');
 
+    const datap = {
+      appuser_id: this.userid,
+      date: this.dateSelect,
+      type: this.fieldtype,
+      data: this.dataadded,
+      remarks: this.remarks
+    };
+
+    this.http.post(this.url + 'adddsrdata', datap, { headers }).subscribe((data: any) => {
+      this.presentToast(data.message, 4000, 'bottom');
+      this.navctrl.navigateRoot('home');
+    }, () => { });
+  }
 }

@@ -15,6 +15,7 @@ import { CustomerPage } from './customer.page';
     IonicModule,
     CustomerPageRoutingModule
   ],
-  declarations: [CustomerPage]
+  declarations: [CustomerPage],
+  exports: [CustomerPage]
 })
 export class CustomerPageModule {}

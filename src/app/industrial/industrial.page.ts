@@ -58,53 +58,43 @@ this.str.get('username').then((value) => {
    }
 
 async openPopOver() {
-  const popover = await this.popoverController.create({
+  const modal = await this.modalCtrl.create({
     component: TownPage,
-   
-    translucent: false,
     componentProps: {
-      title: "Bank Account",
-      items: this.towndatalist,
+      title: "Select Town",
+      items: this.towndatalist || [],
     }
   });
    
-   await popover.present();
+   await modal.present();
    
-   // Listen for onDidDismiss
-   const { data } = await popover.onDidDismiss();
+   const { data } = await modal.onDidDismiss();
    
-   if (data !== null) {
+   if (data && data.selectedItem) {
     console.log(data);
-    this.townselected=data;
-   this.townname=data.selectedItem;
+    this.townselected = data.selectedItem;
+    this.townname = data.selectedItem;
     this.getCustomerList();
-     // this.form.patchValue({ bank: data?.selectedItem });
-     // this.dataReturned = data?.selectedItem;
-     // this.memo = this?.dataReturned + "/" + this.memo;
    }
  }
 async openPopOverCustomer() {
-  const popover = await this.popoverController.create({
+  const modal = await this.modalCtrl.create({
     component: CustomerPage,
-      
-    translucent: false,
     componentProps: {
-      title: "Bank Account",
-      items: this.customerdatalist,
+      title: "Select Customer",
+      items: this.customerdatalist || [],
     }
   });
    
-   await popover.present();
+   await modal.present();
    
-   // Listen for onDidDismiss
-   const { data } = await popover.onDidDismiss();
+   const { data } = await modal.onDidDismiss();
    
-   if (data !== null) {
+   if (data && data.client_name) {
     console.log(data);
-    this.clientselected=data;
- 
-   this.customername=data.client_name;
-    this.customerid=data.id;
+    this.clientselected = data;
+    this.customername = data.client_name;
+    this.customerid = data.id;
    }
  }
 
@@ -211,7 +201,7 @@ this.reqdate=true;
         headers.append("Accept", 'application/json');
         headers.append('Content-Type', 'application/json' );
        
-        let datap = {appuser_id:this.userid,town:this.townselected};
+        let datap = {appuser_id:this.userid,town:this.townname};
         console.log(datap);
         this.http.post(this.url + 'getcustomersdata' ,datap,{headers:headers}).subscribe((data:any)=>{
         console.log(data.data);

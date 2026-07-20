@@ -110,25 +110,22 @@ export class DrtruploadPage implements OnInit {
   
   
      async openPopOver() {
-    const popover = await this.popoverController.create({
+    const modal = await this.modalCtrl.create({
       component: TownPage,
-      
-      translucent: false,
       componentProps: {
-        title: "Bank Account",
-        items: this.towndatalist,
+        title: "Select Town",
+        items: this.towndatalist || [],
       }
     });
      
-     await popover.present();
+     await modal.present();
      
-     // Listen for onDidDismiss
-     const { data } = await popover.onDidDismiss();
+     const { data } = await modal.onDidDismiss();
      
-     if (data !== null) {
+     if (data && data.selectedItem) {
       console.log(data);
-      this.townselected=data;
-     this.townname=data.selectedItem;
+      this.townselected = data.selectedItem;
+      this.townname = data.selectedItem;
      }
    } 
   

@@ -214,11 +214,11 @@ dealer_name:any=""; claimed_amount:any="";
   async openPopOverDistrict() {
     this.towndatalist.map((item:any) => item.town=item.name);
     console.log("this.towndatalist==", this.towndatalist);
-    const popover = await this.popoverController.create({
-      component: TownPage, translucent: false, componentProps: { title: "District", items: this.towndatalist }
+    const modal = await this.modalCtrl.create({
+      component: TownPage, componentProps: { title: "District", items: this.towndatalist }
     });
-    await popover.present();
-    const { data } = await popover.onDidDismiss();
+    await modal.present();
+    const { data } = await modal.onDidDismiss();
     console.log("=openPopOver=", data);
     if (data != undefined) {
       //this.townselected = data;
@@ -241,11 +241,11 @@ dealer_name:any=""; claimed_amount:any="";
   async openPopOverCity() {
     this.citydatalist.map((item:any) => item.town=item.name);
     console.log("this.citydatalist==", this.citydatalist);
-    const popover = await this.popoverController.create({
-      component: TownPage, translucent: false, componentProps: { title: "City", items: this.citydatalist }
+    const modal = await this.modalCtrl.create({
+      component: TownPage, componentProps: { title: "City", items: this.citydatalist }
     });
-    await popover.present();
-    const { data } = await popover.onDidDismiss();
+    await modal.present();
+    const { data } = await modal.onDidDismiss();
     console.log("=openPopOver=", data);
     if (data != undefined) {
       this.townselected = data;

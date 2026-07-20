@@ -15,6 +15,7 @@ import { TownPage } from './town.page';
     IonicModule,
     TownPageRoutingModule
   ],
-  declarations: [TownPage]
+  declarations: [TownPage],
+  exports: [TownPage]
 })
 export class TownPageModule {}

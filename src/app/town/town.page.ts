@@ -1,5 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { ModalController, NavParams, ToastController, PopoverController } from '@ionic/angular';
+import { ModalController, NavParams } from '@ionic/angular';
 
 @Component({
   selector: 'app-town',
@@ -8,27 +8,36 @@ import { ModalController, NavParams, ToastController, PopoverController } from '
   standalone: false,
 })
 export class TownPage implements OnInit {
-  @Input() title: string = ""
-  items: any;
-  @Input() itemss: [{ town: string }];
+  @Input() title: string = 'Select Town';
+  items: any[] = [];
+  itemss: any[] = [];
   public searchTerm = '';
-  constructor(private popoverController: PopoverController, private navParams: NavParams,) {
-    this.title = this.navParams.get('title') ? this.navParams.get('title'): "Town";
-    this.items = this.navParams.get('items');
-    this.itemss = this.items;
+
+  constructor(private modalController: ModalController, private navParams: NavParams) {
+    this.title = this.navParams.get('title') || 'Select Town';
+    this.items = this.navParams.get('items') || [];
+    this.itemss = [...this.items];
   }
+
   ngOnInit() {
-    this.items = this.navParams.get('items');
-    this.itemss = this.items;
+    this.items = this.navParams.get('items') || [];
+    this.itemss = [...this.items];
   }
+
   setFilterTown() {
+    const term = (this.searchTerm || '').toLowerCase();
     this.itemss = this.items.filter((towns: any) => {
-      return towns.town.toLowerCase().indexOf(this.searchTerm.toLowerCase()) > -1;
+      const name = (towns.town || towns.name || '').toLowerCase();
+      return name.indexOf(term) > -1;
     });
   }
+
+  close() {
+    this.modalController.dismiss();
+  }
+
   selectItem(item: any) {
-    this.popoverController.dismiss({
-      'selectedItem': item?.town
-    });
+    const selected = item?.town || item?.name;
+    this.modalController.dismiss({ selectedItem: selected });
   }
 }

@@ -1,18 +1,23 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>Customers</ion-title>
+    <ion-title>{{ title || 'Customers' }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="close()">Close</ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
-<ion-toolbar>
-    <ion-searchbar animated="true" mode="ios" [(ngModel)]="searchTerm" (ionInput)="setFilterCustomer()" ></ion-searchbar>
-</ion-toolbar>
+  <ion-toolbar>
+    <ion-searchbar animated="true" mode="ios" [(ngModel)]="searchTerm" (ionInput)="setFilterCustomer()"></ion-searchbar>
+  </ion-toolbar>
 
-<ion-list>
-   <ion-item class="ion-border" *ngFor="let item of itemss"  (click)="selectItem(item)" tappable>
-       
-        <ion-label > {{ item?.client_name }}</ion-label>
+  <ion-list>
+    <ion-item button detail="false" *ngFor="let item of itemss" (click)="selectItem(item)">
+      <ion-label>{{ item?.client_name }}</ion-label>
     </ion-item>
-</ion-list>
+    <ion-item *ngIf="!itemss?.length">
+      <ion-label color="medium">No customers found</ion-label>
+    </ion-item>
+  </ion-list>
 </ion-content>

@@ -24,12 +24,23 @@ import { Geolocation } from '@awesome-cordova-plugins/geolocation/ngx';
 //import { Market } from '@awesome-cordova-plugins/market/ngx';
 //import { LightboxModule } from 'ngx-lightbox';
 import { ClientsPageModule } from './clients/clients.module';
-import { ClientsPage } from './clients/clients.page';
+import { TownPageModule } from './town/town.module';
+import { CustomerPageModule } from './customer/customer.module';
+import { DsrpopupPageModule } from './dsrpopup/dsrpopup.module';
 
 
 @NgModule({
   declarations: [AppComponent],
-  imports: [ BrowserModule, IonicModule.forRoot(), AppRoutingModule, HttpClientModule, ClientsPageModule ],
+  imports: [
+    BrowserModule,
+    IonicModule.forRoot(),
+    AppRoutingModule,
+    HttpClientModule,
+    ClientsPageModule,
+    TownPageModule,
+    CustomerPageModule,
+    DsrpopupPageModule
+  ],
   providers: [{ provide: RouteReuseStrategy, useClass: IonicRouteStrategy }, Camera, AndroidPermissions, BarcodeScanner, InAppBrowser, SplashScreen, StatusBar, Storage, File, FileTransfer, Geolocation ],
   bootstrap: [AppComponent],
 })

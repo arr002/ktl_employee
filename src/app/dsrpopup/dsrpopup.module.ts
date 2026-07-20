@@ -15,6 +15,7 @@ import { DsrpopupPage } from './dsrpopup.page';
     IonicModule,
     DsrpopupPageRoutingModule
   ],
-  declarations: [DsrpopupPage]
+  declarations: [DsrpopupPage],
+  exports: [DsrpopupPage]
 })
 export class DsrpopupPageModule {}

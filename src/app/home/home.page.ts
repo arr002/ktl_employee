@@ -16,6 +16,7 @@ import { Camera, CameraOptions } from '@awesome-cordova-plugins/camera/ngx';
 import { AndroidPermissions } from '@awesome-cordova-plugins/android-permissions/ngx';
 //import { Market } from '@awesome-cordova-plugins/market/ngx';
 import { PopupPage } from '../popup/popup.page';
+import { ApiCacheService } from '../api-cache.service';
 
 @Component({
   selector: 'app-home',
@@ -83,7 +84,8 @@ export class HomePage {
     private barcodeScanner: BarcodeScanner, private iab: InAppBrowser,
     public popoverController: PopoverController, private file: File, private camera: Camera, 
     private androidPermissions: AndroidPermissions,
-    public alertCtrl: AlertController
+    public alertCtrl: AlertController,
+    private apiCache: ApiCacheService
     //, private market: Market
   ) {
       this.platform.ready().then(async () => {
@@ -164,41 +166,62 @@ navigateRoute(id:any, route:any) {
   }
 }
 
-getHomescreen(value:any) {
+getHomescreen(value:any, forceRefresh = false) {
 
-  let headers = new HttpHeaders();
-  headers.append("Accept", 'application/json');
-  headers.append('Content-Type', 'application/json');
+  const applyMenu = (items: any[]) => {
+    this.homescreendata = items;
+    this.groupedmenu = this.buildGroups(this.homescreendata);
+  };
 
-  let datap = { staffid: value };
+  const loadFromApi = () => {
+    let headers = new HttpHeaders();
+    headers.append("Accept", 'application/json');
+    headers.append('Content-Type', 'application/json');
 
-  this.http.post(this.url + 'get-homescreen', datap, { headers: headers }).subscribe((data: any) => {
-    console.log("department11");
-    console.log(data);
+    let datap = { staffid: value };
 
-    if (data.status) {
+    this.http.post(this.url + 'get-homescreen', datap, { headers: headers }).subscribe((data: any) => {
+      console.log("department11");
+      console.log(data);
 
-      this.homescreendata = (data.result || []).map((item: any) => {
-        const name = (item.itemname || '').toString().trim().toLowerCase().replace(/\s+/g, '');
-        if (name === 'allattendance' || name === 'allattandance') {
-          return { ...item, itemname: 'All Attendance' };
-        }
-        if (name.includes('compaints') || name.includes('suggestion/compaints')) {
-          return { ...item, itemname: 'Suggestion/Complaints' };
-        }
-        return item;
-      }).filter((item: any) => {
-        const name = (item.itemname || '').toString().trim().toLowerCase();
-        const route = (item.route || '').toString().trim().toLowerCase();
-        // Logout and My Profile live in the side panel — hide menu tile duplicates
-        return item.id != 31 && name !== 'logout' && name !== 'my profile' && route !== 'profile';
-      });
+      if (data.status) {
 
-      this.groupedmenu = this.buildGroups(this.homescreendata);
-    } else {
+        this.homescreendata = (data.result || []).map((item: any) => {
+          const name = (item.itemname || '').toString().trim().toLowerCase().replace(/\s+/g, '');
+          if (name === 'allattendance' || name === 'allattandance') {
+            return { ...item, itemname: 'All Attendance' };
+          }
+          if (name.includes('compaints') || name.includes('suggestion/compaints')) {
+            return { ...item, itemname: 'Suggestion/Complaints' };
+          }
+          return item;
+        }).filter((item: any) => {
+          const name = (item.itemname || '').toString().trim().toLowerCase();
+          const route = (item.route || '').toString().trim().toLowerCase();
+          // Logout and My Profile live in the side panel — hide menu tile duplicates
+          return item.id != 31 && name !== 'logout' && name !== 'my profile' && route !== 'profile';
+        });
 
+        this.groupedmenu = this.buildGroups(this.homescreendata);
+        this.apiCache.set(this.apiCache.homescreenKey(value), this.homescreendata);
+      } else {
+
+      }
+    }, err => { this.presentToast('Please check your internet Connection.', 3000, 'middle') })
+  };
+
+  if (forceRefresh) {
+    loadFromApi();
+    return;
+  }
+
+  this.apiCache.get<any[]>(this.apiCache.homescreenKey(value)).then((cached) => {
+    if (cached && cached.length) {
+      applyMenu(cached);
+      return;
     }
-  }, err => { this.presentToast('Please check your internet Connection.', 3000, 'middle') })
+    loadFromApi();
+  });
 }
 
 buildGroups(items: any[]) {
@@ -297,13 +320,13 @@ openMenu() {
 }
 
 reloadHome() {
-  this.getProfile(this.userid);
-  this.getHomescreen(this.userid);
+  this.getProfile(this.userid, true);
+  this.getHomescreen(this.userid, true);
 }
 
 doRefresh(event: any) {
-  this.getProfile(this.userid);
-  this.getHomescreen(this.userid);
+  this.getProfile(this.userid, true);
+  this.getHomescreen(this.userid, true);
   setTimeout(() => event.target.complete(), 1200);
 }
 
@@ -323,6 +346,7 @@ async logout() {
       header: 'Warning', message: 'Are you sure want to logout?',
       buttons: [
         { text: 'Yes', handler: () => { 
+          this.apiCache.clearApiCaches();
           this.str.set('id', null);
           this.router.navigateByUrl('/login', { skipLocationChange: true });
         } },
@@ -332,44 +356,65 @@ async logout() {
     alert.present();
 }
 
-getProfile(userid:any) {
-  let headers = new HttpHeaders();
-  headers.append("Accept", 'application/json');
-  headers.append('Content-Type', 'application/json');
-
-  let datap = { staff_id: userid };
-  this.http.post(this.url + 'get-staff', datap, { headers: headers }).subscribe((data: any) => {
-
-    console.log("buddy")
-    console.log(data)
-    console.log("buddy")
-    if (data.status) {
-      if(data.data) {
-        this.name = data.data.name;
-        this.empcode = data.data.employee_code;
-        this.phone = data.data.phone;
-        this.address = data.data.address;
-        this.department = data.data.department;
-        this.designation = data.data.designation;
-        this.branchname = data.data.branch_name;
-        this.dob = data.data.dob;
-        this.doj = data.data.doj;
-        this.empmanager = data.data.emp_manager;
-      }
-      this.manager_type = data.manager_type;
-      this.buddyattendacne = data.buddy_attendance;
-
-      if (data.image_path == '' || data.image_path == "" || data.image_path == null) {
-        this.image = 'assets/profile.jpg';
-      }
-      else {
-        this.image = data.image_path;
-      }
-
-    } else {
-      //this.presentToast(res.message,3000,'middle')
+getProfile(userid:any, forceRefresh = false) {
+  const applyProfile = (payload: any) => {
+    if (!payload) { return; }
+    const data = payload;
+    if (data.data) {
+      this.name = data.data.name;
+      this.empcode = data.data.employee_code;
+      this.phone = data.data.phone;
+      this.address = data.data.address;
+      this.department = data.data.department;
+      this.designation = data.data.designation;
+      this.branchname = data.data.branch_name;
+      this.dob = data.data.dob;
+      this.doj = data.data.doj;
+      this.empmanager = data.data.emp_manager;
     }
-  }, err => { this.presentToast('Please check your internet Connection.', 3000, 'middle') })
+    this.manager_type = data.manager_type;
+    this.buddyattendacne = data.buddy_attendance;
+
+    if (data.image_path == '' || data.image_path == "" || data.image_path == null) {
+      this.image = 'assets/profile.jpg';
+    }
+    else {
+      this.image = data.image_path;
+    }
+  };
+
+  const loadFromApi = () => {
+    let headers = new HttpHeaders();
+    headers.append("Accept", 'application/json');
+    headers.append('Content-Type', 'application/json');
+
+    let datap = { staff_id: userid };
+    this.http.post(this.url + 'get-staff', datap, { headers: headers }).subscribe((data: any) => {
+
+      console.log("buddy")
+      console.log(data)
+      console.log("buddy")
+      if (data.status) {
+        applyProfile(data);
+        this.apiCache.set(this.apiCache.profileKey(userid), data);
+      } else {
+        //this.presentToast(res.message,3000,'middle')
+      }
+    }, err => { this.presentToast('Please check your internet Connection.', 3000, 'middle') })
+  };
+
+  if (forceRefresh) {
+    loadFromApi();
+    return;
+  }
+
+  this.apiCache.get<any>(this.apiCache.profileKey(userid)).then((cached) => {
+    if (cached && cached.status) {
+      applyProfile(cached);
+      return;
+    }
+    loadFromApi();
+  });
 }
 checkVersion(version:any) {
   let headers = new HttpHeaders();

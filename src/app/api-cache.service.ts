@@ -43,20 +43,20 @@ export class ApiCacheService {
 
   /** Clear app API caches (call on logout). Keeps login session keys untouched. */
   async clearApiCaches(): Promise<void> {
-    const keys = [
-      'cache_homescreen',
-      'cache_profile',
-      'cache_dsr_towns',
-      'cache_dsr_dates',
-      'cache_dsr_customers'
-    ];
-    for (const key of keys) {
-      await this.remove(key);
-    }
-    // also clear any town-specific customer keys held in memory
-    for (const key of Array.from(this.memory.keys())) {
-      if (key.startsWith('cache_')) {
-        await this.remove(key);
+    await this.ensureStorage();
+    try {
+      const allKeys = await this.storage.keys();
+      for (const key of allKeys) {
+        if (key.startsWith('cache_') || key.startsWith('draft_dsr_')) {
+          await this.remove(key);
+        }
+      }
+    } catch (e) {
+      // fallback for older storage without keys()
+      for (const key of Array.from(this.memory.keys())) {
+        if (key.startsWith('cache_') || key.startsWith('draft_dsr_')) {
+          await this.remove(key);
+        }
       }
     }
   }
@@ -79,5 +79,9 @@ export class ApiCacheService {
 
   customersKey(userId: any, town: string) {
     return `cache_dsr_customers_${userId}_${(town || '').toLowerCase()}`;
+  }
+
+  draftKey(userId: any) {
+    return `draft_dsr_${userId}`;
   }
 }

@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ToastController, NavController, ModalController, AlertController } from '@ionic/angular';
+import { ToastController, NavController, ModalController, AlertController, ViewWillLeave } from '@ionic/angular';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { DsrpopupPage } from '../dsrpopup/dsrpopup.page';
 import { TownPage } from '../town/town.page';
@@ -14,7 +14,7 @@ import { ApiCacheService } from '../api-cache.service';
   styleUrls: ['./dsrupload.page.scss'],
   standalone: false,
 })
-export class DsruploadPage implements OnInit {
+export class DsruploadPage implements OnInit, ViewWillLeave {
 
   towndata = false;
   townlist = false;
@@ -36,6 +36,9 @@ export class DsruploadPage implements OnInit {
   remarks: any = '';
   townname: any = '';
   customername: any = '';
+  hasDraft = false;
+  draftSavedAt: string | null = null;
+  private draftTimer: any;
   url = environment.SERVER_URL;
   recdata = {
     id: '',
@@ -56,15 +59,20 @@ export class DsruploadPage implements OnInit {
     public alertController: AlertController,
     private apiCache: ApiCacheService
   ) {
-    this.str.get('id').then((value) => {
+    this.str.get('id').then(async (value) => {
       this.userid = value;
       this.getTowns();
       this.getDateRequest();
+      await this.restoreDraft();
     });
 
     this.str.get('username').then((value) => {
       this.username = value;
     });
+  }
+
+  ionViewWillLeave() {
+    this.saveDraft(false);
   }
 
   // Open town picker → on select load customers for that town
@@ -86,8 +94,8 @@ export class DsruploadPage implements OnInit {
       this.townname = selectedTown;
       this.customername = '';
       this.clientselected = null;
-      // Keep already-added customer records when town changes
       this.getCustomerList(true);
+      this.scheduleDraftSave();
     }
   }
 
@@ -126,7 +134,6 @@ export class DsruploadPage implements OnInit {
     if (data && data.client_name) {
       this.clientselected = data;
       this.customername = data.client_name;
-      // Wait for customer modal to fully close before opening DSR form (needed for 2nd+ add)
       setTimeout(() => this.openModal(), 350);
     }
   }
@@ -178,7 +185,9 @@ export class DsruploadPage implements OnInit {
     this.reqdate = true;
   }
 
-  dateChangeDrop() { }
+  dateChangeDrop() {
+    this.scheduleDraftSave();
+  }
 
   async openModal() {
     if (!this.clientselected || !this.clientselected.client_name) {
@@ -201,12 +210,12 @@ export class DsruploadPage implements OnInit {
     const result = await modal.onDidDismiss();
 
     if (result && result.data) {
-      // Always append — supports multiple customer records
       this.dataadded = [...this.dataadded, result.data];
       this.customername = '';
       this.clientselected = null;
+      this.scheduleDraftSave();
       this.presentToast(
-        'Added (' + this.dataadded.length + '). Tap Add Another Customer for more.',
+        'Added (' + this.dataadded.length + '). Draft auto-saved.',
         3000,
         'bottom'
       );
@@ -217,11 +226,11 @@ export class DsruploadPage implements OnInit {
     if (this.fieldtype === 'InField' || this.fieldtype === 'InFieldandOffice') {
       this.towndata = true;
     } else {
-      // Office / Leave / Holiday — only remarks; clear all field visit data
       this.towndata = false;
       this.townlist = false;
       this.clearFieldVisitData();
     }
+    this.scheduleDraftSave();
   }
 
   /** Clears town/customer/visit records so they stay blank for Office/Leave/Holiday */
@@ -247,6 +256,7 @@ export class DsruploadPage implements OnInit {
           handler: () => {
             this.dataadded.splice(i, 1);
             this.dataadded = [...this.dataadded];
+            this.scheduleDraftSave();
           }
         }
       ]
@@ -276,6 +286,8 @@ export class DsruploadPage implements OnInit {
         this.recdata = result.data;
         const recid: number = parseInt(this.recdata.id, 10);
         this.dataadded[recid as number] = this.recdata;
+        this.dataadded = [...this.dataadded];
+        this.scheduleDraftSave();
       }
     });
 
@@ -318,7 +330,6 @@ export class DsruploadPage implements OnInit {
     headers.append('Content-Type', 'application/json');
 
     const town = this.normalizeTownName(this.townname || this.townselected);
-    console.log('getCustomerList payload', { appuser_id: this.userid, town });
 
     if (!town) {
       this.presentToast('Please select a town first', 3000, 'bottom');
@@ -333,6 +344,7 @@ export class DsruploadPage implements OnInit {
       } else if (shouldOpen) {
         this.openPopOverCustomer();
       }
+      this.scheduleDraftSave();
     };
 
     const cacheKey = this.apiCache.customersKey(this.userid, town);
@@ -354,6 +366,134 @@ export class DsruploadPage implements OnInit {
         this.presentToast('Unable to load customers', 3000, 'bottom');
       });
     });
+  }
+
+  // ----- Draft save / restore -----
+
+  private draftStorageKey() {
+    return this.apiCache.draftKey(this.userid);
+  }
+
+  hasDraftContent(): boolean {
+    return !!(
+      this.fieldtype ||
+      this.dateSelect ||
+      this.townname ||
+      (this.dataadded && this.dataadded.length) ||
+      (this.remarks && String(this.remarks).trim())
+    );
+  }
+
+  scheduleDraftSave() {
+    clearTimeout(this.draftTimer);
+    this.draftTimer = setTimeout(() => this.saveDraft(false), 400);
+  }
+
+  async saveDraft(showToast = false) {
+    if (!this.userid) {
+      return;
+    }
+
+    if (!this.hasDraftContent()) {
+      await this.clearDraft(false);
+      return;
+    }
+
+    const draft = {
+      fieldtype: this.fieldtype,
+      activity: this.activity,
+      dateSelect: this.dateSelect,
+      townname: this.townname,
+      townselected: this.townselected || this.townname,
+      remarks: this.remarks || '',
+      dataadded: this.dataadded || [],
+      towndata: this.towndata,
+      townlist: this.townlist,
+      savedAt: new Date().toISOString()
+    };
+
+    await this.apiCache.set(this.draftStorageKey(), draft);
+    this.hasDraft = true;
+    this.draftSavedAt = draft.savedAt;
+
+    if (showToast) {
+      this.presentToast('Draft saved. You can submit later.', 2500, 'bottom');
+    }
+  }
+
+  async restoreDraft() {
+    if (!this.userid) {
+      return;
+    }
+
+    const draft = await this.apiCache.get<any>(this.draftStorageKey());
+    if (!draft) {
+      return;
+    }
+
+    this.fieldtype = draft.fieldtype;
+    this.activity = draft.activity || 'Visit';
+    this.dateSelect = draft.dateSelect;
+    this.townname = draft.townname || '';
+    this.townselected = draft.townselected || draft.townname || null;
+    this.remarks = draft.remarks || '';
+    this.dataadded = Array.isArray(draft.dataadded) ? draft.dataadded : [];
+    this.draftSavedAt = draft.savedAt || null;
+    this.hasDraft = true;
+
+    if (this.fieldtype === 'InField' || this.fieldtype === 'InFieldandOffice') {
+      this.towndata = true;
+      if (this.townname) {
+        // Restore customer list for the town, but do not auto-open picker
+        this.getCustomerList(false);
+      } else {
+        this.townlist = !!this.dataadded.length;
+      }
+    } else if (this.isRemarksOnlyType()) {
+      this.towndata = false;
+      this.townlist = false;
+    }
+
+    this.presentToast('Draft restored', 2500, 'bottom');
+  }
+
+  async clearDraft(showToast = false) {
+    if (!this.userid) {
+      return;
+    }
+    await this.apiCache.remove(this.draftStorageKey());
+    this.hasDraft = false;
+    this.draftSavedAt = null;
+    if (showToast) {
+      this.presentToast('Draft cleared', 2000, 'bottom');
+    }
+  }
+
+  async clearDraftConfirm() {
+    const alert = await this.alertController.create({
+      header: 'Clear Draft',
+      message: 'Remove saved draft and reset this form?',
+      buttons: [
+        { text: 'NO', role: 'cancel' },
+        {
+          text: 'YES',
+          handler: () => {
+            this.fieldtype = null;
+            this.dateSelect = null;
+            this.remarks = '';
+            this.towndata = false;
+            this.townlist = false;
+            this.clearFieldVisitData();
+            this.clearDraft(true);
+          }
+        }
+      ]
+    });
+    await alert.present();
+  }
+
+  onRemarksChange() {
+    this.scheduleDraftSave();
   }
 
   presentToast(msg: any, durat: any, pos: any) {
@@ -418,7 +558,6 @@ export class DsruploadPage implements OnInit {
     headers.append('Accept', 'application/json');
     headers.append('Content-Type', 'application/json');
 
-    // Office / Leave / Holiday: send only remarks (no town/customer data)
     const datap = this.isRemarksOnlyType()
       ? {
           appuser_id: this.userid,
@@ -437,7 +576,8 @@ export class DsruploadPage implements OnInit {
 
     console.log('adddsrdata payload', datap);
 
-    this.http.post(this.url + 'adddsrdata', datap, { headers }).subscribe((data: any) => {
+    this.http.post(this.url + 'adddsrdata', datap, { headers }).subscribe(async (data: any) => {
+      await this.clearDraft(false);
       this.presentToast(data.message, 4000, 'bottom');
       this.navctrl.navigateRoot('home');
     }, () => { });

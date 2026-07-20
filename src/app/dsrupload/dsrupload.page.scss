@@ -395,6 +395,60 @@
   box-shadow: 0 -6px 18px rgba(27, 42, 58, 0.06);
 }
 
+.draft-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 14px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: var(--dsr-accent-soft);
+  color: var(--dsr-ink);
+  animation: dsrFadeUp 360ms ease both;
+}
+
+.draft-banner ion-icon {
+  margin-top: 2px;
+  font-size: 20px;
+  color: var(--dsr-accent);
+}
+
+.draft-banner strong {
+  display: block;
+  font-size: 13px;
+  color: var(--dsr-accent);
+}
+
+.draft-banner p {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: var(--dsr-muted);
+}
+
+.footer-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.draft-btn {
+  --border-color: var(--dsr-accent);
+  --color: var(--dsr-accent);
+  --border-radius: 14px;
+  --border-width: 2px;
+  height: 44px;
+  font-weight: 700;
+  text-transform: none;
+}
+
+.clear-draft-btn {
+  --color: var(--dsr-muted);
+  height: 36px;
+  font-weight: 600;
+  text-transform: none;
+}
+
 .upload-btn {
   --background: linear-gradient(135deg, #c2414a 0%, #eb445a 100%);
   --background-activated: #a8373f;

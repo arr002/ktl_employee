@@ -23,6 +23,14 @@
       <p class="banner-sub">Fill details for your day and submit once ready.</p>
     </div>
 
+    <div class="draft-banner" *ngIf="hasDraft">
+      <ion-icon name="bookmark-outline"></ion-icon>
+      <div>
+        <strong>Draft saved</strong>
+        <p>Your details are kept for later submit.</p>
+      </div>
+    </div>
+
     <ion-item class="dsr-field" *ngIf="reqdate" lines="none">
       <ion-label position="stacked">Select Date</ion-label>
       <ion-datetime [max]="maxdate" [min]="mindate" presentation="date" [(ngModel)]="datetime"></ion-datetime>
@@ -63,7 +71,7 @@
 
       <ion-item class="dsr-field" lines="none" *ngIf="towndata">
         <ion-label position="stacked">Activity type</ion-label>
-        <ion-select interface="popover" placeholder="Select activity" [(ngModel)]="activity">
+        <ion-select interface="popover" placeholder="Select activity" [(ngModel)]="activity" (ionChange)="scheduleDraftSave()">
           <ion-select-option value="Visit">Visit</ion-select-option>
           <ion-select-option value="Phone">Phone</ion-select-option>
         </ion-select>
@@ -91,7 +99,7 @@
     <section class="dsr-card remarks-card" *ngIf="fieldtype=='Office' || fieldtype=='Leave' || fieldtype=='Holiday'">
       <h2 class="card-title">Remarks</h2>
       <p class="card-hint">Only remarks are required for this status.</p>
-      <textarea class="remarks-box" rows="5" placeholder="Enter remarks..." [(ngModel)]="remarks"></textarea>
+      <textarea class="remarks-box" rows="5" placeholder="Enter remarks..." [(ngModel)]="remarks" (ngModelChange)="onRemarksChange()"></textarea>
     </section>
 
     <section class="dsr-card" *ngIf="townlist">
@@ -160,8 +168,16 @@
 
 <ion-footer class="dsr-footer">
   <ion-toolbar>
-    <ion-button expand="block" class="upload-btn" (click)="uploadDSR()">
-      Upload DSR
-    </ion-button>
+    <div class="footer-actions">
+      <ion-button expand="block" fill="outline" class="draft-btn" (click)="saveDraft(true)">
+        Save for later
+      </ion-button>
+      <ion-button expand="block" fill="clear" class="clear-draft-btn" *ngIf="hasDraft" (click)="clearDraftConfirm()">
+        Clear draft
+      </ion-button>
+      <ion-button expand="block" class="upload-btn" (click)="uploadDSR()">
+        Upload DSR
+      </ion-button>
+    </div>
   </ion-toolbar>
 </ion-footer>

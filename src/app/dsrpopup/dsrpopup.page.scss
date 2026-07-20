@@ -1,2 +1,143 @@
-.inputclass{border: 1px solid #ccc;}
-.textqty{width:50px !important;}
+:host {
+  --pop-ink: #1b2a3a;
+  --pop-muted: #5f6f7f;
+  --pop-bg: #eef3f7;
+  --pop-accent: #0f6e8c;
+  --pop-soft: #d7eef5;
+  --pop-danger: #c2414a;
+}
+
+.dsr-popup-header ion-toolbar {
+  --background: #0f6e8c;
+  --color: #fff;
+  --border-width: 0;
+}
+
+.dsr-popup-header ion-title,
+.close-btn {
+  --color: #fff;
+  color: #fff;
+}
+
+.close-btn {
+  font-weight: 600;
+  text-transform: none;
+}
+
+.dsr-popup-page {
+  --background: var(--pop-bg);
+}
+
+.popup-wrap {
+  padding: 14px 14px 24px;
+}
+
+.client-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: var(--pop-soft);
+  color: var(--pop-accent);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.client-chip ion-icon {
+  font-size: 16px;
+}
+
+.form-card {
+  padding: 14px;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 6px 18px rgba(27, 42, 58, 0.06);
+}
+
+.field-label {
+  display: block;
+  margin: 0 0 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--pop-muted);
+}
+
+.field-label + .field-input,
+.field-label + .field-select,
+.field-label + .remarks-box {
+  margin-bottom: 14px;
+}
+
+.field-note {
+  margin-left: 6px;
+  font-size: 10px;
+  font-weight: 500;
+  color: #8a97a5;
+}
+
+.field-input {
+  --background: #f7fafc;
+  --padding-start: 12px;
+  --padding-end: 12px;
+  --padding-top: 10px;
+  --padding-bottom: 10px;
+  --border-radius: 12px;
+  --color: var(--pop-ink);
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+}
+
+.field-select {
+  width: 100%;
+  max-width: 100%;
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #f7fafc;
+  color: var(--pop-ink);
+  font-weight: 600;
+}
+
+.remarks-box {
+  width: 100%;
+  min-height: 100px;
+  margin: 0;
+  padding: 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  resize: vertical;
+  background: #f7fafc;
+  color: var(--pop-ink);
+  font: inherit;
+  line-height: 1.45;
+}
+
+.remarks-box:focus,
+.field-input:focus-within,
+.field-select:focus {
+  outline: 2px solid rgba(15, 110, 140, 0.22);
+  border-color: var(--pop-accent);
+  background: #fff;
+}
+
+.dsr-popup-footer ion-toolbar {
+  --background: #fff;
+  --padding-start: 14px;
+  --padding-end: 14px;
+  --padding-top: 10px;
+  --padding-bottom: 10px;
+  box-shadow: 0 -6px 18px rgba(27, 42, 58, 0.06);
+}
+
+.save-btn {
+  --background: linear-gradient(135deg, #c2414a 0%, #eb445a 100%);
+  --background-activated: #a8373f;
+  --border-radius: 14px;
+  --box-shadow: 0 8px 18px rgba(194, 65, 74, 0.28);
+  height: 48px;
+  font-weight: 700;
+  text-transform: none;
+}

@@ -51,6 +51,10 @@ getSealStatus(){
   ngOnInit() {
   }
 
+  close() {
+    this.modalController.dismiss();
+  }
+
  presentToast(msg: any, durat: any, pos: any) {
     let toast = this.toastCtrl.create({
       message: msg,

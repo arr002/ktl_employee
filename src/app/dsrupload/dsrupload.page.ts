@@ -242,7 +242,7 @@ export class DsruploadPage implements OnInit {
          
           let datap = {appuser_id:this.userid,town:this.townselected};
           console.log(datap);
-          this.http.post(this.url + 'getcustomersdata' ,datap,{headers:headers}).subscribe((data:any)=>{
+          this.http.post(this.url + 'get-customers-data' ,datap,{headers:headers}).subscribe((data:any)=>{
           console.log(data.data);
             this.customerdatalist=data.data;
               this.townlist=true;

@@ -57,7 +57,7 @@
 
       <ion-item class="dsr-field" lines="none">
         <ion-label position="stacked">Uploading Date</ion-label>
-        <ion-select interface="popover" placeholder="Select date" [(ngModel)]="dateSelect" (ionChange)="scheduleDraftSave()">
+        <ion-select interface="popover" placeholder="Select date" [(ngModel)]="dateSelect" (ionChange)="dateChangeDrop()">
           <ion-select-option *ngFor="let item of daterequest" [value]="item">{{ item }}</ion-select-option>
         </ion-select>
       </ion-item>

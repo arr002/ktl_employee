@@ -289,7 +289,36 @@ export class DrtruploadPage implements OnInit, ViewWillLeave {
   }
 
   dateChangeDrop() {
-    this.scheduleDraftSave();
+    this.checkReportDateAlreadyFilled('DMRT');
+  }
+
+  checkReportDateAlreadyFilled(type: 'DSR' | 'DMRT') {
+    if (!this.userid || !this.dateSelect) {
+      return;
+    }
+
+    const headers = new HttpHeaders();
+    headers.append('Accept', 'application/json');
+    headers.append('Content-Type', 'application/json');
+
+    const datap = {
+      appuser_id: this.userid,
+      date: this.dateSelect,
+      type
+    };
+
+    this.http.post(this.url + 'checkreportdate', datap, { headers }).subscribe((data: any) => {
+      if (data && data.already_filled) {
+        const msg = data.message || (type + ' already submitted for this date');
+        this.presentToast(msg, 4000, 'middle');
+        this.dateSelect = null;
+        this.scheduleDraftSave();
+        return;
+      }
+      this.scheduleDraftSave();
+    }, () => {
+      this.scheduleDraftSave();
+    });
   }
 
   private draftStorageKey() {
@@ -371,6 +400,10 @@ export class DrtruploadPage implements OnInit, ViewWillLeave {
     }
 
     this.presentToast('Draft restored', 2500, 'bottom');
+
+    if (this.dateSelect) {
+      this.checkReportDateAlreadyFilled('DMRT');
+    }
   }
 
   async clearDraft(showToast = false) {

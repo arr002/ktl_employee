@@ -1,147 +1,194 @@
-<ion-header>
-  <ion-toolbar translucent>
-    <ion-buttons slot="start" color="none">
-            <ion-buttons slot="start" color="none">
-                <ion-back-button color="none" defaultHref="home"></ion-back-button>
-            </ion-buttons>
-        </ion-buttons>
-        <ion-title>DRMT Upload</ion-title>
-
-        <ion-buttons slot="end" color="none" (click)="openCal()">
-            Date Request
-        </ion-buttons>
+<ion-header class="dsr-header">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="home" text=""></ion-back-button>
+    </ion-buttons>
+    <ion-title>DRMT Upload</ion-title>
+    <ion-buttons slot="end">
+      <ion-button class="date-req-btn" fill="clear" (click)="openCal()">
+        <ion-icon name="calendar-outline" slot="start"></ion-icon>
+        Date Request
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content color="light"  class="bgWhite" style="height: 70%;">
+<ion-content class="dsr-page">
+  <div class="dsr-wrap">
 
-  <ion-item style="margin-top: 20px !important;" *ngIf="reqdate">
-    <ion-label>Select Date</ion-label>
-    <ion-datetime   [max]="maxdate" [min]="mindate" pickerFormat="YYYY-MM-DD" [(ngModel)]="datetime"></ion-datetime>
-  </ion-item> 
-    <ion-item>
+    <div class="dsr-banner">
+      <div class="banner-glow"></div>
+      <p class="banner-kicker">Daily Retail Market Tracking</p>
+      <h1 class="banner-title">Upload DRMT</h1>
+      <p class="banner-sub">Add customer details for your day and submit once ready.</p>
+    </div>
 
-      <ion-label color="secondary">HQ</ion-label>
-      <ion-label color="dark">Haridwar</ion-label>
-    </ion-item>
-    <ion-item>
+    <div class="draft-banner" *ngIf="hasDraft">
+      <ion-icon name="bookmark-outline"></ion-icon>
+      <div>
+        <strong>Draft saved</strong>
+        <p>Your details are kept for later submit.</p>
+      </div>
+    </div>
 
-      <ion-label color="secondary">User Name</ion-label>
-      <ion-label color="dark">{{username}}</ion-label>
-    </ion-item>
-        <ion-item>
-
-      <ion-label color="secondary">Daily Target Pts.</ion-label>
-      <ion-label color="dark">15</ion-label>
-    </ion-item>
-    <ion-item style="margin-top: 20px !important;">
-    <ion-label>Select Uploading Date</ion-label>
-    <ion-select (ionChange)="dateChangeDrop()" style="width:100%;" placeholder="Select Option" [(ngModel)]="dateSelect"
-      class="native">
-       <ion-select-option *ngFor="let item of daterequest" value="{{item}}">{{item}}</ion-select-option>
-    </ion-select>
-  </ion-item>
-  <ion-item>
-
-    <ion-label>Customer Type</ion-label>
-    <ion-select  style="width:100%;" placeholder="Select Option" [(ngModel)]="visitType"
-      class="native">
-      <ion-select-option value="NewDealer">New Dealer</ion-select-option>
-      <ion-select-option value="Manufacturer">Manufacturer</ion-select-option>
-      <ion-select-option value="Retailer">Retailer</ion-select-option>
-      <ion-select-option value="Tailor">Tailor</ion-select-option>
-    </ion-select>
-
-  </ion-item>
-
-     <ion-item>
-  <ion-label>Select Town</ion-label>
- 
-  <ion-button expand="full" color="white" (click)="openPopOver()">Select Town</ion-button>
-
-</ion-item>
-
-   <ion-row>
-  <ion-col size="4">
-      <ion-label  color="secondary">Town Name</ion-label>
-    </ion-col>
-    <ion-col size="8">
-      <ion-input class="inputclass" [(ngModel)]="townname"></ion-input>
-    </ion-col>
-    </ion-row>
-
-     <ion-item>
-    <ion-grid>
-      <ion-row>
-  <ion-col size="4">
-      <ion-label  color="secondary">Phone</ion-label>
-    </ion-col>
-    <ion-col size="8">
-      <ion-input class="inputclass" [(ngModel)]="phone" (focusout)='getclientname()'></ion-input>
-    </ion-col>
-    </ion-row>
-<ion-row>
-  <ion-col size="4">
-      <ion-label  color="secondary">Name</ion-label>
-    </ion-col>
-    <ion-col size="8">
-      <ion-input class="inputclass" [(ngModel)]="name"></ion-input>
-    </ion-col>
-    </ion-row>
-  </ion-grid>
-    
-  
+    <ion-item class="dsr-field" *ngIf="reqdate" lines="none">
+      <ion-label position="stacked">Select Date</ion-label>
+      <ion-datetime [max]="maxdate" [min]="mindate" presentation="date" [(ngModel)]="datetime"></ion-datetime>
     </ion-item>
 
-     
-  <ion-item>
-      <ion-button color="danger" expand="full" (click)="openModal()">Add Data </ion-button>
-  </ion-item>
+    <section class="dsr-card">
+      <h2 class="card-title">Profile</h2>
+      <div class="info-row">
+        <span class="info-label">HQ</span>
+        <span class="info-value">Haridwar</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">User Name</span>
+        <span class="info-value">{{ username }}</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Daily Target Pts.</span>
+        <span class="info-value">15</span>
+      </div>
+    </section>
 
+    <section class="dsr-card">
+      <h2 class="card-title">Report details</h2>
 
+      <ion-item class="dsr-field" lines="none">
+        <ion-label position="stacked">Uploading Date</ion-label>
+        <ion-select interface="popover" placeholder="Select date" [(ngModel)]="dateSelect" (ionChange)="scheduleDraftSave()">
+          <ion-select-option *ngFor="let item of daterequest" [value]="item">{{ item }}</ion-select-option>
+        </ion-select>
+      </ion-item>
 
-    <div class="divstyle">Added Data of Customer</div>
-  <div style="border:1px solid #ccc; padding:5px;" *ngFor="let item of customer; let i = index;">
-   <ion-item>
+      <ion-item class="dsr-field" lines="none">
+        <ion-label position="stacked">Customer Type</ion-label>
+        <ion-select interface="popover" placeholder="Select option" [(ngModel)]="visitType" (ionChange)="scheduleDraftSave()">
+          <ion-select-option value="NewDealer">New Dealer</ion-select-option>
+          <ion-select-option value="Manufacturer">Manufacturer</ion-select-option>
+          <ion-select-option value="Retailer">Retailer</ion-select-option>
+          <ion-select-option value="Tailor">Tailor</ion-select-option>
+        </ion-select>
+      </ion-item>
 
-      <ion-label color="primary">{{ item.name }}</ion-label>
-      <ion-icon name="trash-outline" color="danger" (click)="delItem(i)">></ion-icon>
-      
-     
-    </ion-item>
-<table style="width:100%; border: 1px solid #ccc; padding: 5px;">
-  <tr><th>Brand</th><th>Article</th><th>Qty</th><th>Price</th><th>T. Sale</th></tr>
-  <tr *ngFor="let items of item.data">
-    <td >{{items.brands}}</td>
-    <td >{{items.article}}</td>
-    <td >{{items.qty}}</td>
-    <td >{{items.itemvalue}}</td>
-    <td >{{items.price}}</td>
-  </tr>
-</table>
-</div>
+      <button type="button" class="picker-row" (click)="openPopOver()">
+        <div class="picker-text">
+          <span class="picker-label">Town</span>
+          <span class="picker-value" [class.placeholder]="!townname">{{ townname || 'Select town' }}</span>
+        </div>
+        <ion-icon name="chevron-forward-outline"></ion-icon>
+      </button>
 
+      <ion-item class="dsr-field" lines="none">
+        <ion-label position="stacked">Town Name</ion-label>
+        <ion-input [(ngModel)]="townname" (ngModelChange)="scheduleDraftSave()" placeholder="Enter town name"></ion-input>
+      </ion-item>
 
+      <ion-item
+        class="dsr-field"
+        [class.invalid]="phoneTouched && !isPhoneValid"
+        [class.valid]="phoneTouched && isPhoneValid"
+        lines="none">
+        <ion-label position="stacked">Phone</ion-label>
+        <ion-input
+          type="tel"
+          inputmode="numeric"
+          maxlength="10"
+          [ngModel]="phone"
+          (ionInput)="onPhoneInput($event)"
+          (ionBlur)="onPhoneBlur()"
+          placeholder="Enter 10-digit mobile"
+          [attr.aria-invalid]="phoneTouched && !isPhoneValid">
+        </ion-input>
+      </ion-item>
+      <p class="field-hint error" *ngIf="phoneTouched && phoneError" role="alert">{{ phoneError }}</p>
+      <p class="field-hint" *ngIf="!phoneTouched || !phoneError">10-digit mobile number</p>
 
- <ion-item>
-   <ion-label class="fintbold" color="dark">Remarks</ion-label>
-    <ion-input class="inputclass" [(ngModel)]="comment"></ion-input>
- </ion-item>
-  <ion-item style="display: none;">
-     <ion-label class="fintbold" color="dark">Take Selfie</ion-label>
-  <img (click)="takePicture()" class="imgwidth" src="assets/uploadattandence.png">
-  </ion-item>
+      <ion-item class="dsr-field" lines="none">
+        <ion-label position="stacked">Name</ion-label>
+        <ion-input [(ngModel)]="name" (ngModelChange)="scheduleDraftSave()" placeholder="Enter customer name"></ion-input>
+      </ion-item>
+
+      <ion-button expand="block" class="add-another-btn" (click)="openModal()">
+        <ion-icon name="add-circle-outline" slot="start"></ion-icon>
+        Add Data
+      </ion-button>
+    </section>
+
+    <section class="dsr-card">
+      <div class="card-head">
+        <h2 class="card-title">Added customers</h2>
+        <span class="count-pill">{{ customer?.length || 0 }}</span>
+      </div>
+
+      <div *ngIf="!customer?.length" class="empty-hint">
+        Fill customer details, add line items, then upload when ready.
+      </div>
+
+      <article class="customer-card" *ngFor="let item of customer; let i = index;">
+        <div class="customer-top">
+          <div>
+            <span class="customer-index">#{{ i + 1 }}</span>
+            <h3 class="customer-name">{{ item.name }}</h3>
+            <p class="customer-meta" *ngIf="item.phone || item.town">
+              <span *ngIf="item.phone">{{ item.phone }}</span>
+              <span *ngIf="item.phone && item.town"> · </span>
+              <span *ngIf="item.town">{{ item.town }}</span>
+            </p>
+          </div>
+          <div class="customer-actions">
+            <button type="button" class="icon-btn delete" (click)="delItem(i)" aria-label="Delete">
+              <ion-icon name="trash-outline"></ion-icon>
+            </button>
+          </div>
+        </div>
+
+        <div class="table-wrap" *ngIf="item.data?.length">
+          <table class="drmt-table">
+            <thead>
+              <tr>
+                <th>Brand</th>
+                <th>Article</th>
+                <th>Qty</th>
+                <th>Price</th>
+                <th>T. Sale</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let row of item.data">
+                <td>{{ row.brands }}</td>
+                <td>{{ row.article }}</td>
+                <td>{{ row.qty }}</td>
+                <td>{{ row.itemvalue }}</td>
+                <td>{{ row.price }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </article>
+    </section>
+
+    <section class="dsr-card remarks-card">
+      <h2 class="card-title">Remarks</h2>
+      <textarea class="remarks-box" rows="4" placeholder="Enter remarks..." [(ngModel)]="comment" (ngModelChange)="scheduleDraftSave()"></textarea>
+    </section>
+
+  </div>
 </ion-content>
 
-
-<ion-footer>
-  <ion-grid>
-    <ion-row>
-      <ion-col>
-        <ion-button color="danger" expand="full" (click)="uploadDRMT()">
-          Upload DRMT </ion-button>
-      </ion-col>
-
-    </ion-row>
-  </ion-grid>
+<ion-footer class="dsr-footer">
+  <ion-toolbar>
+    <div class="footer-actions">
+      <ion-button expand="block" fill="outline" class="draft-btn" (click)="saveDraft(true)">
+        Save for later
+      </ion-button>
+      <ion-button expand="block" fill="clear" class="clear-draft-btn" *ngIf="hasDraft" (click)="clearDraftConfirm()">
+        Clear draft
+      </ion-button>
+      <ion-button expand="block" class="upload-btn" (click)="uploadDRMT()">
+        Upload DRMT
+      </ion-button>
+    </div>
+  </ion-toolbar>
 </ion-footer>

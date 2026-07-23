@@ -1,143 +1,243 @@
-<ion-header>
+<ion-header class="dsr-popup-header">
   <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button class="back-btn" fill="clear" (click)="close()" aria-label="Back">
+        <ion-icon name="arrow-back-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
     <ion-title>DRTR Add Data</ion-title>
-    <ion-buttons slot="end" color="none" (click)="openCal()">
-            ADD Article
-        </ion-buttons>
+    <ion-buttons slot="end">
+      <ion-button class="header-action" fill="clear" (click)="openCal()">
+        <ion-icon name="add-outline" slot="start"></ion-icon>
+        Add Article
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
-  <ion-item style="margin-top: 20px !important;" *ngIf="reqarticle">
-    <ion-label>Enter Article</ion-label>
-    <ion-input  [(ngModel)]="addarticle"></ion-input>
-<ion-button color="danger" expand="full" (click)="addArticleData()">Add</ion-button>
-  </ion-item> 
- <ion-item>
+<ion-content class="dsr-popup-page">
+  <div class="popup-wrap">
 
-    <ion-label>Brands</ion-label>
-    <ion-select style="width:100%;" placeholder="Select Option" [(ngModel)]="brands"
-      class="native">
-      <ion-select-option value="Coats">Coats</ion-select-option>
-      <ion-select-option value="Vardhman">Vardhman</ion-select-option>
-      <ion-select-option value="Pasupati">Pasupati</ion-select-option>
-      <ion-select-option value="TIL">TIL</ion-select-option>
-      <ion-select-option value="Perfect">Perfect</ion-select-option>
-      <ion-select-option value="YKK">YKK</ion-select-option>
-      <ion-select-option value="Gill">Gill</ion-select-option>
-      <ion-select-option value="TEX">TEX</ion-select-option>
-      <ion-select-option value="Unorganized">Unorganized</ion-select-option>
-    </ion-select>
+    <div class="draft-banner" *ngIf="hasDraft">
+      <ion-icon name="bookmark-outline"></ion-icon>
+      <div>
+        <strong>Draft saved</strong>
+        <p>Your article details are kept for later.</p>
+      </div>
+    </div>
 
-  </ion-item>
-  <ion-item>
-     
-      <table style="width:100%">
-        <tr><th></th><th style='width: 50% !important'>Article</th><th>Qty</th><th></th></tr>
-        <tr *ngFor="let articlesd of articlesdata; index as i">
-          <td><input type="checkbox" [(ngModel)]='articlesd[0]'></td>
-          <td >{{articlesd[1]}}</td>
-          <td><input type="text"  style="width:50px !important;background:#fff !important" [(ngModel)]='articlesd[2]' (focusout)='calculate(i)'></td>
-          <td >{{articlesd[4]}}</td>
-        </tr>
-        <tr >
-          <td></td>
-          <td ></td>
-          <td>Total</td>
-          <td >{{GT}}</td>
-        </tr>
-    </table>
+    <section class="form-card" *ngIf="reqarticle">
+      <h2 class="card-title">Custom article</h2>
+      <label class="field-label">Article name</label>
+      <div class="inline-add">
+        <ion-input class="field-input" [(ngModel)]="addarticle" (ngModelChange)="onFieldChange()" placeholder="Enter article"></ion-input>
+        <ion-button class="mini-add-btn" (click)="addArticleData()">Add</ion-button>
+      </div>
+    </section>
 
-  </ion-item>
-<ion-item>
-      <ion-button color="danger" expand="full" (click)="addDrtr()">Add Data </ion-button>
-  </ion-item>
+    <section class="form-card">
+      <h2 class="card-title">Brand articles</h2>
 
+      <label class="field-label">Brand</label>
+      <ion-select
+        class="field-select"
+        interface="popover"
+        placeholder="Select brand"
+        [(ngModel)]="brands"
+        (ionChange)="onFieldChange()">
+        <ion-select-option value="Coats">Coats</ion-select-option>
+        <ion-select-option value="Vardhman">Vardhman</ion-select-option>
+        <ion-select-option value="Pasupati">Pasupati</ion-select-option>
+        <ion-select-option value="TIL">TIL</ion-select-option>
+        <ion-select-option value="Perfect">Perfect</ion-select-option>
+        <ion-select-option value="YKK">YKK</ion-select-option>
+        <ion-select-option value="Gill">Gill</ion-select-option>
+        <ion-select-option value="TEX">TEX</ion-select-option>
+        <ion-select-option value="Unorganized">Unorganized</ion-select-option>
+      </ion-select>
 
-<div style="border:1px solid #ccc; padding:5px;" >
-  <table style="width:100%; border: 1px solid #ccc; padding: 5px;">
-  <tr><th>Brand</th><th>Article</th><th>Qty</th><th>Comment</th><th>Sales</th><th></th></tr>
-  <tr style="height: 20px;" *ngFor="let item of data; let i = index;">
-    <td>{{item.brands}}</td>
-    <td>{{item.article}}</td>
-    <td>{{item.qty}}</td>
-    <td>{{item.itemvalue}}</td>
-    <td>{{item.price}}</td>
-    <td><ion-icon name="trash-outline" color="danger" (click)="delItem(i)">></ion-icon></td>
-  </tr>
-</table>
-</div>
+      <div class="table-wrap">
+        <table class="article-table">
+          <thead>
+            <tr>
+              <th class="col-check"></th>
+              <th class="col-article">Article</th>
+              <th class="col-qty">Qty</th>
+              <th class="col-val">Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let articlesd of articlesdata; index as i">
+              <td class="col-check">
+                <input type="checkbox" [(ngModel)]="articlesd[0]" (ngModelChange)="onFieldChange()">
+              </td>
+              <td class="col-article">{{ articlesd[1] }}</td>
+              <td class="col-qty">
+                <input
+                  class="qty-input"
+                  type="tel"
+                  inputmode="numeric"
+                  [(ngModel)]="articlesd[2]"
+                  (ngModelChange)="calculate(i)"
+                  placeholder="0">
+              </td>
+              <td class="col-val">{{ articlesd[4] || 0 }}</td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colspan="2"></td>
+              <td class="total-label">Total</td>
+              <td class="total-value">{{ GT || 0 }}</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
 
-<ion-item>
+      <ion-button expand="block" class="add-data-btn" (click)="addDrtr()">
+        <ion-icon name="add-circle-outline" slot="start"></ion-icon>
+        Add Data
+      </ion-button>
+    </section>
 
-  <ion-grid>
-<ion-row>
-  <ion-col size="12">
-      <ion-label  color="secondary" text-wrap>Monthly Qty Consumption in Rupees</ion-label>
-    </ion-col>
-    <ion-col size="12">
+    <section class="form-card">
+      <div class="card-head">
+        <h2 class="card-title">Added lines</h2>
+        <span class="count-pill">{{ data?.length || 0 }}</span>
+      </div>
 
+      <div *ngIf="!data?.length" class="empty-hint">
+        Select brand, enter qty for articles, then tap Add Data.
+      </div>
 
-      <ion-input class="inputclass" [(ngModel)]="qty" type="number" inputMode="numeric" pattern="[0-9]*"></ion-input>
-    </ion-col>
-    </ion-row>
-  </ion-grid>
-    </ion-item>
-       <ion-item>
-    <ion-grid>
-<ion-row>
-  <ion-col size="12">
-      <ion-label  color="secondary">Comment</ion-label>
-    </ion-col>
-    <ion-col size="12">
-      <ion-input class="inputclass" [(ngModel)]="itemvalue" type="text" ></ion-input>
-    </ion-col>
-    </ion-row>
-  </ion-grid>
-    </ion-item>
+      <div class="table-wrap" *ngIf="data?.length">
+        <table class="article-table added-table">
+          <thead>
+            <tr>
+              <th>Brand</th>
+              <th>Article</th>
+              <th>Qty</th>
+              <th>Rate</th>
+              <th>Sales</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of data; let i = index;">
+              <td>{{ item.brands }}</td>
+              <td>{{ item.article }}</td>
+              <td>{{ item.qty }}</td>
+              <td>{{ item.itemvalue }}</td>
+              <td>{{ item.price }}</td>
+              <td>
+                <button type="button" class="icon-btn delete" (click)="delItem(i)" aria-label="Delete">
+                  <ion-icon name="trash-outline"></ion-icon>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
 
- <ion-item>
-    <ion-grid>
-<ion-row>
-  <ion-col size="12">
-      <ion-label  color="secondary" text-wrap>Secondary Sales if Any</ion-label>
-    </ion-col>
-    <ion-col size="12">
-      <table style="width:100%">
-        <tr><th></th><th style='width: 50% !important'>Article</th><th>Qty</th><th></th></tr>
-        <tr *ngFor="let articlesd of articlesktl; index as i">
-          <td><input type="checkbox" [(ngModel)]='articlesd[0]'></td>
-          <td >{{articlesd[1]}}</td>
-          <td><input type="text"  style="width:50px !important;background:#fff !important" [(ngModel)]='articlesd[2]' (focusout)='calculatektl(i)'></td>
-            <td >{{articlesd[4]}}</td>
-        </tr>
-        <tr >
-          <td></td>
-          <td ></td>
-          <td>Total</td>
-          <td >{{GTKTL}}</td>
-        </tr>
-    </table>
-     <!-- <ion-input class="inputclass" [(ngModel)]="price" type="number" inputMode="numeric" pattern="[0-9]*"></ion-input>-->
-       <ion-input class="inputclass" [(ngModel)]="dealername" placeholder="Enter Dealer Name" type="text"></ion-input>
-    </ion-col>
-    </ion-row>
-  </ion-grid>
-    </ion-item>
+    <section class="form-card">
+      <h2 class="card-title">Extra details</h2>
 
-  
+      <label class="field-label">Monthly Qty Consumption in Rupees</label>
+      <ion-input
+        class="field-input"
+        type="number"
+        inputMode="numeric"
+        pattern="[0-9]*"
+        placeholder="Enter amount"
+        [(ngModel)]="qty"
+        (ngModelChange)="onFieldChange()">
+      </ion-input>
 
+      <label class="field-label">Comment</label>
+      <ion-input
+        class="field-input"
+        type="text"
+        placeholder="Enter comment"
+        [(ngModel)]="itemvalue"
+        (ngModelChange)="onFieldChange()">
+      </ion-input>
 
+      <label class="field-label">Secondary Sales if Any</label>
+      <div class="table-wrap">
+        <table class="article-table">
+          <thead>
+            <tr>
+              <th class="col-check"></th>
+              <th class="col-article">Article</th>
+              <th class="col-qty">Qty</th>
+              <th class="col-val">Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let articlesd of articlesktl; index as i">
+              <td class="col-check">
+                <input type="checkbox" [(ngModel)]="articlesd[0]" (ngModelChange)="onFieldChange()">
+              </td>
+              <td class="col-article">{{ articlesd[1] }}</td>
+              <td class="col-qty">
+                <input
+                  class="qty-input"
+                  type="tel"
+                  inputmode="numeric"
+                  [(ngModel)]="articlesd[2]"
+                  (ngModelChange)="calculatektl(i)"
+                  placeholder="0">
+              </td>
+              <td class="col-val">{{ articlesd[4] || 0 }}</td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colspan="2"></td>
+              <td class="total-label">Total</td>
+              <td class="total-value">{{ GTKTL || 0 }}</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
 
+      <label class="field-label">Dealer Name</label>
+      <ion-input
+        class="field-input"
+        type="text"
+        placeholder="Enter dealer name"
+        [(ngModel)]="dealername"
+        (ngModelChange)="onFieldChange()">
+      </ion-input>
+    </section>
 
-
-
+  </div>
 </ion-content>
-<ion-footer>
-    <ion-item>
-     <ion-label class="fintbold" color="dark">Take Photo Of Shop</ion-label>
-  <img (click)="takePicture()" class="imgwidth" src="assets/uploadattandence.png">
-  </ion-item>
-      <ion-button color="danger" expand="full" (click)="postData()">Submit </ion-button>
-  
-  </ion-footer>
+
+<ion-footer class="dsr-popup-footer">
+  <ion-toolbar>
+    <div class="photo-row">
+      <div class="photo-text">
+        <strong>Take Photo Of Shop</strong>
+        <span>{{ imgBlob ? 'Photo captured' : 'Required before submit' }}</span>
+      </div>
+      <button type="button" class="photo-btn" (click)="openPicChooser()" aria-label="Take photo">
+        <img *ngIf="!imgBlob" src="assets/uploadattandence.png" alt="">
+        <img *ngIf="imgBlob" [src]="imgBlob" alt="Shop photo" class="photo-preview">
+      </button>
+    </div>
+    <div class="footer-actions">
+      <ion-button expand="block" fill="outline" class="draft-btn" (click)="saveDraft(true)">
+        Save for later
+      </ion-button>
+      <ion-button expand="block" fill="clear" class="clear-draft-btn" *ngIf="hasDraft" (click)="clearDraftConfirm()">
+        Clear draft
+      </ion-button>
+      <ion-button expand="block" class="submit-btn" (click)="postData()">
+        Submit
+      </ion-button>
+    </div>
+  </ion-toolbar>
+</ion-footer>
+

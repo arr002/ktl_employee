@@ -1,51 +1,131 @@
-<ion-content class="bg" color="light">
-  <div class="mainimg">
-    <ion-avatar class="image-center">
-      <img src="assets/logo.png">
+<ion-content class="login-content" [fullscreen]="true">
+  <div class="login-bg" aria-hidden="true"></div>
+  <div class="login-wrap">
+    <header class="login-brand">
+      <ion-avatar class="brand-logo">
+        <img src="assets/logo.png" alt="KTL">
+      </ion-avatar>
+      <h1 class="brand-title">KTL Plus</h1>
+      <p class="brand-welcome">Welcome to KTL Plus App</p>
+    </header>
 
-    </ion-avatar>
-  </div>
+    <section class="login-panel" [class.panel-otp]="openotp">
+      <h2 class="panel-title">{{txtmsg}}</h2>
 
-  <div id="maindiv">
-    <div class="welcome">Welcome to KTL Plus App</div>
-    <div class="card">
-      <ion-list lines="none" class="bg-transparent">
-        <ion-item color="none" lines="none">
-          <div>{{txtmsg}}</div>
-        </ion-item>
-        <ion-item *ngIf="!openotp" color="none" lines="none">
-          <ion-icon class="icon" name="phone-portrait-outline"></ion-icon>
-          <ion-input class="native" [(ngModel)]="phone" placeholder="Enter Your Mobile"></ion-input>
-
-        </ion-item>
-        <ion-item *ngIf="openotp" color="none" lines="none">
-          <ion-icon class="icon" name="document-outline"></ion-icon>
-          <ion-input class="native" [(ngModel)]="otp" placeholder="Enter OTP"></ion-input>
-        </ion-item>
-
-
-        <div class="countdown" *ngIf="optbut && openotp">
-          {{countdown}}
-
+      <div class="field-group" *ngIf="!openotp">
+        <div
+          class="input-shell"
+          [class.invalid]="phoneTouched && !isPhoneValid"
+          [class.valid]="phoneTouched && isPhoneValid">
+          <span class="input-prefix" aria-hidden="true">
+            <ion-icon name="phone-portrait-outline"></ion-icon>
+          </span>
+          <span class="country-code">+91</span>
+          <ion-input
+            class="phone-input"
+            type="tel"
+            inputmode="numeric"
+            maxlength="10"
+            [ngModel]="phone"
+            (ionInput)="onPhoneInput($event)"
+            (ionBlur)="phoneTouched = true"
+            placeholder="Enter mobile number"
+            autocomplete="tel"
+            [attr.aria-invalid]="phoneTouched && !isPhoneValid"
+            aria-describedby="phone-error">
+          </ion-input>
+          <ion-icon
+            *ngIf="phoneTouched && isPhoneValid"
+            class="field-status ok"
+            name="checkmark-circle"
+            aria-hidden="true">
+          </ion-icon>
         </div>
-
-      </ion-list>
-      <div class="buttcontainer">
-        <ion-button *ngIf="!optbut && openotp" color="light" class="butt" (click)="resendOTP()" expand="full">Resend OTP
-        </ion-button>
-        <ion-button *ngIf="!openotp" color="light" class="butt" (click)="login()" expand="full">Login to KTL Plus App
-        </ion-button>
-        <ion-button *ngIf="openotp" color="light" class="butt" (click)="checkOTP()" expand="full">Verify OTP
-        </ion-button>
+        <p
+          id="phone-error"
+          class="field-hint error"
+          *ngIf="phoneTouched && phoneError"
+          role="alert">
+          {{phoneError}}
+        </p>
+        <p class="field-hint" *ngIf="!phoneTouched || !phoneError">
+          10-digit Indian mobile number
+        </p>
       </div>
 
-    </div>
+      <div class="field-group" *ngIf="openotp">
+        <div
+          class="input-shell"
+          [class.invalid]="otpTouched && !isOtpValid"
+          [class.valid]="otpTouched && isOtpValid">
+          <span class="input-prefix" aria-hidden="true">
+            <ion-icon name="lock-closed-outline"></ion-icon>
+          </span>
+          <ion-input
+            class="phone-input otp-input"
+            type="tel"
+            inputmode="numeric"
+            maxlength="4"
+            [ngModel]="otp"
+            (ionInput)="onOtpInput($event)"
+            (ionBlur)="otpTouched = true"
+            placeholder="Enter 4-digit OTP"
+            [attr.aria-invalid]="otpTouched && !isOtpValid"
+            aria-describedby="otp-error">
+          </ion-input>
+        </div>
+        <p
+          id="otp-error"
+          class="field-hint error"
+          *ngIf="otpTouched && otpError"
+          role="alert">
+          {{otpError}}
+        </p>
+        <div class="countdown" *ngIf="optbut && openotp" aria-live="polite">
+          <span class="countdown-value">{{countdown}}</span>
+          <span class="countdown-label">sec</span>
+        </div>
+      </div>
 
-    <p>This app is solely for the use of <strong>KTL Employees</strong>.</p>
-    <p>Any unauthorized person is not permitted to enter the APP.</p>
+      <div class="actions">
+        <ion-button
+          *ngIf="!optbut && openotp"
+          class="cta secondary"
+          expand="block"
+          (click)="resendOTP()">
+          Resend OTP
+        </ion-button>
+        <ion-button
+          *ngIf="!openotp"
+          class="cta"
+          expand="block"
+          [disabled]="!isPhoneValid"
+          (click)="login()">
+          Login to KTL Plus App
+        </ion-button>
+        <ion-button
+          *ngIf="openotp"
+          class="cta"
+          expand="block"
+          [disabled]="!isOtpValid"
+          (click)="checkOTP()">
+          Verify OTP
+        </ion-button>
+      </div>
+    </section>
+
+    <footer class="login-note">
+      <p>
+        This app is solely for the use of <strong>KTL Employees</strong>.
+        Any unauthorized person is not permitted to enter the APP.
+      </p>
+    </footer>
   </div>
-
 </ion-content>
-<ion-footer>
-  <h5>KTL - <span class="slogan">Manufacturers of Sewing Threads and Zip Fasteners</span></h5>
+
+<ion-footer class="app-footer" mode="md">
+  <div class="footer-bar">
+    <strong>KTL</strong>
+    <span>Manufacturers of Sewing Threads and Zip Fasteners</span>
+  </div>
 </ion-footer>

@@ -39,6 +39,8 @@ export class DsruploadPage implements OnInit, ViewWillLeave {
   hasDraft = false;
   draftSavedAt: string | null = null;
   private draftTimer: any;
+  /** Prevents ionViewWillLeave from re-saving draft after a successful upload. */
+  private skipDraftSaveOnLeave = false;
   url = environment.SERVER_URL;
   recdata = {
     id: '',
@@ -72,6 +74,9 @@ export class DsruploadPage implements OnInit, ViewWillLeave {
   }
 
   ionViewWillLeave() {
+    if (this.skipDraftSaveOnLeave) {
+      return;
+    }
     this.saveDraft(false);
   }
 
@@ -146,29 +151,14 @@ export class DsruploadPage implements OnInit, ViewWillLeave {
   }
 
   getDateRequest() {
-    const applyDates = (list: any) => {
-      this.daterequest = list;
-    };
+    const headers = new HttpHeaders();
+    headers.append('Accept', 'application/json');
+    headers.append('Content-Type', 'application/json');
 
-    const loadFromApi = () => {
-      const headers = new HttpHeaders();
-      headers.append('Accept', 'application/json');
-      headers.append('Content-Type', 'application/json');
-
-      const datap = { appuser_id: this.userid, typerequest: 'DSR' };
-      this.http.post(this.url + 'getdaterequested', datap, { headers }).subscribe((data: any) => {
-        this.daterequest = data.data;
-        this.apiCache.set(this.apiCache.datesKey(this.userid), this.daterequest);
-      }, () => { });
-    };
-
-    this.apiCache.get<any>(this.apiCache.datesKey(this.userid)).then((cached) => {
-      if (cached) {
-        applyDates(cached);
-        return;
-      }
-      loadFromApi();
-    });
+    const datap = { appuser_id: this.userid, typerequest: 'DSR' };
+    this.http.post(this.url + 'getdaterequested', datap, { headers }).subscribe((data: any) => {
+      this.daterequest = data.data;
+    }, () => { });
   }
 
   ngOnInit() {
@@ -577,9 +567,21 @@ export class DsruploadPage implements OnInit, ViewWillLeave {
     console.log('adddsrdata payload', datap);
 
     this.http.post(this.url + 'adddsrdata', datap, { headers }).subscribe(async (data: any) => {
+      clearTimeout(this.draftTimer);
+      this.skipDraftSaveOnLeave = true;
+      this.resetFormAfterUpload();
       await this.clearDraft(false);
       this.presentToast(data.message, 4000, 'bottom');
       this.navctrl.navigateRoot('home');
     }, () => { });
+  }
+
+  private resetFormAfterUpload() {
+    this.fieldtype = null;
+    this.dateSelect = null;
+    this.remarks = '';
+    this.towndata = false;
+    this.townlist = false;
+    this.clearFieldVisitData();
   }
 }

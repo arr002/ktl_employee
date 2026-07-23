@@ -1,11 +1,17 @@
-
-import { Component, OnInit, Input } from '@angular/core';
-import { ModalController ,NavParams,ToastController} from '@ionic/angular';
-import { File, IWriteOptions, FileEntry } from '@awesome-cordova-plugins/file/ngx';
+import { Component, OnInit } from '@angular/core';
+import {
+  ModalController,
+  NavParams,
+  ToastController,
+  AlertController,
+  Platform,
+  ActionSheetController
+} from '@ionic/angular';
 import { Camera, CameraOptions } from '@awesome-cordova-plugins/camera/ngx';
 import { AndroidPermissions } from '@awesome-cordova-plugins/android-permissions/ngx';
 import { Geolocation } from '@awesome-cordova-plugins/geolocation/ngx';
-import { Observable } from 'rxjs';
+import { File } from '@awesome-cordova-plugins/file/ngx';
+import { ApiCacheService } from '../api-cache.service';
 
 interface DataItem {
   brands: any;
@@ -21,224 +27,527 @@ interface DataItem {
   styleUrls: ['./drtrpopup.page.scss'],
   standalone: false,
 })
-
 export class DrtrpopupPage implements OnInit {
-  data:DataItem[]=[];
-  qty:any=0;
-  itemvalue:any='';
-  price:any;
-  article:any;
-  brands:any;
-  addarticle:any="";
-  reqarticle:any=false;
-  filedata:any;
-  imgBlob:any='';
-  dealername:any='';
-  GT:any=0;
-  GTKTL:any=0;
-  maindata:any=[
-                        [true,'2/180 M','',70,''],[true,'3/135 M','',70,''],[true,'2/800 M','',110,''], [true,'2/10000 M','',110,''],[true,'2/200 G','',100,''],
-                        [true,'2/170 G','',100,''],[true,'2/300 M','',120,''],[true,'CFC-8"','',4,''],[true,'LFC-8"','',4,''],[true,'CINC','',5,''] ,[true,'Others','','1',''],[true,'2/130M','',85,'']
-                        ];
-  articlesdata:any=[
-                        [true,'2/180 M','',70,''],[true,'3/135 M','',70,''],[true,'2/800 M','',110,''], [true,'2/10000 M','',110,''],[true,'2/200 G','',100,''],
-                        [true,'2/170 G','',100,''],[true,'2/300 M','',120,''],[true,'CFC-8"','',4,''],[true,'LFC-8"','',4,''],[true,'CINC','',5,''] ,[true,'Others','','1',''],[true,'2/130M','',85,'']
-                        ];
-  
-  articlesktl:any=[
-                        [true,'2/180 M','',70,''],[true,'3/135 M','',70,''],[true,'2/800 M','',110,''], [true,'2/10000 M','',110,''],[true,'2/200 G','',100,''],
-                        [true,'2/170 G','',100,''],[true,'2/300 M','',120,''],[true,'CFC-8"','',4,''],[true,'LFC-8"','',4,''],[true,'CINC','',5,''] ,[true,'Others','','1',''],[true,'2/130M','',85,'']
-                        ];
-  mode:any;
-  clientname:any;
+  data: DataItem[] = [];
+  qty: any = 0;
+  itemvalue: any = '';
+  price: any;
+  article: any;
+  brands: any;
+  addarticle: any = '';
+  reqarticle: any = false;
+  filedata: any;
+  imgBlob: any = '';
+  dealername: any = '';
+  GT: any = 0;
+  GTKTL: any = 0;
+  maindata: any = [
+    [true, '2/180 M', '', 70, ''], [true, '3/135 M', '', 70, ''], [true, '2/800 M', '', 110, ''], [true, '2/10000 M', '', 110, ''], [true, '2/200 G', '', 100, ''],
+    [true, '2/170 G', '', 100, ''], [true, '2/300 M', '', 120, ''], [true, 'CFC-8"', '', 4, ''], [true, 'LFC-8"', '', 4, ''], [true, 'CINC', '', 5, ''], [true, 'Others', '', '1', ''], [true, '2/130M', '', 85, '']
+  ];
+  articlesdata: any = [
+    [true, '2/180 M', '', 70, ''], [true, '3/135 M', '', 70, ''], [true, '2/800 M', '', 110, ''], [true, '2/10000 M', '', 110, ''], [true, '2/200 G', '', 100, ''],
+    [true, '2/170 G', '', 100, ''], [true, '2/300 M', '', 120, ''], [true, 'CFC-8"', '', 4, ''], [true, 'LFC-8"', '', 4, ''], [true, 'CINC', '', 5, ''], [true, 'Others', '', '1', ''], [true, '2/130M', '', 85, '']
+  ];
+
+  articlesktl: any = [
+    [true, '2/180 M', '', 70, ''], [true, '3/135 M', '', 70, ''], [true, '2/800 M', '', 110, ''], [true, '2/10000 M', '', 110, ''], [true, '2/200 G', '', 100, ''],
+    [true, '2/170 G', '', 100, ''], [true, '2/300 M', '', 120, ''], [true, 'CFC-8"', '', 4, ''], [true, 'LFC-8"', '', 4, ''], [true, 'CINC', '', 5, ''], [true, 'Others', '', '1', ''], [true, '2/130M', '', 85, '']
+  ];
+  mode: any;
+  clientname: any;
   lat: any = '';
   lang: any = '';
-  
+  userid: any;
+  hasDraft = false;
+  private draftTimer: any;
+  private skipDraftSaveOnClose = false;
+
   optionsGallery: CameraOptions = {
-      quality: 100,
-       targetWidth: 800,
-      destinationType: this.camera.DestinationType.DATA_URL,
-      encodingType: this.camera.EncodingType.JPEG,
-      mediaType: this.camera.MediaType.PICTURE,
-      sourceType: this.camera.PictureSourceType.PHOTOLIBRARY
-    };
-    options: CameraOptions = {
-      quality: 100,
-      allowEdit: false,
-      targetWidth: 800,
-      cameraDirection: 0,
-      saveToPhotoAlbum: false,
-     destinationType: this.camera.DestinationType.DATA_URL,
-      encodingType: this.camera.EncodingType.JPEG,
-      mediaType: this.camera.MediaType.PICTURE,
-      sourceType: this.camera.PictureSourceType.CAMERA
-    };
-    constructor(private modalController: ModalController,
-      public toastCtrl: ToastController,
-  private navParams:NavParams,
-   private file: File,
-      private camera: Camera,
-  
-      private androidPermissions: AndroidPermissions,
-      private geolocation: Geolocation
-  
-  ) { 
-  this.mode=this.navParams.get('mode');
-      if(this.mode=='add'){
-      
-      }
-  
-    }
-  
-    ngOnInit() {
-        this.geolocation.getCurrentPosition().then((resp) => {
-          this.lat = resp.coords.latitude;
-          this.lang = resp.coords.longitude;
-        }).catch((error) => {
-          this.presentToast("Please check your location is enabled.", 4000, "bottom");
-        });
-    }
-  openCal(){
-    this.reqarticle=true;
+    quality: 80,
+    targetWidth: 800,
+    destinationType: this.camera.DestinationType.DATA_URL,
+    encodingType: this.camera.EncodingType.JPEG,
+    mediaType: this.camera.MediaType.PICTURE,
+    sourceType: this.camera.PictureSourceType.PHOTOLIBRARY,
+    correctOrientation: true
+  };
+  options: CameraOptions = {
+    quality: 80,
+    allowEdit: false,
+    targetWidth: 800,
+    cameraDirection: 0,
+    saveToPhotoAlbum: false,
+    destinationType: this.camera.DestinationType.DATA_URL,
+    encodingType: this.camera.EncodingType.JPEG,
+    mediaType: this.camera.MediaType.PICTURE,
+    sourceType: this.camera.PictureSourceType.CAMERA,
+    correctOrientation: true
+  };
+
+  constructor(
+    private modalController: ModalController,
+    public toastCtrl: ToastController,
+    private navParams: NavParams,
+    private file: File,
+    private camera: Camera,
+    private androidPermissions: AndroidPermissions,
+    private geolocation: Geolocation,
+    private apiCache: ApiCacheService,
+    public alertController: AlertController,
+    private platform: Platform,
+    private actionsheetCtrl: ActionSheetController,
+  ) {
+    this.mode = this.navParams.get('mode');
+    this.userid = this.navParams.get('userid');
   }
-  addArticleData(){
-    if(this.addarticle==""){
-       this.presentToast("Please enter article", 4000, "bottom");
+
+  async ngOnInit() {
+    this.geolocation.getCurrentPosition().then((resp) => {
+      this.lat = resp.coords.latitude;
+      this.lang = resp.coords.longitude;
+    }).catch(() => {
+      this.presentToast('Please check your location is enabled.', 4000, 'bottom');
+    });
+
+    await this.restoreDraft();
+  }
+
+  openCal() {
+    this.reqarticle = true;
+  }
+
+  async close() {
+    if (!this.skipDraftSaveOnClose) {
+      await this.saveDraft(false);
+    }
+    this.modalController.dismiss();
+  }
+
+  addArticleData() {
+    if (this.addarticle == '') {
+      this.presentToast('Please enter article', 4000, 'bottom');
       return;
     }
-    else{
-      //*****console.log("'" + this.addarticle + "'");
-      //*****this.articlesdata.push("'" + this.addarticle + "'");
-      //*****this.articlesdata="";
-       //*****this.reqarticle=false;
+    this.articlesdata.push([true, this.addarticle, '', 1, '']);
+    this.addarticle = '';
+    this.reqarticle = false;
+    this.scheduleDraftSave();
+  }
+
+  calculate(index: any) {
+    let tval = 0;
+
+    if (this.articlesdata[index][0] == true && this.articlesdata[index][2] != '') {
+      const qty = parseFloat(this.articlesdata[index][2]) || 0;
+      const rate = parseFloat(this.articlesdata[index][3]) || 0;
+      this.articlesdata[index][4] = qty * rate;
+    } else {
+      this.articlesdata[index][4] = '';
     }
-    
-  }
-  
-  calculate(index:any){
-    let tval=0;
-  
-     if(this.articlesdata[index][0]==true && this.articlesdata[index][2]!=''){
-    this.articlesdata[index][4]=parseInt(this.articlesdata[index][2]) * parseInt(this.articlesdata[index][3]); 
-  }
-    for(var i = 0; i < this.articlesdata.length; i++) {
-  
-      tval+= parseInt(this.articlesdata[i][4]);
+    for (let i = 0; i < this.articlesdata.length; i++) {
+      tval += parseFloat(this.articlesdata[i][4]) || 0;
     }
-    this.GT=tval;
+    this.GT = tval;
+    this.scheduleDraftSave();
   }
-  calculatektl(index:any){
-    let tval=0;
-  
-    if(this.articlesktl[index][0]==true && this.articlesktl[index][2]!=''){
-    this.articlesktl[index][4]=parseInt(this.articlesktl[index][2]) * parseInt(this.articlesktl[index][3]); 
-  }
-     for(var i = 0; i < this.articlesdata.length; i++) {
-      tval+= parseInt(this.articlesdata[i][4]);
+
+  calculatektl(index: any) {
+    let tval = 0;
+
+    if (this.articlesktl[index][0] == true && this.articlesktl[index][2] != '') {
+      const qty = parseFloat(this.articlesktl[index][2]) || 0;
+      const rate = parseFloat(this.articlesktl[index][3]) || 0;
+      this.articlesktl[index][4] = qty * rate;
+    } else {
+      this.articlesktl[index][4] = '';
     }
-    this.GTKTL=tval;
+    for (let i = 0; i < this.articlesktl.length; i++) {
+      tval += parseFloat(this.articlesktl[i][4]) || 0;
+    }
+    this.GTKTL = tval;
+    this.scheduleDraftSave();
   }
-     presentToast(msg: any, durat: any, pos: any) {
-      let toast = this.toastCtrl.create({
-        message: msg,
-        duration: durat,
-        position: pos
-      }).then((toastData) => {
-        console.log(toastData);
-        toastData.present();
+
+  presentToast(msg: any, durat: any, pos: any) {
+    this.toastCtrl.create({
+      message: msg,
+      duration: durat,
+      position: pos
+    }).then((toastData) => {
+      toastData.present();
+    });
+  }
+
+  async addDrtr() {
+    if (this.brands == '' || this.brands == null) {
+      this.presentToast('Please check Brands', 4000, 'bottom');
+      return;
+    }
+
+    for (let i = 0; i < this.articlesdata.length; i++) {
+      if (this.articlesdata[i][0] == true && this.articlesdata[i][2] != '') {
+        const dataval: DataItem = {
+          brands: this.brands,
+          article: this.articlesdata[i][1],
+          qty: this.articlesdata[i][2],
+          itemvalue: this.articlesdata[i][3],
+          price: this.articlesdata[i][4]
+        };
+        this.data.push(dataval);
+      }
+    }
+
+    this.articlesdata = this.maindata.map((row: any) => [...row]);
+    this.brands = '';
+    this.GT = 0;
+    this.imgBlob = '';
+    await this.saveDraft(false);
+  }
+
+  async postData() {
+    if (this.imgBlob == '') {
+      this.presentToast('Please take a photo of the shop', 4000, 'bottom');
+      return;
+    }
+
+    for (let i = 0; i < this.articlesktl.length; i++) {
+      if (this.articlesktl[i][0] == true && this.articlesktl[i][2] != '') {
+        const dataval: DataItem = {
+          brands: 'KTL',
+          article: this.articlesktl[i][1],
+          qty: this.articlesktl[i][2],
+          itemvalue: this.articlesktl[i][3],
+          price: this.articlesktl[i][4]
+        };
+        this.data.push(dataval);
+      }
+    }
+
+    const lastdata = {
+      file: this.imgBlob,
+      data: this.data,
+      comment: this.itemvalue,
+      consumption: this.qty,
+      dealer: this.dealername,
+      lat: this.lat,
+      lang: this.lang
+    };
+
+    clearTimeout(this.draftTimer);
+    this.skipDraftSaveOnClose = true;
+    await this.clearDraft(false);
+    await this.modalController.dismiss(lastdata);
+  }
+
+  delItem(i: any) {
+    this.data.splice(i, 1);
+    this.scheduleDraftSave();
+  }
+
+  async openPicChooser() {
+    const actionSheet = await this.actionsheetCtrl.create({
+      header: 'Shop Photo',
+      buttons: [
+        {
+          text: 'Take photo',
+          icon: 'camera-outline',
+          handler: () => {
+            this.takePicture();
+          }
+        },
+        {
+          text: 'Choose photo from Gallery',
+          icon: 'images-outline',
+          handler: () => {
+            this.takePictureFile();
+          }
+        },
+        {
+          text: 'Cancel',
+          role: 'cancel'
+        }
+      ]
+    });
+    await actionSheet.present();
+  }
+
+  takePictureFile() {
+    // Camera plugin only works inside the native app; use a file input in the browser
+    if (!this.platform.is('cordova')) {
+      this.pickImageInBrowser(false);
+      return;
+    }
+
+    this.camera.getPicture(this.optionsGallery).then((imageData: any) => {
+      this.setShopPhoto('data:image/jpeg;base64,' + imageData);
+    }, (err: any) => {
+      const errText = String(err || '');
+      if (errText && errText.toLowerCase().indexOf('cancel') === -1 && errText.indexOf('No Image Selected') === -1) {
+        this.presentToast('Could not open gallery: ' + errText, 4000, 'bottom');
+      }
+    });
+  }
+
+  // Gallery: file picker. Camera: live webcam overlay (works on laptop + phone browsers).
+  pickImageInBrowser(useCamera: boolean) {
+    if (useCamera) {
+      this.openBrowserCamera();
+      return;
+    }
+
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = () => {
+      if (input.files && input.files.length > 0) {
+        this.readBrowserFile(input.files[0]);
+      }
+    };
+    input.click();
+  }
+
+  async openBrowserCamera() {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      this.presentToast('Camera is not supported in this browser.', 4000, 'bottom');
+      return;
+    }
+
+    let stream: MediaStream;
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: { ideal: 'environment' } },
+        audio: false
       });
-      //await this.toastCtrl.create({ message:msg, duration:durat, position:pos }).present();
-    }
-  addDrtr(){
-  
-  
-    if (this.brands=="" || this.brands==null){
-       this.presentToast("Please check Brands", 4000, "bottom");
+    } catch (err) {
+      this.presentToast('Please allow camera access in the browser, then try again.', 5000, 'bottom');
       return;
     }
-    // if (this.article=="" || this.article==null){
-    //    this.presentToast("Please check article", 4000, "bottom");
-    //   return;
-    // }
-    // if (this.qty.toString()=="" || this.qty==null){
-    //    this.presentToast("Please check qty", 4000, "bottom");
-    //   return;
-    // }
-    
-  
-    //  if (this.price.toString=="" || this.price==null){
-    //    this.presentToast("Please Check Secondary Sales", 4000, "bottom");
-    //   return;
-    // }
-    for(var i = 0; i < this.articlesdata.length; i++) {
-      
-      if(this.articlesdata[i][0]==true && this.articlesdata[i][2]!=''){
-        
-       let dataval : DataItem = {brands:this.brands,article:this.articlesdata[i][1],qty:this.articlesdata[i][2],itemvalue:this.articlesdata[i][3],price:this.articlesdata[i][4]}
-       
-       this.data.push(dataval);
-     }
+
+    const overlay = document.createElement('div');
+    overlay.id = 'ktl-drmt-camera-overlay';
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:99999;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;';
+
+    const video = document.createElement('video');
+    video.autoplay = true;
+    video.playsInline = true;
+    video.muted = true;
+    video.srcObject = stream;
+    video.style.cssText = 'max-width:100%;max-height:70vh;width:100%;object-fit:cover;';
+
+    const btnRow = document.createElement('div');
+    btnRow.style.cssText = 'display:flex;gap:16px;margin-top:20px;';
+
+    const captureBtn = document.createElement('button');
+    captureBtn.textContent = 'Capture';
+    captureBtn.style.cssText = 'padding:12px 28px;border:0;border-radius:24px;background:#0f6e8c;color:#fff;font-size:16px;cursor:pointer;';
+
+    const cancelBtn = document.createElement('button');
+    cancelBtn.textContent = 'Cancel';
+    cancelBtn.style.cssText = 'padding:12px 28px;border:0;border-radius:24px;background:#666;color:#fff;font-size:16px;cursor:pointer;';
+
+    const stopCamera = () => {
+      stream.getTracks().forEach(t => t.stop());
+      if (overlay.parentNode) {
+        overlay.parentNode.removeChild(overlay);
       }
-   
-   this.articlesdata=null;
-  this.articlesdata=this.maindata;
-      this.brands='';
-     this.GT='';
-      this.imgBlob='';
-    }
-  
-  
-  
-    async postData(){
-  
-      if (this.imgBlob == '') {
-        this.presentToast("Please take a photo of the shop", 4000, "bottom");
+    };
+
+    cancelBtn.onclick = () => stopCamera();
+
+    captureBtn.onclick = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = video.videoWidth || 640;
+      canvas.height = video.videoHeight || 480;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        stopCamera();
+        this.presentToast('Could not capture photo. Please try again.', 4000, 'bottom');
         return;
       }
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      stopCamera();
+      this.setShopPhoto(canvas.toDataURL('image/jpeg', 0.9));
+    };
 
-  
-      for(var i = 0; i < this.articlesktl.length; i++) {
-      
-      if(this.articlesktl[i][0]==true && this.articlesktl[i][2]!=''){
-        
-       let dataval : DataItem = {brands:'KTL',article:this.articlesktl[i][1],qty:this.articlesktl[i][2],itemvalue:this.articlesktl[i][3],price:this.articlesktl[i][4]}
-       this.data.push(dataval);
-     }
+    btnRow.appendChild(cancelBtn);
+    btnRow.appendChild(captureBtn);
+    overlay.appendChild(video);
+    overlay.appendChild(btnRow);
+    document.body.appendChild(overlay);
+  }
+
+  readBrowserFile(file: any) {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      this.setShopPhoto(String(reader.result || ''));
+    };
+    reader.readAsDataURL(file);
+  }
+
+  setShopPhoto(base64Image: string) {
+    if (!base64Image) {
+      this.presentToast('Could not capture photo. Please try again.', 3000, 'bottom');
+      return;
+    }
+    this.imgBlob = base64Image;
+    this.scheduleDraftSave();
+    this.presentToast('Shop photo added', 2000, 'bottom');
+  }
+
+  takePicture() {
+    // Camera plugin only works inside the native app; use browser camera in web
+    if (!this.platform.is('cordova')) {
+      this.pickImageInBrowser(true);
+      return;
+    }
+
+    this.camera.getPicture(this.options).then((imageData: any) => {
+      this.setShopPhoto('data:image/jpeg;base64,' + imageData);
+    }, (err: any) => {
+      const errText = String(err || '');
+      if (errText && errText.toLowerCase().indexOf('cancel') === -1 && errText.indexOf('No Image Selected') === -1) {
+        this.presentToast('Could not open camera: ' + errText, 4000, 'bottom');
       }
-  
-      let lastdata={file:this.imgBlob,data:this.data,'comment':this.itemvalue,'consumption':this.qty,'dealer':this.dealername, 'lat': this.lat, 'lang': this.lang}
-  
-      // let data={zip:this.zip,thread:this.thread,collection:this.paymentcollected,issue:this.currentissue,remarks:this.remarks,clientname:this.clientname,id:this.id}
-      await this.modalController.dismiss(lastdata);
-    }
-  
-     delItem(i:any){
-      
-      this.data.splice(i, 1);
-    }
-  
-   takePicture() {
-     
-      this.camera.getPicture(this.options).then((imageData:any) => {
-        let base64Image = 'data:image/jpeg;base64,' + imageData;
-        this.imgBlob=base64Image;
-        //alert(base64Image);
-      });
-    }
-  //    readFile(files: any) {
-  //     const reader = new FileReader();
-  // alert(files);
-  //     reader.onloadend = () => {
-  //       const imgBlobs = new Blob([reader.result], {
-  //         type: files.type
-  //       });
-  //       alert(imgBlobs);
-  //       alert(files);
-  //       this.imgBlob=imgBlobs;
-  //       this.filedata=files;
-  //       reader.readAsArrayBuffer(files);
-  //   }
-  // }
-  
+    });
+  }
 
+  onFieldChange() {
+    this.scheduleDraftSave();
+  }
+
+  // ----- Draft -----
+
+  private draftStorageKey() {
+    return this.apiCache.draftDrmtPopupKey(this.userid);
+  }
+
+  hasDraftContent(): boolean {
+    const hasArticleQty = (this.articlesdata || []).some((row: any) => row[2] !== '' && row[2] != null);
+    const hasKtlQty = (this.articlesktl || []).some((row: any) => row[2] !== '' && row[2] != null);
+    return !!(
+      this.brands ||
+      (this.data && this.data.length) ||
+      hasArticleQty ||
+      hasKtlQty ||
+      this.itemvalue ||
+      this.dealername ||
+      this.imgBlob ||
+      (this.qty && this.qty !== 0 && this.qty !== '0')
+    );
+  }
+
+  scheduleDraftSave() {
+    clearTimeout(this.draftTimer);
+    this.draftTimer = setTimeout(() => this.saveDraft(false), 400);
+  }
+
+  async saveDraft(showToast = false) {
+    if (!this.userid) {
+      return;
+    }
+
+    if (!this.hasDraftContent()) {
+      await this.clearDraft(false);
+      return;
+    }
+
+    const draft = {
+      brands: this.brands,
+      articlesdata: this.articlesdata,
+      articlesktl: this.articlesktl,
+      data: this.data || [],
+      qty: this.qty,
+      itemvalue: this.itemvalue || '',
+      dealername: this.dealername || '',
+      imgBlob: this.imgBlob || '',
+      GT: this.GT || 0,
+      GTKTL: this.GTKTL || 0,
+      reqarticle: this.reqarticle,
+      addarticle: this.addarticle || '',
+      savedAt: new Date().toISOString()
+    };
+
+    await this.apiCache.set(this.draftStorageKey(), draft);
+    this.hasDraft = true;
+
+    if (showToast) {
+      this.presentToast('Draft saved. You can continue later.', 2500, 'bottom');
+    }
+  }
+
+  async restoreDraft() {
+    if (!this.userid) {
+      return;
+    }
+
+    const draft = await this.apiCache.get<any>(this.draftStorageKey());
+    if (!draft) {
+      return;
+    }
+
+    this.brands = draft.brands;
+    this.articlesdata = Array.isArray(draft.articlesdata)
+      ? draft.articlesdata.map((row: any) => [...row])
+      : this.articlesdata;
+    this.articlesktl = Array.isArray(draft.articlesktl)
+      ? draft.articlesktl.map((row: any) => [...row])
+      : this.articlesktl;
+    this.data = Array.isArray(draft.data) ? draft.data : [];
+    this.qty = draft.qty ?? 0;
+    this.itemvalue = draft.itemvalue || '';
+    this.dealername = draft.dealername || '';
+    this.imgBlob = draft.imgBlob || '';
+    this.GT = draft.GT || 0;
+    this.GTKTL = draft.GTKTL || 0;
+    this.reqarticle = !!draft.reqarticle;
+    this.addarticle = draft.addarticle || '';
+    this.hasDraft = true;
+
+    this.presentToast('Draft restored', 2500, 'bottom');
+  }
+
+  async clearDraft(showToast = false) {
+    if (!this.userid) {
+      return;
+    }
+    await this.apiCache.remove(this.draftStorageKey());
+    this.hasDraft = false;
+    if (showToast) {
+      this.presentToast('Draft cleared', 2000, 'bottom');
+    }
+  }
+
+  private resetForm() {
+    this.brands = '';
+    this.articlesdata = this.maindata.map((row: any) => [...row]);
+    this.articlesktl = this.maindata.map((row: any) => [...row]);
+    this.data = [];
+    this.qty = 0;
+    this.itemvalue = '';
+    this.dealername = '';
+    this.imgBlob = '';
+    this.GT = 0;
+    this.GTKTL = 0;
+    this.reqarticle = false;
+    this.addarticle = '';
+  }
+
+  async clearDraftConfirm() {
+    const alert = await this.alertController.create({
+      header: 'Clear Draft',
+      message: 'Remove saved draft and reset this form?',
+      buttons: [
+        { text: 'NO', role: 'cancel' },
+        {
+          text: 'YES',
+          handler: () => {
+            this.resetForm();
+            this.clearDraft(true);
+          }
+        }
+      ]
+    });
+    await alert.present();
+  }
 }

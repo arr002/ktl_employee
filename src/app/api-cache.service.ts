@@ -47,14 +47,14 @@ export class ApiCacheService {
     try {
       const allKeys = await this.storage.keys();
       for (const key of allKeys) {
-        if (key.startsWith('cache_') || key.startsWith('draft_dsr_')) {
+        if (key.startsWith('cache_') || key.startsWith('draft_dsr_') || key.startsWith('draft_drmt_')) {
           await this.remove(key);
         }
       }
     } catch (e) {
       // fallback for older storage without keys()
       for (const key of Array.from(this.memory.keys())) {
-        if (key.startsWith('cache_') || key.startsWith('draft_dsr_')) {
+        if (key.startsWith('cache_') || key.startsWith('draft_dsr_') || key.startsWith('draft_drmt_')) {
           await this.remove(key);
         }
       }
@@ -83,5 +83,13 @@ export class ApiCacheService {
 
   draftKey(userId: any) {
     return `draft_dsr_${userId}`;
+  }
+
+  draftDrmtKey(userId: any) {
+    return `draft_drmt_${userId}`;
+  }
+
+  draftDrmtPopupKey(userId: any) {
+    return `draft_drmt_popup_${userId}`;
   }
 }

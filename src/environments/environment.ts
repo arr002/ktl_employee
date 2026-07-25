@@ -4,7 +4,7 @@
 
 export const environment = {
   production: false,
-  SERVER_URL : "https://manage.ktl.in/api/",
+  SERVER_URL : "https://test.ktl.in/api/",
   SERVERForQR_URL : "http://test.ktl.in/api/"
 };
 

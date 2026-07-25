@@ -432,9 +432,9 @@ export class DsruploadPage implements OnInit, ViewWillLeave {
       savedAt: new Date().toISOString()
     };
 
-    await this.apiCache.set(this.draftStorageKey(), draft);
+    const savedAt = await this.apiCache.saveDraftRemote(this.userid, 'dsr', draft);
     this.hasDraft = true;
-    this.draftSavedAt = draft.savedAt;
+    this.draftSavedAt = savedAt || draft.savedAt;
 
     if (showToast) {
       this.presentToast('Draft saved. You can submit later.', 2500, 'bottom');
@@ -446,7 +446,7 @@ export class DsruploadPage implements OnInit, ViewWillLeave {
       return;
     }
 
-    const draft = await this.apiCache.get<any>(this.draftStorageKey());
+    const draft = await this.apiCache.getDraftRemote(this.userid, 'dsr');
     if (!draft) {
       return;
     }
@@ -485,7 +485,7 @@ export class DsruploadPage implements OnInit, ViewWillLeave {
     if (!this.userid) {
       return;
     }
-    await this.apiCache.remove(this.draftStorageKey());
+    await this.apiCache.clearDraftRemote(this.userid, 'dsr');
     this.hasDraft = false;
     this.draftSavedAt = null;
     if (showToast) {

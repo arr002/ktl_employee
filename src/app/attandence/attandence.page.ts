@@ -144,13 +144,18 @@ export class AttandencePage implements OnInit {
       return;
     }
 
+    // Persist route so a WebView kill during gallery/camera returns here, not /home
+    localStorage.setItem('ktl_return_route', this.router.url || '/attandence');
+
     this.camera.getPicture(this.optionsGallery).then((imageData) => {
+      localStorage.removeItem('ktl_return_route');
       let base64Image = 'data:image/jpeg;base64,' + imageData;
       // alert(base64Image);
       
       this.readFileGallery(base64Image);
 
     }, (err) => {
+      localStorage.removeItem('ktl_return_route');
       if (err && String(err).toLowerCase().indexOf('cancel') === -1 && String(err).indexOf('No Image Selected') === -1) {
         this.presentToast('Could not open gallery: ' + err, 4000, 'bottom');
       }
@@ -438,12 +443,17 @@ export class AttandencePage implements OnInit {
 
     // Explicitly set to front camera before opening
     this.options.cameraDirection = this.camera.Direction.FRONT;
+
+    // Persist route so a WebView kill during camera returns here, not /home
+    localStorage.setItem('ktl_return_route', this.router.url || '/attandence');
     
     this.camera.getPicture(this.options).then((imageData) => {
+      localStorage.removeItem('ktl_return_route');
       // Same base64 upload path as the gallery flow
       const base64Image = 'data:image/jpeg;base64,' + imageData;
       this.readFileGallery(base64Image);
     }, (err) => {
+      localStorage.removeItem('ktl_return_route');
       const errText = String(err || '');
       if (errText && errText.toLowerCase().indexOf('cancel') === -1 && errText.indexOf('No Image Selected') === -1) {
         this.showCameraError(errText);

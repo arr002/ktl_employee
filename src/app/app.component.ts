@@ -1,12 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { Platform } from '@ionic/angular';
 import { AndroidPermissions } from '@awesome-cordova-plugins/android-permissions/ngx';
-//import { SplashScreen } from '@awesome-cordova-plugins/splash-screen/ngx';
-//import { StatusBar } from '@awesome-cordova-plugins/status-bar/ngx';
 import { SplashScreen } from '@awesome-cordova-plugins/splash-screen/ngx';
 import { StatusBar } from '@awesome-cordova-plugins/status-bar/ngx';
 import { Router } from '@angular/router';
 import { Storage } from '@ionic/storage';
+
+const SESSION_KEYS = ['id', 'username', 'empid', 'otp', 'mobile'] as const;
 
 @Component({
   selector: 'app-root',
@@ -25,6 +25,14 @@ export class AppComponent implements OnInit {
         this.splashScreen.hide();
         this.androidPermission();
       }
+
+      // Camera opens an external activity; Android often kills the WebView while paused.
+      this.platform.pause.subscribe(() => {
+        const url = this.router.url;
+        if (url && url !== '/' && url !== '/login') {
+          localStorage.setItem('ktl_return_route', url);
+        }
+      });
     });
   }
 
@@ -35,17 +43,52 @@ export class AppComponent implements OnInit {
   async initializeApp() {
       await this.str.create();
       this.str.set('version', 5);
-      this.str.get('id').then((value) => {
-        console.log("==value==",value);
-        const currentPath = window.location.pathname;
+
+      // Camera / draft OOM can leave Ionic Storage unreadable briefly or corrupted.
+      // localStorage backup is the reliable fallback for session restore.
+      let value = await this.str.get('id');
+      if (!value) {
+        value = localStorage.getItem('ktl_id');
         if (value) {
-          if (currentPath === '/' || currentPath === '/login') {
+          await this.restoreSessionFromLocal();
+        }
+      } else {
+        this.mirrorSessionToLocal();
+      }
+
+      const currentPath = window.location.pathname;
+      if (value) {
+        if (currentPath === '/' || currentPath === '/login') {
+          const returnRoute = localStorage.getItem('ktl_return_route');
+          if (returnRoute && returnRoute !== '/' && returnRoute !== '/login') {
+            localStorage.removeItem('ktl_return_route');
+            this.router.navigateByUrl(returnRoute);
+          } else {
             this.router.navigate(['/home']);
           }
-        } else {
-          this.router.navigate(['/login']);
         }
-      });
+      } else {
+        localStorage.removeItem('ktl_return_route');
+        this.router.navigate(['/login']);
+      }
+  }
+
+  private async mirrorSessionToLocal() {
+    for (const key of SESSION_KEYS) {
+      const v = await this.str.get(key);
+      if (v != null && v !== '') {
+        localStorage.setItem('ktl_' + key, String(v));
+      }
+    }
+  }
+
+  private async restoreSessionFromLocal() {
+    for (const key of SESSION_KEYS) {
+      const v = localStorage.getItem('ktl_' + key);
+      if (v != null && v !== '') {
+        await this.str.set(key, v);
+      }
+    }
   }
 
   androidPermission() {

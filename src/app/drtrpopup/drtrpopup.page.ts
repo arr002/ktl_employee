@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, NgZone } from '@angular/core';
 import {
   ModalController,
   NavParams,
@@ -7,6 +7,7 @@ import {
   Platform,
   ActionSheetController
 } from '@ionic/angular';
+import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { Camera, CameraOptions } from '@awesome-cordova-plugins/camera/ngx';
 import { AndroidPermissions } from '@awesome-cordova-plugins/android-permissions/ngx';
 import { Geolocation } from '@awesome-cordova-plugins/geolocation/ngx';
@@ -38,6 +39,7 @@ export class DrtrpopupPage implements OnInit {
   reqarticle: any = false;
   filedata: any;
   imgBlob: any = '';
+  photoPreview: SafeUrl | null = null;
   dealername: any = '';
   GT: any = 0;
   GTKTL: any = 0;
@@ -64,8 +66,8 @@ export class DrtrpopupPage implements OnInit {
   private skipDraftSaveOnClose = false;
 
   optionsGallery: CameraOptions = {
-    quality: 80,
-    targetWidth: 800,
+    quality: 60,
+    targetWidth: 640,
     destinationType: this.camera.DestinationType.DATA_URL,
     encodingType: this.camera.EncodingType.JPEG,
     mediaType: this.camera.MediaType.PICTURE,
@@ -73,11 +75,12 @@ export class DrtrpopupPage implements OnInit {
     correctOrientation: true
   };
   options: CameraOptions = {
-    quality: 80,
+    quality: 60,
     allowEdit: false,
-    targetWidth: 800,
+    targetWidth: 640,
     cameraDirection: 0,
     saveToPhotoAlbum: false,
+    // DATA_URL keeps Samsung scoped-storage working; keep size small to avoid WebView OOM
     destinationType: this.camera.DestinationType.DATA_URL,
     encodingType: this.camera.EncodingType.JPEG,
     mediaType: this.camera.MediaType.PICTURE,
@@ -97,6 +100,8 @@ export class DrtrpopupPage implements OnInit {
     public alertController: AlertController,
     private platform: Platform,
     private actionsheetCtrl: ActionSheetController,
+    private sanitizer: DomSanitizer,
+    private zone: NgZone,
   ) {
     this.mode = this.navParams.get('mode');
     this.userid = this.navParams.get('userid');
@@ -201,7 +206,6 @@ export class DrtrpopupPage implements OnInit {
     this.articlesdata = this.maindata.map((row: any) => [...row]);
     this.brands = '';
     this.GT = 0;
-    this.imgBlob = '';
     await this.saveDraft(false);
   }
 
@@ -279,9 +283,12 @@ export class DrtrpopupPage implements OnInit {
       return;
     }
 
+    localStorage.setItem('ktl_return_route', '/drtrupload');
     this.camera.getPicture(this.optionsGallery).then((imageData: any) => {
-      this.setShopPhoto('data:image/jpeg;base64,' + imageData);
+      localStorage.removeItem('ktl_return_route');
+      this.setShopPhoto(imageData);
     }, (err: any) => {
+      localStorage.removeItem('ktl_return_route');
       const errText = String(err || '');
       if (errText && errText.toLowerCase().indexOf('cancel') === -1 && errText.indexOf('No Image Selected') === -1) {
         this.presentToast('Could not open gallery: ' + errText, 4000, 'bottom');
@@ -390,9 +397,32 @@ export class DrtrpopupPage implements OnInit {
       this.presentToast('Could not capture photo. Please try again.', 3000, 'bottom');
       return;
     }
-    this.imgBlob = base64Image;
-    this.scheduleDraftSave();
-    this.presentToast('Shop photo added', 2000, 'bottom');
+
+    // Normalize: Cordova may return raw base64 or a full data URL
+    let photo = String(base64Image).trim();
+    if (photo && !photo.startsWith('data:') && !photo.startsWith('http') && !photo.startsWith('file:') && !photo.startsWith('content:')) {
+      photo = 'data:image/jpeg;base64,' + photo;
+    }
+
+    this.zone.run(() => {
+      this.imgBlob = photo;
+      this.photoPreview = this.sanitizer.bypassSecurityTrustUrl(photo);
+      this.scheduleDraftSave();
+      this.presentToast('Shop photo added', 2000, 'bottom');
+    });
+  }
+
+  private applyPhotoPreview(photo: string) {
+    if (!photo) {
+      this.photoPreview = null;
+      return;
+    }
+    let normalized = String(photo).trim();
+    if (normalized && !normalized.startsWith('data:') && !normalized.startsWith('http') && !normalized.startsWith('file:') && !normalized.startsWith('content:')) {
+      normalized = 'data:image/jpeg;base64,' + normalized;
+      this.imgBlob = normalized;
+    }
+    this.photoPreview = this.sanitizer.bypassSecurityTrustUrl(normalized);
   }
 
   takePicture() {
@@ -402,9 +432,13 @@ export class DrtrpopupPage implements OnInit {
       return;
     }
 
+    // If Android kills WebView during camera, cold-start should reopen DRMT upload
+    localStorage.setItem('ktl_return_route', '/drtrupload');
     this.camera.getPicture(this.options).then((imageData: any) => {
-      this.setShopPhoto('data:image/jpeg;base64,' + imageData);
+      localStorage.removeItem('ktl_return_route');
+      this.setShopPhoto(imageData);
     }, (err: any) => {
+      localStorage.removeItem('ktl_return_route');
       const errText = String(err || '');
       if (errText && errText.toLowerCase().indexOf('cancel') === -1 && errText.indexOf('No Image Selected') === -1) {
         this.presentToast('Could not open camera: ' + errText, 4000, 'bottom');
@@ -452,6 +486,7 @@ export class DrtrpopupPage implements OnInit {
       return;
     }
 
+    // Never persist full shop photo base64 in drafts — it OOMs WebView / wipes session after camera
     const draft = {
       brands: this.brands,
       articlesdata: this.articlesdata,
@@ -460,7 +495,7 @@ export class DrtrpopupPage implements OnInit {
       qty: this.qty,
       itemvalue: this.itemvalue || '',
       dealername: this.dealername || '',
-      imgBlob: this.imgBlob || '',
+      hasPhoto: !!this.imgBlob,
       GT: this.GT || 0,
       GTKTL: this.GTKTL || 0,
       reqarticle: this.reqarticle,
@@ -468,7 +503,7 @@ export class DrtrpopupPage implements OnInit {
       savedAt: new Date().toISOString()
     };
 
-    await this.apiCache.set(this.draftStorageKey(), draft);
+    await this.apiCache.saveDraftRemote(this.userid, 'drmt_popup', draft);
     this.hasDraft = true;
 
     if (showToast) {
@@ -481,7 +516,7 @@ export class DrtrpopupPage implements OnInit {
       return;
     }
 
-    const draft = await this.apiCache.get<any>(this.draftStorageKey());
+    const draft = await this.apiCache.getDraftRemote(this.userid, 'drmt_popup');
     if (!draft) {
       return;
     }
@@ -497,7 +532,9 @@ export class DrtrpopupPage implements OnInit {
     this.qty = draft.qty ?? 0;
     this.itemvalue = draft.itemvalue || '';
     this.dealername = draft.dealername || '';
-    this.imgBlob = draft.imgBlob || '';
+    // Photos are kept in memory only (not in draft) to avoid storage crash after camera
+    this.imgBlob = '';
+    this.photoPreview = null;
     this.GT = draft.GT || 0;
     this.GTKTL = draft.GTKTL || 0;
     this.reqarticle = !!draft.reqarticle;
@@ -511,7 +548,7 @@ export class DrtrpopupPage implements OnInit {
     if (!this.userid) {
       return;
     }
-    await this.apiCache.remove(this.draftStorageKey());
+    await this.apiCache.clearDraftRemote(this.userid, 'drmt_popup');
     this.hasDraft = false;
     if (showToast) {
       this.presentToast('Draft cleared', 2000, 'bottom');
@@ -527,6 +564,7 @@ export class DrtrpopupPage implements OnInit {
     this.itemvalue = '';
     this.dealername = '';
     this.imgBlob = '';
+    this.photoPreview = null;
     this.GT = 0;
     this.GTKTL = 0;
     this.reqarticle = false;

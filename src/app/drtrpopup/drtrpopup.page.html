@@ -223,8 +223,8 @@
         <span>{{ imgBlob ? 'Photo captured' : 'Required before submit' }}</span>
       </div>
       <button type="button" class="photo-btn" (click)="openPicChooser()" aria-label="Take photo">
-        <img *ngIf="!imgBlob" src="assets/uploadattandence.png" alt="">
-        <img *ngIf="imgBlob" [src]="imgBlob" alt="Shop photo" class="photo-preview">
+        <img *ngIf="!photoPreview" src="assets/uploadattandence.png" alt="">
+        <img *ngIf="photoPreview" [src]="photoPreview" alt="Shop photo" class="photo-preview">
       </button>
     </div>
     <div class="footer-actions">

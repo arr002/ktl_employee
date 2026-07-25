@@ -352,6 +352,12 @@ export class DrtruploadPage implements OnInit, ViewWillLeave {
       return;
     }
 
+    // Strip shop photo base64 from draft customers — large writes crash WebView after camera
+    const customerDraft = (this.customer || []).map((c: any) => ({
+      ...c,
+      file: c?.file ? '__photo_omitted__' : ''
+    }));
+
     const draft = {
       dateSelect: this.dateSelect,
       visitType: this.visitType,
@@ -360,13 +366,14 @@ export class DrtruploadPage implements OnInit, ViewWillLeave {
       phone: this.phone || '',
       name: this.name || '',
       comment: this.comment || '',
-      customer: this.customer || [],
+      customer: customerDraft,
       savedAt: new Date().toISOString()
     };
 
-    await this.apiCache.set(this.draftStorageKey(), draft);
+    // Server draft (with local fallback) so camera/WebView kills don't lose form data
+    const savedAt = await this.apiCache.saveDraftRemote(this.userid, 'drmt', draft);
     this.hasDraft = true;
-    this.draftSavedAt = draft.savedAt;
+    this.draftSavedAt = savedAt || draft.savedAt;
 
     if (showToast) {
       this.presentToast('Draft saved. You can submit later.', 2500, 'bottom');
@@ -378,7 +385,7 @@ export class DrtruploadPage implements OnInit, ViewWillLeave {
       return;
     }
 
-    const draft = await this.apiCache.get<any>(this.draftStorageKey());
+    const draft = await this.apiCache.getDraftRemote(this.userid, 'drmt');
     if (!draft) {
       return;
     }
@@ -390,7 +397,13 @@ export class DrtruploadPage implements OnInit, ViewWillLeave {
     this.phone = draft.phone || '';
     this.name = draft.name || '';
     this.comment = draft.comment || '';
-    this.customer = Array.isArray(draft.customer) ? draft.customer : [];
+    this.customer = Array.isArray(draft.customer)
+      ? draft.customer.map((c: any) => ({
+          ...c,
+          // Draft never keeps real photo bytes; force retake if needed on submit
+          file: c?.file && c.file !== '__photo_omitted__' ? c.file : ''
+        }))
+      : [];
     this.draftSavedAt = draft.savedAt || null;
     this.hasDraft = true;
 
@@ -410,7 +423,7 @@ export class DrtruploadPage implements OnInit, ViewWillLeave {
     if (!this.userid) {
       return;
     }
-    await this.apiCache.remove(this.draftStorageKey());
+    await this.apiCache.clearDraftRemote(this.userid, 'drmt');
     this.hasDraft = false;
     this.draftSavedAt = null;
     if (showToast) {

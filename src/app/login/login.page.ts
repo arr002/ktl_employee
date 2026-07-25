@@ -131,11 +131,7 @@ export class LoginPage implements OnInit {
 
           if (data.status) {
             this.loggedin = true;
-            this.str.set('id', data.data.uid);
-            this.str.set('username', data.data.name);
-            this.str.set('empid', data.data.name);
-            this.str.set('otp', this.otp);
-            this.str.set('mobile', this.phone);
+            this.persistSession(data.data.uid, data.data.name, this.otp, this.phone);
             this.router.navigate(['/home']);
           } else {
             this.presentToast(data.message, 4000, 'middle');
@@ -148,23 +144,29 @@ export class LoginPage implements OnInit {
     }
   }
 
+  /** Keep session in Ionic Storage + localStorage so camera WebView kills don't force re-login. */
+  persistSession(id: any, username: any, otp: any, mobile: any) {
+    this.str.set('id', id);
+    this.str.set('username', username);
+    this.str.set('empid', username);
+    this.str.set('otp', otp);
+    this.str.set('mobile', mobile);
+    localStorage.setItem('ktl_id', String(id));
+    localStorage.setItem('ktl_username', String(username || ''));
+    localStorage.setItem('ktl_empid', String(username || ''));
+    localStorage.setItem('ktl_otp', String(otp || ''));
+    localStorage.setItem('ktl_mobile', String(mobile || ''));
+  }
+
   login() {
     if (this.phone === '9910035373') {
       this.loggedin = true;
-      this.str.set('id', '2112');
-      this.str.set('username', 'Kewal Wason');
-      this.str.set('empid', 'MI001Testing');
-      this.str.set('otp', '1234');
-      this.str.set('mobile', '9910035373');
+      this.persistSession('2112', 'Kewal Wason', '1234', '9910035373');
       this.router.navigate(['/home']);
       return;
     } else if (this.phone === '8076863026') {
       this.loggedin = true;
-      this.str.set('id', '2173');
-      this.str.set('username', 'Akshay Taneja');
-      this.str.set('empid', 'MI001Testing');
-      this.str.set('otp', '4780');
-      this.str.set('mobile', '8076863026');
+      this.persistSession('2173', 'Akshay Taneja', '4780', '8076863026');
       this.router.navigate(['/home']);
       return;
     }

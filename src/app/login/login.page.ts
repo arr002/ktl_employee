@@ -242,14 +242,40 @@ export class LoginPage implements OnInit {
     });
   }
 
-  ngOnInit() {
-    this.str.get('id').then((value) => {
-      if (value) {
+  async ngOnInit() {
+    if (this.loggedin == true) {
+      this.router.navigateByUrl('/home', { skipLocationChange: true });
+      return;
+    }
+
+    await this.str.create();
+    let value = await this.str.get('id');
+    if (!value || value === 'null') {
+      // Camera WebView kills can leave Ionic Storage empty briefly; use backup.
+      value = localStorage.getItem('ktl_id');
+      if (value && value !== 'null') {
+        await this.restoreSessionFromLocal();
+      }
+    }
+
+    if (value && value !== 'null') {
+      const returnRoute = localStorage.getItem('ktl_return_route');
+      if (returnRoute && returnRoute !== '/' && returnRoute !== '/login') {
+        localStorage.removeItem('ktl_return_route');
+        this.router.navigateByUrl(returnRoute);
+      } else {
         this.router.navigateByUrl('/home', { skipLocationChange: true });
       }
-    });
-    if (this.loggedin == true) {
-      this.router.navigateByUrl('home', { skipLocationChange: true });
+    }
+  }
+
+  private async restoreSessionFromLocal() {
+    const keys = ['id', 'username', 'empid', 'otp', 'mobile'];
+    for (const key of keys) {
+      const v = localStorage.getItem('ktl_' + key);
+      if (v != null && v !== '' && v !== 'null') {
+        await this.str.set(key, v);
+      }
     }
   }
 }

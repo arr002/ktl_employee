@@ -47,17 +47,18 @@ export class AttandencePage implements OnInit {
 
 
   optionsGallery: CameraOptions = {
-    quality: 100,
-     targetWidth: 800,
+    // Lower size/quality reduces WebView OOM kills on low-RAM phones during camera.
+    quality: 60,
+    targetWidth: 640,
     destinationType: this.camera.DestinationType.DATA_URL,
     encodingType: this.camera.EncodingType.JPEG,
     mediaType: this.camera.MediaType.PICTURE,
     sourceType: this.camera.PictureSourceType.PHOTOLIBRARY
   };
   options: CameraOptions = {
-    quality: 80,
+    quality: 60,
     allowEdit: false,
-    targetWidth: 800,
+    targetWidth: 640,
     cameraDirection: 1, // Will be overridden in takePicture()
     saveToPhotoAlbum: false,
     correctOrientation: true,
@@ -86,16 +87,91 @@ export class AttandencePage implements OnInit {
     private androidPermissions: AndroidPermissions,
     private geolocation: Geolocation) {
 
-    this.str.get('id').then((value) => {
-      this.userid = value;
-      this.getProfile(value);
+    this.initAttendanceSession();
+  }
+
+  /** Restore session + draft after camera WebView kills on some phones. */
+  private async initAttendanceSession() {
+    this.restoreAttendanceDraft();
+    const id = await this.ensureSessionReady();
+    if (id) {
+      this.userid = id;
+      this.getProfile(id);
       this.getLocation();
+    }
+  }
 
-    });
+  /** Ensure staff id exists in Ionic Storage and localStorage before camera opens. */
+  private async ensureSessionReady(): Promise<any> {
+    await this.str.create();
+    let id = await this.str.get('id');
+    if (!id || id === 'null') {
+      id = localStorage.getItem('ktl_id');
+      if (id && id !== 'null') {
+        await this.str.set('id', id);
+        for (const key of ['username', 'empid', 'otp', 'mobile']) {
+          const v = localStorage.getItem('ktl_' + key);
+          if (v != null && v !== '' && v !== 'null') {
+            await this.str.set(key, v);
+          }
+        }
+      }
+    }
+    if (id && id !== 'null') {
+      this.userid = id;
+      localStorage.setItem('ktl_id', String(id));
+      // Mirror remaining session keys so a process kill during camera keeps login.
+      for (const key of ['username', 'empid', 'otp', 'mobile']) {
+        const v = await this.str.get(key);
+        if (v != null && v !== '' && v !== 'null') {
+          localStorage.setItem('ktl_' + key, String(v));
+        }
+      }
+      return id;
+    }
+    return null;
+  }
 
+  private saveAttendanceDraft() {
+    try {
+      localStorage.setItem('ktl_att_draft', JSON.stringify({
+        subject: this.subject || '',
+        client: this.client || '',
+        comment: this.comment || '',
+        userid: this.userid || localStorage.getItem('ktl_id') || ''
+      }));
+    } catch (e) {}
+  }
 
+  private restoreAttendanceDraft() {
+    try {
+      const raw = localStorage.getItem('ktl_att_draft');
+      if (!raw) {
+        return;
+      }
+      const draft = JSON.parse(raw);
+      if (draft.subject) {
+        this.subject = draft.subject;
+      }
+      if (draft.client) {
+        this.client = draft.client;
+      }
+      if (draft.comment) {
+        this.comment = draft.comment;
+      }
+      if (draft.userid && !this.userid) {
+        this.userid = draft.userid;
+      }
+    } catch (e) {}
+  }
 
+  private clearAttendanceDraft() {
+    localStorage.removeItem('ktl_att_draft');
+  }
 
+  private prepareForCamera() {
+    this.saveAttendanceDraft();
+    localStorage.setItem('ktl_return_route', this.router.url || '/attandence');
   }
 
   optionSelected() {
@@ -132,7 +208,7 @@ export class AttandencePage implements OnInit {
     await actionSheet.present();
   }
 
-  takePictureFile() {
+  async takePictureFile() {
     if (!this.subject) {
       this.presentToast("Please select drop down option.", 4000, "bottom");
       return;
@@ -144,14 +220,19 @@ export class AttandencePage implements OnInit {
       return;
     }
 
-    // Persist route so a WebView kill during gallery/camera returns here, not /home
-    localStorage.setItem('ktl_return_route', this.router.url || '/attandence');
+    const sessionOk = await this.ensureSessionReady();
+    if (!sessionOk) {
+      this.presentToast('Session expired. Please login again.', 4000, 'bottom');
+      this.router.navigate(['/login']);
+      return;
+    }
+
+    // Persist route + draft so a WebView kill during gallery returns here, not /login
+    this.prepareForCamera();
 
     this.camera.getPicture(this.optionsGallery).then((imageData) => {
       localStorage.removeItem('ktl_return_route');
       let base64Image = 'data:image/jpeg;base64,' + imageData;
-      // alert(base64Image);
-      
       this.readFileGallery(base64Image);
 
     }, (err) => {
@@ -262,7 +343,15 @@ export class AttandencePage implements OnInit {
   async readFileGallery(file: any) {
 
     this.presentLoading();
-    
+    const sessionId = await this.ensureSessionReady();
+    this.restoreAttendanceDraft();
+    if (!sessionId && !this.userid) {
+      this.dismiss();
+      this.presentToast('Session expired. Please login again.', 4000, 'bottom');
+      this.router.navigate(['/login']);
+      return;
+    }
+
     try {
       const resp = await this.geolocation.getCurrentPosition({ enableHighAccuracy: true });
       this.lat = resp.coords.latitude;
@@ -271,31 +360,32 @@ export class AttandencePage implements OnInit {
       console.log('Error getting location', error);
     }
 
-    const reader = new FileReader();
-
     let headers = new HttpHeaders();
     headers.append("Accept", 'application/json');
     headers.append('Content-Type', 'application/json');
 
     const formData = new FormData();
-    formData.append('staff_id', this.userid || '');
+    formData.append('staff_id', this.userid || localStorage.getItem('ktl_id') || '');
     formData.append('lat', this.lat || '');
     formData.append('long', this.long || '');
     formData.append('position', this.subject || '');
     formData.append('client', this.client || '');
     formData.append('comment', this.comment || '');
 
-    var fname = Math.floor(Math.random() * 100000);
     formData.append('file', file);
 
     this.http.post(this.url + 'uploads-attendance-base', formData, { headers: headers }).subscribe((data: any) => {
 
       if (data.status)
         console.log(data);
-        // alert(data.status);
-     
+
+      this.clearAttendanceDraft();
+      this.client = "";
+      this.lat = "";
+      this.long = "";
+      this.comment = "";
+      this.subject = "";
       this.dismiss();
-      
       this.presentToast(data.message, 4000, "bottom");
     }, error => {
       this.dismiss();
@@ -371,9 +461,9 @@ export class AttandencePage implements OnInit {
     const reader = new FileReader();
 
     reader.onloadend = async () => {
-      // const imgBlob = new Blob([reader.result], {
-      //   type: file.type
-      // });
+      await this.ensureSessionReady();
+      this.restoreAttendanceDraft();
+
       const imgBlob = new Blob([reader.result as ArrayBuffer], {
         type: file.type
       });
@@ -391,7 +481,7 @@ export class AttandencePage implements OnInit {
       headers.append('Content-Type', 'application/json');
 
       const formData = new FormData();
-      formData.append('staff_id', this.userid || '');
+      formData.append('staff_id', this.userid || localStorage.getItem('ktl_id') || '');
       formData.append('lat', this.lat || '');
       formData.append('long', this.long || '');
       formData.append('position', this.subject || '');
@@ -404,19 +494,18 @@ export class AttandencePage implements OnInit {
 
         if (data.status)
           console.log(data);
+        this.clearAttendanceDraft();
         this.client = "";
         this.lat = "";
         this.long = "";
         this.comment = "";
         this.subject = "";
         this.dismiss();
-        //this.image=data.image;
         this.presentToast(data.message, 4000, "bottom");
       }, error => {
         this.dismiss();
         this.presentToast('Please check your internet Connection.', 3000, 'middle')
         this.presentToast("Error uploading. Please try again.", 4000, "bottom");
-        //this.toast.presentToast("Check internet connection");
       });
     };
     reader.readAsArrayBuffer(file);
@@ -434,6 +523,13 @@ export class AttandencePage implements OnInit {
       return;
     }
 
+    const sessionOk = await this.ensureSessionReady();
+    if (!sessionOk) {
+      this.presentToast('Session expired. Please login again.', 4000, 'bottom');
+      this.router.navigate(['/login']);
+      return;
+    }
+
     // The CAMERA permission is declared in the manifest, so it MUST be granted
     // at runtime before opening the camera, otherwise it silently fails.
     const allowed = await this.ensureCameraPermission();
@@ -444,8 +540,8 @@ export class AttandencePage implements OnInit {
     // Explicitly set to front camera before opening
     this.options.cameraDirection = this.camera.Direction.FRONT;
 
-    // Persist route so a WebView kill during camera returns here, not /home
-    localStorage.setItem('ktl_return_route', this.router.url || '/attandence');
+    // Persist route + draft so a WebView kill during camera returns here, not /login
+    this.prepareForCamera();
     
     this.camera.getPicture(this.options).then((imageData) => {
       localStorage.removeItem('ktl_return_route');

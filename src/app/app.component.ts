@@ -32,6 +32,13 @@ export class AppComponent implements OnInit {
         if (url && url !== '/' && url !== '/login') {
           localStorage.setItem('ktl_return_route', url);
         }
+        // Flush session to localStorage before the process may be killed.
+        this.mirrorSessionToLocal();
+      });
+
+      // After camera/gallery returns (or process restart), re-apply session + return route.
+      this.platform.resume.subscribe(() => {
+        this.recoverSessionAfterResume();
       });
     });
   }
@@ -44,39 +51,88 @@ export class AppComponent implements OnInit {
       await this.str.create();
       this.str.set('version', 5);
 
-      // Camera / draft OOM can leave Ionic Storage unreadable briefly or corrupted.
-      // localStorage backup is the reliable fallback for session restore.
-      let value = await this.str.get('id');
-      if (!value) {
-        value = localStorage.getItem('ktl_id');
-        if (value) {
-          await this.restoreSessionFromLocal();
-        }
-      } else {
-        this.mirrorSessionToLocal();
-      }
+      // Camera / draft OOM can leave Ionic Storage unreadable briefly.
+      // Retry storage, then fall back to localStorage before treating as logged out.
+      const value = await this.resolveSessionId();
 
-      const currentPath = window.location.pathname;
       if (value) {
-        if (currentPath === '/' || currentPath === '/login') {
-          const returnRoute = localStorage.getItem('ktl_return_route');
-          if (returnRoute && returnRoute !== '/' && returnRoute !== '/login') {
-            localStorage.removeItem('ktl_return_route');
-            this.router.navigateByUrl(returnRoute);
-          } else {
-            this.router.navigate(['/home']);
-          }
-        }
+        await this.navigateAfterSessionRestore();
       } else {
+        // Only clear return route when session is truly missing after retries.
         localStorage.removeItem('ktl_return_route');
         this.router.navigate(['/login']);
+      }
+  }
+
+  private async recoverSessionAfterResume() {
+    const value = await this.resolveSessionId();
+    if (!value) {
+      return;
+    }
+    const url = this.router.url || '';
+    if (url === '/login' || url === '/' || url === '') {
+      await this.navigateAfterSessionRestore();
+    }
+  }
+
+  /** Resolve staff id from Ionic Storage (with retry) or localStorage backup. */
+  private async resolveSessionId(): Promise<string | null> {
+      let value = await this.str.get('id');
+      if (value != null && value !== '' && value !== 'null') {
+        await this.mirrorSessionToLocal();
+        return String(value);
+      }
+
+      // IndexedDB can be briefly empty right after a WebView OOM kill.
+      for (let i = 0; i < 3; i++) {
+        await new Promise(resolve => setTimeout(resolve, 150));
+        value = await this.str.get('id');
+        if (value != null && value !== '' && value !== 'null') {
+          await this.mirrorSessionToLocal();
+          return String(value);
+        }
+      }
+
+      const localId = localStorage.getItem('ktl_id');
+      if (localId && localId !== 'null' && localId !== '') {
+        await this.restoreSessionFromLocal();
+        return localId;
+      }
+      return null;
+  }
+
+  private isAtAuthEntryRoute(): boolean {
+      const path = window.location.pathname || '';
+      const hash = (window.location.hash || '').replace(/^#/, '');
+      const url = this.router.url || '';
+      const entryHints = [path, hash, url];
+      return entryHints.some((c) =>
+        !c ||
+        c === '/' ||
+        c === '/login' ||
+        c === 'login' ||
+        c.endsWith('index.html') ||
+        c.indexOf('/login') !== -1
+      );
+  }
+
+  private async navigateAfterSessionRestore() {
+      const returnRoute = localStorage.getItem('ktl_return_route');
+      if (returnRoute && returnRoute !== '/' && returnRoute !== '/login') {
+        localStorage.removeItem('ktl_return_route');
+        this.router.navigateByUrl(returnRoute);
+        return;
+      }
+
+      if (this.isAtAuthEntryRoute()) {
+        this.router.navigate(['/home']);
       }
   }
 
   private async mirrorSessionToLocal() {
     for (const key of SESSION_KEYS) {
       const v = await this.str.get(key);
-      if (v != null && v !== '') {
+      if (v != null && v !== '' && v !== 'null') {
         localStorage.setItem('ktl_' + key, String(v));
       }
     }
@@ -85,7 +141,7 @@ export class AppComponent implements OnInit {
   private async restoreSessionFromLocal() {
     for (const key of SESSION_KEYS) {
       const v = localStorage.getItem('ktl_' + key);
-      if (v != null && v !== '') {
+      if (v != null && v !== '' && v !== 'null') {
         await this.str.set(key, v);
       }
     }

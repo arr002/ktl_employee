@@ -95,13 +95,26 @@ export class HomePage {
 
   async getStorageValue() {
     await this.str.create();
-    this.str.get('id').then((value) => {
-      this.userid = value;
+    let value = await this.str.get('id');
+    if (!value || value === 'null') {
+      value = localStorage.getItem('ktl_id');
+      if (value && value !== 'null') {
+        await this.str.set('id', value);
+        for (const key of ['username', 'empid', 'otp', 'mobile']) {
+          const v = localStorage.getItem('ktl_' + key);
+          if (v != null && v !== '' && v !== 'null') {
+            await this.str.set(key, v);
+          }
+        }
+      }
+    }
+    this.userid = value;
+    if (this.userid) {
       this.callCirculars(this.userid);
       this.getProfile(this.userid);
       this.getHomescreen(this.userid);  // Looping screen through api
-       this.checkpass(this.userid);
-    });
+      this.checkpass(this.userid);
+    }
 
     this.str.get("version").then((version) => {
       this.version = version;
@@ -110,6 +123,10 @@ export class HomePage {
   }
   
  checkpass(id:any) {
+  // Avoid false logout when session is still restoring after camera kill.
+  if (!id || id === 'null') {
+    return;
+  }
   let headers = new HttpHeaders();
   headers.append("Accept", 'application/json');
   headers.append('Content-Type', 'application/json');
@@ -119,19 +136,22 @@ export class HomePage {
 
 
     if (data.success == false) {
-
-
-       this.str.set('id',null);
-       this.str.set('username',null);
-      this.str.set('empid',null);
-      this.str.set('otp',null);
-      this.str.set('mobile',null);
-
+      this.clearLocalSession();
       this.navctrl.navigateRoot('login');
     }
 
 
   });
+}
+
+private clearLocalSession() {
+  this.str.set('id', null);
+  this.str.set('username', null);
+  this.str.set('empid', null);
+  this.str.set('otp', null);
+  this.str.set('mobile', null);
+  ['ktl_id', 'ktl_username', 'ktl_empid', 'ktl_otp', 'ktl_mobile', 'ktl_return_route', 'ktl_att_draft']
+    .forEach((key) => localStorage.removeItem(key));
 }
 
 callCirculars(value:any) {
@@ -345,9 +365,9 @@ async logout() {
     const alert = await this.alertCtrl.create({
       header: 'Warning', message: 'Are you sure want to logout?',
       buttons: [
-        { text: 'Yes', handler: () => { 
+        { text: 'Yes', handler: () => {
           this.apiCache.clearApiCaches();
-          this.str.set('id', null);
+          this.clearLocalSession();
           this.router.navigateByUrl('/login', { skipLocationChange: true });
         } },
         { text: 'No', role: 'cancel' }

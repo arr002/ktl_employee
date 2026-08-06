@@ -27,8 +27,8 @@ export class ClientsPage implements OnInit {
            
   
     this.str.get('id').then((value) => { 
-                    this.userid=value;
-                this.clients(value); 
+                    this.userid = this.userid || value;
+                this.clients(this.userid); 
   
                   });
   
@@ -40,9 +40,10 @@ export class ClientsPage implements OnInit {
           headers.append("Accept", 'application/json');
           headers.append('Content-Type', 'application/json' );
          
-          let datap = {employee_id:id};
+          // get-customers-data — appuser_id only (no town)
+          let datap = { appuser_id: id };
           
-          this.http.post(this.url + 'employee-customer-details' ,datap,{headers:headers}).subscribe((data:any)=>{
+          this.http.post(this.url + 'get-customers-data' ,datap,{headers:headers}).subscribe((data:any)=>{
          
               this.customers = data && data.data ? data.data : [];
               this.isLoading = false;

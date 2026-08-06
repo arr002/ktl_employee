@@ -22,8 +22,8 @@
 <ion-radio-group name="radio-group" [(ngModel)]="selectedRadioGroup" (ionChange)="radioGroupChange($event)">
 <ion-item *ngFor="let prod of customers">
  	
-      <ion-radio value="{{prod.customer_name}}"></ion-radio>
-      <ion-label class="ion-text-wrap txtname">{{prod.customer_name}}</ion-label>
+      <ion-radio value="{{prod.client_name || prod.customer_name}}"></ion-radio>
+      <ion-label class="ion-text-wrap txtname">{{prod.client_name || prod.customer_name}}</ion-label>
  </ion-item>  
 </ion-radio-group>
 </ion-content>

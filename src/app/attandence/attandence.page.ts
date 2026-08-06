@@ -1,5 +1,5 @@
-import { Component, OnInit } from '@angular/core';
-import { MenuController, ToastController, Platform, NavController, ModalController, ActionSheetController, AlertController } from '@ionic/angular';
+import { Component, OnInit, NgZone, ChangeDetectorRef, ViewChild, ElementRef } from '@angular/core';
+import { MenuController, ToastController, Platform, NavController, ModalController, ActionSheetController, AlertController, ViewWillEnter } from '@ionic/angular';
 import { ActivatedRoute, Router } from '@angular/router';
 import { LoadingController } from '@ionic/angular';
 import { Observable } from 'rxjs';
@@ -18,12 +18,22 @@ import { ClientsPage } from '../clients/clients.page';
   styleUrls: ['./attandence.page.scss'],
   standalone: false,
 })
-export class AttandencePage implements OnInit {
+export class AttandencePage implements OnInit, ViewWillEnter {
+  @ViewChild('previewImg') previewImg?: ElementRef<HTMLImageElement>;
+
   version: any;
 
   userid: any;
   name: any;
   image: any;
+  /** Selected camera/gallery photo (data URL) kept for upload. */
+  previewImage: string | null = null;
+  /** True once a photo is selected (controls preview UI). */
+  hasPreview = false;
+  /** On-page error message (camera / gallery / upload / preview). */
+  pageError: string | null = null;
+  /** On-page success message. */
+  pageSuccess: string | null = null;
   empcode: any;
   phone: any;
   department: any;
@@ -47,30 +57,32 @@ export class AttandencePage implements OnInit {
 
 
   optionsGallery: CameraOptions = {
-    // Lower size/quality reduces WebView OOM kills on low-RAM phones during camera.
-    quality: 60,
+    // FILE_URI + convertFileSrc — same reliable preview path as camera (data: URLs break in WebView).
+    quality: 50,
     targetWidth: 640,
-    destinationType: this.camera.DestinationType.DATA_URL,
-    encodingType: this.camera.EncodingType.JPEG,
-    mediaType: this.camera.MediaType.PICTURE,
-    sourceType: this.camera.PictureSourceType.PHOTOLIBRARY
+    correctOrientation: true,
+    destinationType: 1, // FILE_URI
+    encodingType: 0, // JPEG
+    mediaType: 0, // PICTURE
+    sourceType: 0 // PHOTOLIBRARY
   };
+  // Prefer FILE_URI so preview can use Ionic.WebView.convertFileSrc (reliable on Android).
   options: CameraOptions = {
-    quality: 60,
+    quality: 50,
     allowEdit: false,
     targetWidth: 640,
-    cameraDirection: 1, // Will be overridden in takePicture()
+    cameraDirection: 1,
     saveToPhotoAlbum: false,
     correctOrientation: true,
-    // DATA_URL (base64) avoids file:// resolution, which silently fails on
-    // newer Android (scoped storage), especially Samsung devices
-    destinationType: 0, // DATA_URL
+    destinationType: 1, // FILE_URI
     encodingType: 0, // JPEG
     mediaType: 0, // PICTURE
     sourceType: 1 // CAMERA
   };
 
   url = environment.SERVER_URL;
+
+  private uploadingPending = false;
 
   constructor(public menuCtrl: MenuController,
     public actionsheetCtrl: ActionSheetController,
@@ -85,9 +97,98 @@ export class AttandencePage implements OnInit {
     private file: File,
     private camera: Camera,
     private androidPermissions: AndroidPermissions,
-    private geolocation: Geolocation) {
+    private geolocation: Geolocation,
+    private zone: NgZone,
+    private cdr: ChangeDetectorRef) {
 
     this.initAttendanceSession();
+
+    // pendingResult may arrive after this page already constructed (WebView kill).
+    this.platform.resume.subscribe(() => {
+      this.consumePendingCameraImage();
+      this.restorePreviewFromStorage();
+    });
+    document.addEventListener('resume', (event: any) => {
+      this.stashPendingCameraFromEvent(event);
+      this.consumePendingCameraImage();
+      this.restorePreviewFromStorage();
+    }, false);
+  }
+
+  private stashPendingCameraFromEvent(event: any) {
+    try {
+      const pending = event && event.pendingResult;
+      if (!pending || pending.pluginServiceName !== 'Camera') {
+        return;
+      }
+      if (localStorage.getItem('ktl_camera_pending') !== 'attendance') {
+        return;
+      }
+      if (pending.pluginStatus === 'OK' && pending.result != null && pending.result !== '') {
+        localStorage.setItem('ktl_pending_image', String(pending.result));
+      } else if (pending.pluginStatus && pending.pluginStatus !== 'OK') {
+        this.showPageError(this.friendlyCameraError(pending.pluginStatus));
+      }
+    } catch (e) {
+      this.showPageError('Could not recover photo after camera closed. Please try again.');
+    }
+  }
+
+  /** Show a clear error banner on this page (also toast for visibility). */
+  private showPageError(message: string) {
+    if (!message) {
+      return;
+    }
+    this.zone.run(() => {
+      this.pageError = message;
+      this.pageSuccess = null;
+      this.cdr.detectChanges();
+      this.presentToast(message, 4500, 'bottom');
+    });
+  }
+
+  private showPageSuccess(message: string) {
+    this.zone.run(() => {
+      this.pageSuccess = message;
+      this.pageError = null;
+      this.cdr.detectChanges();
+      this.presentToast(message, 3500, 'bottom');
+    });
+  }
+
+  clearPageMessage() {
+    this.pageError = null;
+    this.pageSuccess = null;
+  }
+
+  /** Map Cordova/camera plugin errors to user-friendly text. */
+  private friendlyCameraError(err: any, source: 'camera' | 'gallery' = 'camera'): string {
+    const raw = String(err == null ? '' : err);
+    const lower = raw.toLowerCase();
+    if (!raw || lower === 'null' || lower === 'undefined') {
+      return source === 'gallery'
+        ? 'Could not open gallery. Please try again.'
+        : 'Could not open camera. Please try again.';
+    }
+    if (lower.indexOf('cancel') !== -1 || lower.indexOf('no image selected') !== -1) {
+      return ''; // user cancelled — no error banner
+    }
+    if (lower.indexOf('permission') !== -1 || lower.indexOf('access') !== -1 || lower.indexOf('denied') !== -1) {
+      return source === 'gallery'
+        ? 'Gallery permission denied. Allow Photos/Storage in Phone Settings > Apps > KTL Plus > Permissions.'
+        : 'Camera permission denied. Allow Camera in Phone Settings > Apps > KTL Plus > Permissions.';
+    }
+    if (lower.indexOf('unavailable') !== -1 || lower.indexOf('not available') !== -1) {
+      return source === 'gallery'
+        ? 'Gallery is not available on this device.'
+        : 'Camera is not available on this device.';
+    }
+    return (source === 'gallery' ? 'Gallery error: ' : 'Camera error: ') + raw;
+  }
+
+  private isUserCancel(err: any): boolean {
+    const lower = String(err == null ? '' : err).toLowerCase();
+    return lower.indexOf('cancel') !== -1 || lower.indexOf('no image selected') !== -1;
   }
 
   /** Restore session + draft after camera WebView kills on some phones. */
@@ -99,6 +200,348 @@ export class AttandencePage implements OnInit {
       this.getProfile(id);
       this.getLocation();
     }
+    // If WebView was killed during camera, Cordova stashes the photo for us.
+    await this.consumePendingCameraImage();
+  }
+
+  /** Show photo recovered from Cordova resume.pendingResult (do not upload until Submit). */
+  private async consumePendingCameraImage() {
+    const pending = localStorage.getItem('ktl_pending_image');
+    if (!pending || this.uploadingPending) {
+      return;
+    }
+    this.uploadingPending = true;
+    localStorage.removeItem('ktl_pending_image');
+    localStorage.removeItem('ktl_camera_pending');
+    localStorage.removeItem('ktl_return_route');
+    this.restoreAttendanceDraft();
+    await this.ensureSessionReady();
+
+    // FILE_URI path (file:// or content://)
+    if (pending.indexOf('file:') === 0 || pending.indexOf('content:') === 0 || pending.indexOf('/') === 0) {
+      this.uploadingPending = false;
+      this.showSelectedImageFromFileUri(pending);
+      return;
+    }
+
+    // DATA_URL result is raw base64 (sometimes already prefixed)
+    const base64Image = pending.indexOf('data:image') === 0
+      ? pending
+      : 'data:image/jpeg;base64,' + pending;
+    this.uploadingPending = false;
+    this.showSelectedImage(base64Image);
+  }
+
+  private showSelectedImage(dataUrl: string) {
+    // Cordova camera/gallery callbacks run outside NgZone — force UI refresh.
+    this.zone.run(() => {
+      void this.applyPreview(dataUrl);
+    });
+  }
+
+  /**
+   * Cordova Ionic WebView cannot reliably paint large data:/blob: URLs in <img>.
+   * Write JPEG to cache, convert with Ionic.WebView.convertFileSrc, set img.src natively.
+   */
+  private async applyPreview(dataUrl: string) {
+    try {
+      if (!dataUrl || dataUrl.length < 32) {
+        this.showPageError('Could not read photo. Please take or choose again.');
+        return;
+      }
+
+      let normalized = dataUrl;
+      if (normalized.indexOf('data:image') !== 0) {
+        normalized = 'data:image/jpeg;base64,' + normalized.replace(/^data:image\/\w+;base64,/, '');
+      }
+
+      this.previewImage = normalized;
+      this.hasPreview = true;
+      this.pageError = null;
+      try {
+        localStorage.setItem('ktl_att_preview', normalized);
+      } catch (e) {}
+      this.saveAttendanceDraft();
+      this.cdr.detectChanges();
+
+      let displaySrc = normalized;
+      try {
+        if (this.platform.is('cordova') && this.file && this.file.cacheDirectory) {
+          const blob = this.dataUrlToBlob(normalized);
+          const fileName = 'ktl_att_preview_' + Date.now() + '.jpg';
+          await this.file.writeFile(this.file.cacheDirectory, fileName, blob, { replace: true });
+          displaySrc = this.toWebViewSrc(this.file.cacheDirectory + fileName);
+        }
+      } catch (e) {
+        console.log('cache preview write failed', e);
+        displaySrc = normalized;
+      }
+
+      this.paintPreviewElement(displaySrc, normalized);
+      this.showPageSuccess('Photo ready — tap Submit Attendance.');
+    } catch (e) {
+      console.log('applyPreview error', e);
+      this.showPageError('Failed to show photo preview. Please try again.');
+    }
+  }
+
+  private toWebViewSrc(filePath: string): string {
+    try {
+      const Ionic = (window as any).Ionic;
+      if (Ionic && Ionic.WebView && typeof Ionic.WebView.convertFileSrc === 'function') {
+        return Ionic.WebView.convertFileSrc(filePath);
+      }
+      if ((window as any).wkWebView && (window as any).wkWebView.convertFilePath) {
+        return (window as any).wkWebView.convertFilePath(filePath);
+      }
+    } catch (e) {}
+    return filePath;
+  }
+
+  /** Assign img src natively with cache-bust so Change photo always refreshes. */
+  private paintPreviewElement(displaySrc: string, fallbackDataUrl?: string | null) {
+    setTimeout(() => {
+      const el = this.previewImg && this.previewImg.nativeElement;
+      if (!el) {
+        this.cdr.detectChanges();
+        return;
+      }
+      const bust = (displaySrc.indexOf('?') >= 0 ? '&' : '?') + 't=' + Date.now();
+      const src = displaySrc + bust;
+      el.onload = () => this.cdr.detectChanges();
+      el.onerror = () => {
+        if (fallbackDataUrl && el.getAttribute('data-fallback') !== '1') {
+          el.setAttribute('data-fallback', '1');
+          // Last resort: try writing a tiny canvas-backed approach via object URL from data URL
+          try {
+            const blob = this.dataUrlToBlob(fallbackDataUrl);
+            const obj = URL.createObjectURL(blob);
+            el.src = obj;
+          } catch (e) {
+            console.log('preview paint fallback failed', e);
+          }
+        }
+      };
+      el.removeAttribute('data-fallback');
+      el.removeAttribute('src');
+      // Force decode of new image even when replacing gallery selection
+      el.src = src;
+      this.cdr.detectChanges();
+    }, 80);
+  }
+
+  /** Show preview from a native file:// or content:// URI (camera/gallery FILE_URI). */
+  private showSelectedImageFromFileUri(fileUri: string) {
+    this.zone.run(() => {
+      void this.applyPreviewFromFileUri(fileUri);
+    });
+  }
+
+  private async applyPreviewFromFileUri(fileUri: string) {
+    try {
+      if (!fileUri) {
+        this.showPageError('No photo returned. Please try again.');
+        return;
+      }
+
+      this.hasPreview = true;
+      this.pageError = null;
+      this.cdr.detectChanges();
+
+      let displaySrc = this.toWebViewSrc(fileUri);
+      let uploadDataUrl: string | null = null;
+
+      try {
+        if (this.platform.is('cordova') && this.file && this.file.cacheDirectory) {
+          const cached = await this.copyUriToCache(fileUri);
+          if (cached) {
+            displaySrc = this.toWebViewSrc(cached.path);
+            uploadDataUrl = cached.dataUrl;
+          }
+        }
+      } catch (e) {
+        console.log('copyUriToCache failed', e);
+      }
+
+      if (!uploadDataUrl) {
+        try {
+          uploadDataUrl = await this.readUriAsDataUrl(fileUri);
+        } catch (e) {
+          console.log('readUriAsDataUrl failed', e);
+        }
+      }
+
+      if (uploadDataUrl) {
+        this.previewImage = uploadDataUrl;
+        try {
+          localStorage.setItem('ktl_att_preview', uploadDataUrl);
+        } catch (e) {}
+        this.saveAttendanceDraft();
+      } else {
+        this.showPageError('Photo selected but could not be prepared for upload. Please try another photo.');
+      }
+
+      this.paintPreviewElement(displaySrc, uploadDataUrl);
+      if (uploadDataUrl) {
+        this.showPageSuccess('Photo ready — tap Submit Attendance.');
+      }
+    } catch (e) {
+      console.log('applyPreviewFromFileUri error', e);
+      this.showPageError('Failed to show gallery/camera photo. Please try again.');
+    }
+  }
+
+  /** Copy camera/gallery URI into cache; returns local file path + data URL. */
+  private async copyUriToCache(fileUri: string): Promise<{ path: string; dataUrl: string } | null> {
+    const fileName = 'ktl_att_preview_' + Date.now() + '.jpg';
+    const destPath = this.file.cacheDirectory + fileName;
+
+    // Prefer fetch via WebView-converted URL (works for content:// and file:// on Android).
+    try {
+      const webSrc = this.toWebViewSrc(fileUri);
+      const resp = await fetch(webSrc);
+      if (resp.ok) {
+        const blob = await resp.blob();
+        await this.file.writeFile(this.file.cacheDirectory, fileName, blob, { replace: true });
+        const dataUrl = await this.blobToDataUrl(blob);
+        return { path: destPath, dataUrl };
+      }
+    } catch (e) {
+      console.log('fetch copyUriToCache failed', e);
+    }
+
+    // Fallback: File plugin resolve
+    try {
+      const entry: any = await this.file.resolveLocalFilesystemUrl(fileUri);
+      if (entry && entry.isFile) {
+        const fileEntry = entry as FileEntry;
+        const dataUrl = await new Promise<string | null>((resolve) => {
+          fileEntry.file((f) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(typeof reader.result === 'string' ? reader.result : null);
+            reader.onerror = () => resolve(null);
+            reader.readAsDataURL(f);
+          }, () => resolve(null));
+        });
+        if (dataUrl) {
+          const blob = this.dataUrlToBlob(dataUrl);
+          await this.file.writeFile(this.file.cacheDirectory, fileName, blob, { replace: true });
+          return { path: destPath, dataUrl };
+        }
+      }
+    } catch (e) {
+      console.log('resolve copyUriToCache failed', e);
+    }
+    return null;
+  }
+
+  private async readUriAsDataUrl(fileUri: string): Promise<string | null> {
+    try {
+      const webSrc = this.toWebViewSrc(fileUri);
+      const resp = await fetch(webSrc);
+      if (resp.ok) {
+        return await this.blobToDataUrl(await resp.blob());
+      }
+    } catch (e) {}
+    try {
+      const entry: any = await this.file.resolveLocalFilesystemUrl(fileUri);
+      if (entry && entry.isFile) {
+        const fileEntry = entry as FileEntry;
+        return await new Promise<string | null>((resolve) => {
+          fileEntry.file((f) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(typeof reader.result === 'string' ? reader.result : null);
+            reader.onerror = () => resolve(null);
+            reader.readAsDataURL(f);
+          }, () => resolve(null));
+        });
+      }
+    } catch (e) {}
+    return null;
+  }
+
+  private blobToDataUrl(blob: Blob): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        if (typeof reader.result === 'string') {
+          resolve(reader.result);
+        } else {
+          reject(new Error('blobToDataUrl failed'));
+        }
+      };
+      reader.onerror = () => reject(reader.error);
+      reader.readAsDataURL(blob);
+    });
+  }
+
+  private dataUrlToBlob(dataUrl: string): Blob {
+    const parts = dataUrl.split(',');
+    const meta = parts[0] || '';
+    const base64 = parts[1] || '';
+    const mimeMatch = meta.match(/data:([^;]+);/);
+    const mime = (mimeMatch && mimeMatch[1]) ? mimeMatch[1] : 'image/jpeg';
+    const binary = atob(base64);
+    const len = binary.length;
+    const bytes = new Uint8Array(len);
+    for (let i = 0; i < len; i++) {
+      bytes[i] = binary.charCodeAt(i);
+    }
+    return new Blob([bytes], { type: mime });
+  }
+
+  private restorePreviewFromStorage() {
+    if (this.hasPreview && this.previewImage) {
+      return;
+    }
+    try {
+      const preview = localStorage.getItem('ktl_att_preview');
+      if (preview) {
+        this.showSelectedImage(preview);
+      }
+    } catch (e) {}
+  }
+
+  private setPreviewFromFile(file: Blob) {
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === 'string') {
+        this.showSelectedImage(reader.result);
+      }
+    };
+    reader.readAsDataURL(file);
+  }
+
+  /** Submit marks attendance only after user confirms the visible photo. */
+  async submitAttendance() {
+    try {
+      this.clearPageMessage();
+      if (!this.subject) {
+        this.showPageError('Please select an option from the dropdown.');
+        return;
+      }
+      if (!this.previewImage) {
+        this.showPageError('Please take or choose a photo first.');
+        return;
+      }
+      await this.readFileGallery(this.previewImage);
+    } catch (e) {
+      console.log('submitAttendance error', e);
+      this.showPageError('Could not submit attendance. Please check internet and try again.');
+    }
+  }
+
+  clearSelectedPhoto() {
+    this.zone.run(() => {
+      this.previewImage = null;
+      this.hasPreview = false;
+      localStorage.removeItem('ktl_att_preview');
+      const el = this.previewImg && this.previewImg.nativeElement;
+      if (el) {
+        el.removeAttribute('src');
+      }
+      this.cdr.detectChanges();
+    });
   }
 
   /** Ensure staff id exists in Ionic Storage and localStorage before camera opens. */
@@ -162,16 +605,40 @@ export class AttandencePage implements OnInit {
       if (draft.userid && !this.userid) {
         this.userid = draft.userid;
       }
+      if (!this.previewImage) {
+        const preview = localStorage.getItem('ktl_att_preview');
+        if (preview) {
+          this.previewImage = preview;
+          this.hasPreview = true;
+          setTimeout(() => void this.applyPreview(preview), 0);
+        }
+      }
     } catch (e) {}
   }
 
   private clearAttendanceDraft() {
     localStorage.removeItem('ktl_att_draft');
+    localStorage.removeItem('ktl_att_preview');
+    this.previewImage = null;
+    this.hasPreview = false;
+    const el = this.previewImg && this.previewImg.nativeElement;
+    if (el) {
+      el.removeAttribute('src');
+    }
   }
 
   private prepareForCamera() {
     this.saveAttendanceDraft();
     localStorage.setItem('ktl_return_route', this.router.url || '/attandence');
+    // Marks that the next Camera pendingResult belongs to Mark Attendance.
+    localStorage.setItem('ktl_camera_pending', 'attendance');
+    localStorage.removeItem('ktl_pending_image');
+  }
+
+  private clearCameraPending() {
+    localStorage.removeItem('ktl_camera_pending');
+    localStorage.removeItem('ktl_pending_image');
+    localStorage.removeItem('ktl_return_route');
   }
 
   optionSelected() {
@@ -184,63 +651,87 @@ export class AttandencePage implements OnInit {
 
 
   async openePicChooser() {
-    const actionSheet = await this.actionsheetCtrl.create({
-      header: 'Option',
-      cssClass: 'action-sheets-basic-page',
-      buttons: [
-        {
-          text: 'Take photo',
-          role: 'destructive',
-          icon: !this.platform.is('ios') ? 'ios-camera-outline' : '',
-          handler: () => {
-            this.takePicture();
-          }
-        },
-        {
-          text: 'Choose photo from Gallery',
-          icon: !this.platform.is('ios') ? 'ios-images-outline' : '',
-          handler: () => {
-             this.takePictureFile();
-          }
-        },
-      ]
-    });
-    await actionSheet.present();
+    try {
+      this.clearPageMessage();
+      if (!this.subject) {
+        this.showPageError('Please select an option from the dropdown first.');
+        return;
+      }
+      const actionSheet = await this.actionsheetCtrl.create({
+        header: 'Option',
+        cssClass: 'action-sheets-basic-page',
+        buttons: [
+          {
+            text: 'Take photo',
+            role: 'destructive',
+            icon: !this.platform.is('ios') ? 'ios-camera-outline' : '',
+            handler: () => {
+              this.takePicture();
+            }
+          },
+          {
+            text: 'Choose photo from Gallery',
+            icon: !this.platform.is('ios') ? 'ios-images-outline' : '',
+            handler: () => {
+               this.takePictureFile();
+            }
+          },
+        ]
+      });
+      await actionSheet.present();
+    } catch (e) {
+      console.log('openePicChooser error', e);
+      this.showPageError('Could not open photo options. Please try again.');
+    }
   }
 
   async takePictureFile() {
-    if (!this.subject) {
-      this.presentToast("Please select drop down option.", 4000, "bottom");
-      return;
-    }
-
-    // Camera plugin only works inside the native app; use a file input in the browser
-    if (!this.platform.is('cordova')) {
-      this.pickImageInBrowser(false);
-      return;
-    }
-
-    const sessionOk = await this.ensureSessionReady();
-    if (!sessionOk) {
-      this.presentToast('Session expired. Please login again.', 4000, 'bottom');
-      this.router.navigate(['/login']);
-      return;
-    }
-
-    // Persist route + draft so a WebView kill during gallery returns here, not /login
-    this.prepareForCamera();
-
-    this.camera.getPicture(this.optionsGallery).then((imageData) => {
-      localStorage.removeItem('ktl_return_route');
-      let base64Image = 'data:image/jpeg;base64,' + imageData;
-      this.readFileGallery(base64Image);
-
-    }, (err) => {
-      localStorage.removeItem('ktl_return_route');
-      if (err && String(err).toLowerCase().indexOf('cancel') === -1 && String(err).indexOf('No Image Selected') === -1) {
-        this.presentToast('Could not open gallery: ' + err, 4000, 'bottom');
+    try {
+      this.clearPageMessage();
+      if (!this.subject) {
+        this.showPageError('Please select an option from the dropdown.');
+        return;
       }
-    });
+
+      if (!this.platform.is('cordova')) {
+        this.pickImageInBrowser(false);
+        return;
+      }
+
+      const sessionOk = await this.ensureSessionReady();
+      if (!sessionOk) {
+        this.showPageError('Session expired. Please login again.');
+        this.router.navigate(['/login']);
+        return;
+      }
+
+      this.prepareForCamera();
+
+      try {
+        const imageData = await this.camera.getPicture(this.optionsGallery);
+        this.clearCameraPending();
+        const uri = String(imageData || '');
+        if (!uri) {
+          this.showPageError('No photo selected from gallery. Please try again.');
+          return;
+        }
+        if (uri.indexOf('file:') === 0 || uri.indexOf('content:') === 0 || uri.indexOf('/') === 0) {
+          this.showSelectedImageFromFileUri(uri);
+        } else {
+          this.showSelectedImage(uri.indexOf('data:image') === 0 ? uri : 'data:image/jpeg;base64,' + uri);
+        }
+      } catch (err) {
+        this.clearCameraPending();
+        if (this.isUserCancel(err)) {
+          return;
+        }
+        this.showPageError(this.friendlyCameraError(err, 'gallery'));
+      }
+    } catch (e) {
+      this.clearCameraPending();
+      console.log('takePictureFile error', e);
+      this.showPageError(this.friendlyCameraError(e, 'gallery'));
+    }
   }
 
   // Gallery: standard file picker. Camera: live webcam overlay (works on laptop + phone browsers).
@@ -255,7 +746,7 @@ export class AttandencePage implements OnInit {
     input.accept = 'image/*';
     input.onchange = () => {
       if (input.files && input.files.length > 0) {
-        this.readFile(input.files[0]);
+        this.setPreviewFromFile(input.files[0]);
       }
     };
     input.click();
@@ -263,7 +754,7 @@ export class AttandencePage implements OnInit {
 
   async openLaptopCamera() {
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      this.presentToast('Camera is not supported in this browser.', 4000, 'bottom');
+      this.showPageError('Camera is not supported in this browser.');
       return;
     }
 
@@ -274,7 +765,7 @@ export class AttandencePage implements OnInit {
         audio: false
       });
     } catch (err) {
-      this.presentToast('Please allow camera access in the browser, then try again.', 5000, 'bottom');
+      this.showPageError('Please allow camera access in the browser, then try again.');
       return;
     }
 
@@ -320,17 +811,9 @@ export class AttandencePage implements OnInit {
         return;
       }
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const previewDataUrl = canvas.toDataURL('image/jpeg', 0.9);
+      this.showSelectedImage(previewDataUrl);
       stopCamera();
-      canvas.toBlob((blob) => {
-        if (!blob) {
-          this.presentToast('Could not capture photo. Please try again.', 4000, 'bottom');
-          return;
-        }
-        // Use browser File (Cordova File plugin shadows the global File type)
-        const BrowserFile = (window as any).File;
-        const file = new BrowserFile([blob], 'attendance_' + Date.now() + '.jpg', { type: 'image/jpeg' });
-        this.readFile(file);
-      }, 'image/jpeg', 0.9);
     };
 
     btnRow.appendChild(cancelBtn);
@@ -341,59 +824,69 @@ export class AttandencePage implements OnInit {
   }
 
   async readFileGallery(file: any) {
-
-    this.presentLoading();
-    const sessionId = await this.ensureSessionReady();
-    this.restoreAttendanceDraft();
-    if (!sessionId && !this.userid) {
-      this.dismiss();
-      this.presentToast('Session expired. Please login again.', 4000, 'bottom');
-      this.router.navigate(['/login']);
-      return;
-    }
-
     try {
-      const resp = await this.geolocation.getCurrentPosition({ enableHighAccuracy: true });
-      this.lat = resp.coords.latitude;
-      this.long = resp.coords.longitude;
-    } catch (error) {
-      console.log('Error getting location', error);
+      this.presentLoading();
+      const sessionId = await this.ensureSessionReady();
+      this.restoreAttendanceDraft();
+      if (!sessionId && !this.userid) {
+        this.dismiss();
+        this.showPageError('Session expired. Please login again.');
+        this.router.navigate(['/login']);
+        return;
+      }
+
+      try {
+        const resp = await this.geolocation.getCurrentPosition({ enableHighAccuracy: true, timeout: 10000 });
+        this.lat = resp.coords.latitude;
+        this.long = resp.coords.longitude;
+      } catch (error) {
+        console.log('Error getting location', error);
+        // Continue upload; location optional but warn on page
+        this.pageError = 'Location not available. Submitting without GPS — enable Location for accurate attendance.';
+        this.cdr.detectChanges();
+      }
+
+      let headers = new HttpHeaders();
+      headers.append("Accept", 'application/json');
+      headers.append('Content-Type', 'application/json');
+
+      const formData = new FormData();
+      formData.append('staff_id', this.userid || localStorage.getItem('ktl_id') || '');
+      formData.append('lat', this.lat || '');
+      formData.append('long', this.long || '');
+      formData.append('position', this.subject || '');
+      formData.append('client', this.client || '');
+      formData.append('comment', this.comment || '');
+      formData.append('file', file);
+
+      this.http.post(this.url + 'uploads-attendance-base', formData, { headers: headers }).subscribe((data: any) => {
+        try {
+          this.clearAttendanceDraft();
+          this.client = "";
+          this.lat = "";
+          this.long = "";
+          this.comment = "";
+          this.subject = "";
+          this.dismiss();
+          if (data && (data.status === false || data.status === 0)) {
+            this.showPageError(data.message || 'Attendance upload failed. Please try again.');
+          } else {
+            this.showPageSuccess(data && data.message ? data.message : 'Attendance marked successfully.');
+          }
+        } catch (e) {
+          this.dismiss();
+          this.showPageError('Attendance response error. Please check My Attendance.');
+        }
+      }, error => {
+        this.dismiss();
+        console.log('upload error', error);
+        this.showPageError('Upload failed. Please check your internet connection and try again.');
+      });
+    } catch (e) {
+      try { this.dismiss(); } catch (ignore) {}
+      console.log('readFileGallery error', e);
+      this.showPageError('Could not upload attendance. Please try again.');
     }
-
-    let headers = new HttpHeaders();
-    headers.append("Accept", 'application/json');
-    headers.append('Content-Type', 'application/json');
-
-    const formData = new FormData();
-    formData.append('staff_id', this.userid || localStorage.getItem('ktl_id') || '');
-    formData.append('lat', this.lat || '');
-    formData.append('long', this.long || '');
-    formData.append('position', this.subject || '');
-    formData.append('client', this.client || '');
-    formData.append('comment', this.comment || '');
-
-    formData.append('file', file);
-
-    this.http.post(this.url + 'uploads-attendance-base', formData, { headers: headers }).subscribe((data: any) => {
-
-      if (data.status)
-        console.log(data);
-
-      this.clearAttendanceDraft();
-      this.client = "";
-      this.lat = "";
-      this.long = "";
-      this.comment = "";
-      this.subject = "";
-      this.dismiss();
-      this.presentToast(data.message, 4000, "bottom");
-    }, error => {
-      this.dismiss();
-      this.presentToast('Please check your internet Connection.', 3000, 'middle')
-      this.presentToast("Error uploading. Please try again.", 4000, "bottom");
-     
-    });
-    
   }
 
 
@@ -512,59 +1005,62 @@ export class AttandencePage implements OnInit {
   }
 
   async takePicture() {
-    if (!this.subject) {
-      this.presentToast("Please select drop down option.", 4000, "bottom");
-      return;
-    }
-
-    // Camera plugin only works inside the native app; use a file input in the browser
-    if (!this.platform.is('cordova')) {
-      this.pickImageInBrowser(true);
-      return;
-    }
-
-    const sessionOk = await this.ensureSessionReady();
-    if (!sessionOk) {
-      this.presentToast('Session expired. Please login again.', 4000, 'bottom');
-      this.router.navigate(['/login']);
-      return;
-    }
-
-    // The CAMERA permission is declared in the manifest, so it MUST be granted
-    // at runtime before opening the camera, otherwise it silently fails.
-    const allowed = await this.ensureCameraPermission();
-    if (!allowed) {
-      return;
-    }
-
-    // Explicitly set to front camera before opening
-    this.options.cameraDirection = this.camera.Direction.FRONT;
-
-    // Persist route + draft so a WebView kill during camera returns here, not /login
-    this.prepareForCamera();
-    
-    this.camera.getPicture(this.options).then((imageData) => {
-      localStorage.removeItem('ktl_return_route');
-      // Same base64 upload path as the gallery flow
-      const base64Image = 'data:image/jpeg;base64,' + imageData;
-      this.readFileGallery(base64Image);
-    }, (err) => {
-      localStorage.removeItem('ktl_return_route');
-      const errText = String(err || '');
-      if (errText && errText.toLowerCase().indexOf('cancel') === -1 && errText.indexOf('No Image Selected') === -1) {
-        this.showCameraError(errText);
+    try {
+      this.clearPageMessage();
+      if (!this.subject) {
+        this.showPageError('Please select an option from the dropdown.');
+        return;
       }
-    });
+
+      if (!this.platform.is('cordova')) {
+        this.pickImageInBrowser(true);
+        return;
+      }
+
+      const sessionOk = await this.ensureSessionReady();
+      if (!sessionOk) {
+        this.showPageError('Session expired. Please login again.');
+        this.router.navigate(['/login']);
+        return;
+      }
+
+      const allowed = await this.ensureCameraPermission();
+      if (!allowed) {
+        this.showPageError('Camera permission is required. Allow Camera in Phone Settings > Apps > KTL Plus > Permissions.');
+        return;
+      }
+
+      this.options.cameraDirection = this.camera.Direction.FRONT;
+      this.prepareForCamera();
+
+      try {
+        const imageData = await this.camera.getPicture(this.options);
+        this.clearCameraPending();
+        if (!imageData) {
+          this.showPageError('Camera did not return a photo. Please try again.');
+          return;
+        }
+        if (String(imageData).indexOf('file:') === 0 || String(imageData).indexOf('content:') === 0 || String(imageData).indexOf('/') === 0) {
+          this.showSelectedImageFromFileUri(String(imageData));
+        } else {
+          this.showSelectedImage('data:image/jpeg;base64,' + imageData);
+        }
+      } catch (err) {
+        this.clearCameraPending();
+        if (this.isUserCancel(err)) {
+          return;
+        }
+        this.showPageError(this.friendlyCameraError(err, 'camera'));
+      }
+    } catch (e) {
+      this.clearCameraPending();
+      console.log('takePicture error', e);
+      this.showPageError(this.friendlyCameraError(e, 'camera'));
+    }
   }
 
   async showCameraError(errText: string) {
-    const alert = await this.alertCtrl.create({
-      header: 'Camera Error',
-      message: 'The camera could not be opened: ' + errText +
-        '. Please make sure camera permission is allowed in Phone Settings > Apps > KTL Plus > Permissions.',
-      buttons: ['OK']
-    });
-    await alert.present();
+    this.showPageError(this.friendlyCameraError(errText, 'camera'));
   }
 
   presentToast(msg: any, durat: any, pos: any) {
@@ -607,12 +1103,15 @@ export class AttandencePage implements OnInit {
       this.lat = resp.coords.latitude;
       this.long = resp.coords.longitude;
     }).catch((error) => {
-      this.presentToast("Please check your location is enabled.", 4000, "bottom");
+      this.showPageError('Location is off or unavailable. Enable Location for accurate attendance.');
     });
 
-   
+    this.restorePreviewFromStorage();
+  }
 
-
+  ionViewWillEnter() {
+    this.restorePreviewFromStorage();
+    this.consumePendingCameraImage();
   }
 
 

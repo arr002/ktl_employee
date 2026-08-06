@@ -23,25 +23,33 @@
       <option value="Present" *ngIf="department=='Admin'">Present</option>
       <option value="Absent Without Information" *ngIf="department=='Admin'">Absent Without Information</option>
       <option value="Approve Leave" *ngIf="department=='Admin'">Approve Leave</option>
-
-      <!-- <option value="P">Present</option>
-      <option value="AWI">Absent Without Information</option>
-      <option value="AL">Approve Leave</option>
-      <option value="H">Half Day</option> -->
-
-
-     
   </select>
   <h3> Please enter comments. (Optional)</h3>
-    <ion-textarea class="nativearea" rows="12"  [(ngModel)]="comment"></ion-textarea>
+    <ion-textarea class="nativearea" rows="4"  [(ngModel)]="comment"></ion-textarea>
    </div>
 
+  <div *ngIf="pageError" class="page-error" (click)="clearPageMessage()">
+    <strong>Error</strong>
+    <p>{{ pageError }}</p>
+    <span class="page-msg-dismiss">Tap to dismiss</span>
+  </div>
+  <div *ngIf="pageSuccess && !pageError" class="page-success" (click)="clearPageMessage()">
+    <strong>Success</strong>
+    <p>{{ pageSuccess }}</p>
+    <span class="page-msg-dismiss">Tap to dismiss</span>
+  </div>
 
  	<div class="attupload">
- 		<img (click)="takePicture()" class="imgwidth" src="assets/uploadattandence.png">
-    <!-- <h4 (click)="takePicture()">Click to upload attendance</h4> -->
-     <h4 (click)="openePicChooser()">Click to upload attendance</h4>
-    <!-- presentActionSheet -->
+    <div *ngIf="hasPreview" class="preview-wrap">
+      <!-- src is set in TypeScript via ViewChild (Cordova WebView cannot paint data:/blob: URLs) -->
+      <img #previewImg class="preview-image" alt="Selected attendance photo" (click)="openePicChooser()">
+      <p class="preview-label">Selected photo — tap Submit below</p>
+    </div>
+ 		<img *ngIf="!hasPreview" (click)="openePicChooser()" class="imgwidth" src="assets/uploadattandence.png" alt="Upload attendance">
+     <h4 (click)="openePicChooser()">{{ hasPreview ? 'Change photo' : 'Click to take / choose photo' }}</h4>
+     <ion-button *ngIf="hasPreview" expand="block" class="submit-btn" (click)="submitAttendance()">
+       Submit Attendance
+     </ion-button>
  	</div>
  	
  </div>

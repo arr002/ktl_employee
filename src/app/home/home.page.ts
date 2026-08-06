@@ -150,7 +150,7 @@ private clearLocalSession() {
   this.str.set('empid', null);
   this.str.set('otp', null);
   this.str.set('mobile', null);
-  ['ktl_id', 'ktl_username', 'ktl_empid', 'ktl_otp', 'ktl_mobile', 'ktl_return_route', 'ktl_att_draft']
+  ['ktl_id', 'ktl_username', 'ktl_empid', 'ktl_otp', 'ktl_mobile', 'ktl_return_route', 'ktl_att_draft', 'ktl_att_preview', 'ktl_camera_pending', 'ktl_pending_image']
     .forEach((key) => localStorage.removeItem(key));
 }
 

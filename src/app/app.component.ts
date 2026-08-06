@@ -40,7 +40,41 @@ export class AppComponent implements OnInit {
       this.platform.resume.subscribe(() => {
         this.recoverSessionAfterResume();
       });
+
+      // Cordova delivers camera/gallery results via resume.pendingResult when the
+      // WebView was destroyed while the camera activity was open (common on low-RAM phones).
+      document.addEventListener('resume', (event: any) => {
+        this.capturePendingCameraResult(event);
+      }, false);
     });
+  }
+
+  /** Stash Camera plugin result so Mark Attendance can upload after a process kill. */
+  private capturePendingCameraResult(event: any) {
+    try {
+      const pending = event && event.pendingResult;
+      if (!pending || pending.pluginServiceName !== 'Camera') {
+        return;
+      }
+      const purpose = localStorage.getItem('ktl_camera_pending');
+      if (purpose !== 'attendance') {
+        return;
+      }
+      if (pending.pluginStatus === 'OK' && pending.result != null && pending.result !== '') {
+        localStorage.setItem('ktl_pending_image', String(pending.result));
+        localStorage.setItem('ktl_return_route', '/attandence');
+        // Ensure we land on attendance so it can consume + upload the recovered photo.
+        const url = this.router.url || '';
+        if (url !== '/attandence' && url.indexOf('attandence') === -1) {
+          this.router.navigateByUrl('/attandence');
+        }
+      } else {
+        localStorage.removeItem('ktl_camera_pending');
+        localStorage.removeItem('ktl_pending_image');
+      }
+    } catch (e) {
+      console.log('capturePendingCameraResult error', e);
+    }
   }
 
   ngOnInit() {

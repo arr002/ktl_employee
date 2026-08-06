@@ -520,6 +520,11 @@ export class AttandencePage implements OnInit, ViewWillEnter {
         this.showPageError('Please select an option from the dropdown.');
         return;
       }
+      if (this.needsClient && !this.client) {
+        this.showPageError('Please select a client for this attendance option.');
+        this.presentPop(this.userid);
+        return;
+      }
       if (!this.previewImage) {
         this.showPageError('Please take or choose a photo first.');
         return;
@@ -642,11 +647,32 @@ export class AttandencePage implements OnInit, ViewWillEnter {
   }
 
   optionSelected() {
-
     if (this.subject == 'Reached Customer' || this.subject == 'Going to Customer') {
-
-      this.presentPop(this.userid);
+      // Keep existing client if still valid; otherwise open picker
+      if (!this.client) {
+        this.presentPop(this.userid);
+      }
+    } else {
+      this.client = '';
     }
+    this.saveAttendanceDraft();
+    this.cdr.detectChanges();
+  }
+
+  get needsClient(): boolean {
+    return this.subject === 'Reached Customer' || this.subject === 'Going to Customer';
+  }
+
+  get clientInitial(): string {
+    const name = String(this.client || '').trim();
+    return name ? name.charAt(0) : '?';
+  }
+
+  changeClient() {
+    if (!this.needsClient) {
+      return;
+    }
+    this.presentPop(this.userid);
   }
 
 
@@ -655,6 +681,11 @@ export class AttandencePage implements OnInit, ViewWillEnter {
       this.clearPageMessage();
       if (!this.subject) {
         this.showPageError('Please select an option from the dropdown first.');
+        return;
+      }
+      if (this.needsClient && !this.client) {
+        this.showPageError('Please select a client first.');
+        this.presentPop(this.userid);
         return;
       }
       const actionSheet = await this.actionsheetCtrl.create({
@@ -897,19 +928,27 @@ export class AttandencePage implements OnInit, ViewWillEnter {
   async presentPop(id: any) {
     const popover = await this.popoverController.create({
       component: ClientsPage,
+      cssClass: 'client-select-modal',
       componentProps: { head: 'Order Confirmation', header: 'Order Uploaded Successfully.', userid: id }
 
     });
 
     popover.onDidDismiss()
       .then((result) => {
-        if (result && result['data'] && result['data'].client) {
-          this.client = result['data'].client;
-        } else {
-          // Modal was closed without choosing a client; reset the dropdown
-          this.client = '';
-          this.subject = '';
-        }
+        this.zone.run(() => {
+          if (result && result['data'] && result['data'].client) {
+            this.client = result['data'].client;
+            this.saveAttendanceDraft();
+            this.pageError = null;
+            this.cdr.detectChanges();
+          } else {
+            // Modal was closed without choosing a client; reset the dropdown
+            this.client = '';
+            this.subject = '';
+            this.saveAttendanceDraft();
+            this.cdr.detectChanges();
+          }
+        });
       });
 
     return await popover.present();

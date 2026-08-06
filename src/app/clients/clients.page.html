@@ -1,29 +1,56 @@
-<ion-header>
+<ion-header class="picker-header">
   <ion-toolbar>
     <ion-title>Select Client</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="close()">Close</ion-button>
+      <ion-button class="close-btn" fill="clear" (click)="close()">Close</ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content color="light"  class="bgWhite">
+<ion-content class="picker-page">
+  <div class="picker-wrap">
 
-<div *ngIf="isLoading" class="ion-text-center ion-padding">
-  <ion-spinner></ion-spinner>
-  <p>Loading clients...</p>
-</div>
+    <div *ngIf="isLoading" class="state-box">
+      <ion-spinner name="crescent" color="primary"></ion-spinner>
+      <p>Loading clients...</p>
+    </div>
 
-<div *ngIf="!isLoading && (!customers || customers.length === 0)" class="ion-text-center ion-padding">
-  <p>No clients found.</p>
-  <ion-button (click)="close()">Go Back</ion-button>
-</div>
+    <ng-container *ngIf="!isLoading">
+      <ion-searchbar
+        class="picker-search"
+        mode="ios"
+        animated="true"
+        placeholder="Search client..."
+        [(ngModel)]="searchTerm"
+        (ionInput)="setFilterClients()"
+        debounce="150">
+      </ion-searchbar>
 
-<ion-radio-group name="radio-group" [(ngModel)]="selectedRadioGroup" (ionChange)="radioGroupChange($event)">
-<ion-item *ngFor="let prod of customers">
- 	
-      <ion-radio value="{{prod.client_name || prod.customer_name}}"></ion-radio>
-      <ion-label class="ion-text-wrap txtname">{{prod.client_name || prod.customer_name}}</ion-label>
- </ion-item>  
-</ion-radio-group>
+      <p class="result-count" *ngIf="filteredCustomers?.length">
+        {{ filteredCustomers.length }} client{{ filteredCustomers.length === 1 ? '' : 's' }}
+      </p>
+
+      <button
+        type="button"
+        class="picker-item"
+        *ngFor="let prod of filteredCustomers"
+        (click)="selectClient(prod)">
+        <span class="avatar">{{ clientInitial(prod) }}</span>
+        <span class="item-body">
+          <span class="item-name">{{ clientLabel(prod) }}</span>
+          <span class="item-meta" *ngIf="prod?.masterid || prod?.customer_code">
+            {{ prod.masterid || prod.customer_code }}
+          </span>
+        </span>
+        <ion-icon name="chevron-forward-outline"></ion-icon>
+      </button>
+
+      <div class="empty-state" *ngIf="!filteredCustomers?.length">
+        <ion-icon name="people-outline"></ion-icon>
+        <p>{{ searchTerm ? 'No matching clients' : 'No clients found' }}</p>
+        <ion-button fill="outline" shape="round" size="small" (click)="close()">Go Back</ion-button>
+      </div>
+    </ng-container>
+
+  </div>
 </ion-content>

@@ -24,6 +24,22 @@
       <option value="Absent Without Information" *ngIf="department=='Admin'">Absent Without Information</option>
       <option value="Approve Leave" *ngIf="department=='Admin'">Approve Leave</option>
   </select>
+
+  <div class="selected-client" *ngIf="needsClient && client" (click)="changeClient()">
+    <div class="selected-client-label">Selected client</div>
+    <div class="selected-client-row">
+      <span class="selected-client-avatar">{{ clientInitial }}</span>
+      <span class="selected-client-name">{{ client }}</span>
+      <span class="selected-client-change">Change</span>
+    </div>
+  </div>
+  <div class="selected-client missing" *ngIf="needsClient && !client" (click)="changeClient()">
+    <div class="selected-client-label">Client required</div>
+    <div class="selected-client-row">
+      <span class="selected-client-name placeholder">Tap to select client</span>
+    </div>
+  </div>
+
   <h3> Please enter comments. (Optional)</h3>
     <ion-textarea class="nativearea" rows="4"  [(ngModel)]="comment"></ion-textarea>
    </div>

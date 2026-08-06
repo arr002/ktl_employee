@@ -43,6 +43,18 @@
     
     
     }
+
+.client-select-modal {
+  --border-radius: 18px;
+  --box-shadow: 0 16px 40px rgba(42, 37, 80, 0.22);
+}
+
+.client-select-modal .modal-wrapper,
+.client-select-modal ion-modal,
+.client-select-modal::part(content) {
+  border-radius: 18px;
+  overflow: hidden;
+}
     
     .sc-ion-alert-ios-h{
        --min-width:360px !important;

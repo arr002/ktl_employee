@@ -95,6 +95,7 @@ subject:any='';
 async presentPop(id:any) {
   const popover = await this.popoverController.create({
     component: ClientsPage,
+    cssClass: 'client-select-modal',
     componentProps: {head: 'Order Confirmation', header:'Order Uploaded Successfully.', userid: id} 
        
   });

@@ -56,7 +56,7 @@ export class OrderstatusPage implements OnInit {
  }
  
  openImg(image:any, orderno:any ){
-   let urlimg="http://manage.ktl.in/uploads/order/" + orderno + "/" + image;
+   let urlimg="https://manage.ktl.in/uploads/order/" + orderno + "/" + image;
    let imageObj = [{
      src: urlimg,
      thumb: urlimg,

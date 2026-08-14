@@ -156,7 +156,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let row of item.data">
+              <tr *ngFor="let row of filterRowsWithQty(item.data)">
                 <td>{{ row.brands }}</td>
                 <td>{{ row.article }}</td>
                 <td>{{ row.qty }}</td>

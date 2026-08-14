@@ -7,7 +7,7 @@
     </ion-buttons>
     <ion-title>DRTR Add Data</ion-title>
     <ion-buttons slot="end">
-      <ion-button class="header-action" fill="clear" (click)="openCal()">
+      <ion-button class="header-action" fill="clear" (click)="openCal()" *ngIf="!existingCustomer">
         <ion-icon name="add-outline" slot="start"></ion-icon>
         Add Article
       </ion-button>
@@ -35,7 +35,7 @@
       </div>
     </section>
 
-    <section class="form-card">
+    <section class="form-card" *ngIf="!existingCustomer">
       <h2 class="card-title">Brand articles</h2>
 
       <label class="field-label">Brand</label>
@@ -100,7 +100,7 @@
       </ion-button>
     </section>
 
-    <section class="form-card">
+    <section class="form-card" *ngIf="!existingCustomer">
       <div class="card-head">
         <h2 class="card-title">Added lines</h2>
         <span class="count-pill">{{ data?.length || 0 }}</span>
@@ -220,7 +220,7 @@
     <div class="photo-row">
       <div class="photo-text">
         <strong>Take Photo Of Shop</strong>
-        <span>{{ imgBlob ? 'Photo captured' : 'Required before submit' }}</span>
+        <span>{{ imgBlob ? 'Photo captured' : (existingCustomer ? 'Optional' : 'Required before submit') }}</span>
       </div>
       <button type="button" class="photo-btn" (click)="openPicChooser()" aria-label="Take photo">
         <img *ngIf="!photoPreview" src="assets/uploadattandence.png" alt="">

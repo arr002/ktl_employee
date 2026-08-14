@@ -62,6 +62,8 @@ export class DrtrpopupPage implements OnInit {
   lang: any = '';
   userid: any;
   hasDraft = false;
+  /** When true (existing customer from API), hide brand articles and make shop photo optional */
+  existingCustomer = false;
   private draftTimer: any;
   private skipDraftSaveOnClose = false;
 
@@ -105,6 +107,7 @@ export class DrtrpopupPage implements OnInit {
   ) {
     this.mode = this.navParams.get('mode');
     this.userid = this.navParams.get('userid');
+    this.existingCustomer = !!this.navParams.get('existingCustomer');
   }
 
   async ngOnInit() {
@@ -140,10 +143,23 @@ export class DrtrpopupPage implements OnInit {
     this.scheduleDraftSave();
   }
 
+  /** Only rows with a real positive qty should be added / submitted */
+  private hasValidQty(qty: any): boolean {
+    if (qty === null || qty === undefined) {
+      return false;
+    }
+    const raw = String(qty).trim();
+    if (raw === '') {
+      return false;
+    }
+    const n = Number(raw);
+    return !isNaN(n) && n > 0;
+  }
+
   calculate(index: any) {
     let tval = 0;
 
-    if (this.articlesdata[index][0] == true && this.articlesdata[index][2] != '') {
+    if (this.articlesdata[index][0] == true && this.hasValidQty(this.articlesdata[index][2])) {
       const qty = parseFloat(this.articlesdata[index][2]) || 0;
       const rate = parseFloat(this.articlesdata[index][3]) || 0;
       this.articlesdata[index][4] = qty * rate;
@@ -160,7 +176,7 @@ export class DrtrpopupPage implements OnInit {
   calculatektl(index: any) {
     let tval = 0;
 
-    if (this.articlesktl[index][0] == true && this.articlesktl[index][2] != '') {
+    if (this.articlesktl[index][0] == true && this.hasValidQty(this.articlesktl[index][2])) {
       const qty = parseFloat(this.articlesktl[index][2]) || 0;
       const rate = parseFloat(this.articlesktl[index][3]) || 0;
       this.articlesktl[index][4] = qty * rate;
@@ -190,17 +206,28 @@ export class DrtrpopupPage implements OnInit {
       return;
     }
 
+    let added = 0;
     for (let i = 0; i < this.articlesdata.length; i++) {
-      if (this.articlesdata[i][0] == true && this.articlesdata[i][2] != '') {
+      if (this.articlesdata[i][0] == true && this.hasValidQty(this.articlesdata[i][2])) {
+        const qtyNum = Number(String(this.articlesdata[i][2]).trim());
+        const rate = parseFloat(this.articlesdata[i][3]) || 0;
         const dataval: DataItem = {
           brands: this.brands,
           article: this.articlesdata[i][1],
-          qty: this.articlesdata[i][2],
+          qty: qtyNum,
           itemvalue: this.articlesdata[i][3],
-          price: this.articlesdata[i][4]
+          price: this.articlesdata[i][4] !== '' && this.articlesdata[i][4] != null
+            ? this.articlesdata[i][4]
+            : qtyNum * rate
         };
         this.data.push(dataval);
+        added++;
       }
+    }
+
+    if (added === 0) {
+      this.presentToast('Enter qty for at least one article', 4000, 'bottom');
+      return;
     }
 
     this.articlesdata = this.maindata.map((row: any) => [...row]);
@@ -210,23 +237,30 @@ export class DrtrpopupPage implements OnInit {
   }
 
   async postData() {
-    if (this.imgBlob == '') {
+    if (!this.existingCustomer && this.imgBlob == '') {
       this.presentToast('Please take a photo of the shop', 4000, 'bottom');
       return;
     }
 
     for (let i = 0; i < this.articlesktl.length; i++) {
-      if (this.articlesktl[i][0] == true && this.articlesktl[i][2] != '') {
+      if (this.articlesktl[i][0] == true && this.hasValidQty(this.articlesktl[i][2])) {
+        const qtyNum = Number(String(this.articlesktl[i][2]).trim());
+        const rate = parseFloat(this.articlesktl[i][3]) || 0;
         const dataval: DataItem = {
           brands: 'KTL',
           article: this.articlesktl[i][1],
-          qty: this.articlesktl[i][2],
+          qty: qtyNum,
           itemvalue: this.articlesktl[i][3],
-          price: this.articlesktl[i][4]
+          price: this.articlesktl[i][4] !== '' && this.articlesktl[i][4] != null
+            ? this.articlesktl[i][4]
+            : qtyNum * rate
         };
         this.data.push(dataval);
       }
     }
+
+    // Drop any previously saved lines that have no qty (bad draft / old bug)
+    this.data = (this.data || []).filter((row: DataItem) => this.hasValidQty(row.qty));
 
     const lastdata = {
       file: this.imgBlob,

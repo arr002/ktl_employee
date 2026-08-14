@@ -46,6 +46,8 @@ export class DrtruploadPage implements OnInit, ViewWillLeave {
   phone: any = '';
   phoneTouched = false;
   phoneError = '';
+  /** True when getdrtrcustomername returned a name for this phone */
+  existingCustomerFromApi = false;
   brands: any;
   article: any;
   userid: any;
@@ -154,12 +156,32 @@ export class DrtruploadPage implements OnInit, ViewWillLeave {
     return /^[6-9]\d{9}$/.test(this.phone || '');
   }
 
+  private hasValidQty(qty: any): boolean {
+    if (qty === null || qty === undefined) {
+      return false;
+    }
+    const raw = String(qty).trim();
+    if (raw === '') {
+      return false;
+    }
+    const n = Number(raw);
+    return !isNaN(n) && n > 0;
+  }
+
+  filterRowsWithQty(rows: any): any[] {
+    if (!Array.isArray(rows)) {
+      return [];
+    }
+    return rows.filter((row: any) => this.hasValidQty(row?.qty));
+  }
+
   onPhoneInput(event: any) {
     const raw = String(event?.detail?.value ?? '');
     const digits = raw.replace(/\D/g, '').slice(0, 10);
     this.phone = digits;
     this.phoneTouched = true;
     this.phoneError = this.getPhoneError(digits);
+    this.existingCustomerFromApi = false;
     this.scheduleDraftSave();
   }
 
@@ -191,9 +213,14 @@ export class DrtruploadPage implements OnInit, ViewWillLeave {
 
     const datap = { phone: this.phone };
     this.http.post(this.url + 'getdrtrcustomername', datap, { headers }).subscribe((data: any) => {
-      this.name = data.data;
+      const apiName = data?.data;
+      const hasName = apiName != null && String(apiName).trim() !== '';
+      this.existingCustomerFromApi = hasName;
+      this.name = hasName ? String(apiName).trim() : (this.name || '');
       this.scheduleDraftSave();
-    }, () => { });
+    }, () => {
+      this.existingCustomerFromApi = false;
+    });
   }
 
   getTowns() {
@@ -250,7 +277,12 @@ export class DrtruploadPage implements OnInit, ViewWillLeave {
     const modal = await this.modalCtrl.create({
       component: DrtrpopupPage,
       cssClass: 'dsrmodal',
-      componentProps: { value: 0, mode: 'add', userid: this.userid }
+      componentProps: {
+        value: 0,
+        mode: 'add',
+        userid: this.userid,
+        existingCustomer: this.existingCustomerFromApi
+      }
     });
 
     modal.onDidDismiss().then(async (data) => {
@@ -264,7 +296,7 @@ export class DrtruploadPage implements OnInit, ViewWillLeave {
         visittype: this.visitType,
         town: this.townname,
         file: data.data.file,
-        data: data.data.data,
+        data: this.filterRowsWithQty(data.data.data),
         comment: data.data.comment,
         consumption: data.data.consumption,
         dealer: data.data.dealer,
@@ -276,6 +308,7 @@ export class DrtruploadPage implements OnInit, ViewWillLeave {
       this.phone = '';
       this.phoneTouched = false;
       this.phoneError = '';
+      this.existingCustomerFromApi = false;
       this.imgBlob = '';
       this.townname = '';
       await this.saveDraft(false);
@@ -400,6 +433,7 @@ export class DrtruploadPage implements OnInit, ViewWillLeave {
     this.customer = Array.isArray(draft.customer)
       ? draft.customer.map((c: any) => ({
           ...c,
+          data: this.filterRowsWithQty(c?.data),
           // Draft never keeps real photo bytes; force retake if needed on submit
           file: c?.file && c.file !== '__photo_omitted__' ? c.file : ''
         }))
@@ -410,6 +444,9 @@ export class DrtruploadPage implements OnInit, ViewWillLeave {
     if (this.phone) {
       this.phoneTouched = true;
       this.phoneError = this.getPhoneError(this.phone);
+      if (this.isPhoneValid) {
+        this.getclientname();
+      }
     }
 
     this.presentToast('Draft restored', 2500, 'bottom');
@@ -439,6 +476,7 @@ export class DrtruploadPage implements OnInit, ViewWillLeave {
     this.phone = '';
     this.phoneTouched = false;
     this.phoneError = '';
+    this.existingCustomerFromApi = false;
     this.name = '';
     this.comment = '';
     this.customer = [];
@@ -491,10 +529,15 @@ export class DrtruploadPage implements OnInit, ViewWillLeave {
     headers.append('Accept', 'application/json');
     headers.append('Content-Type', 'application/json');
 
+    const customers = (this.customer || []).map((c: any) => ({
+      ...c,
+      data: this.filterRowsWithQty(c?.data)
+    }));
+
     const formData = new FormData();
     formData.append('appuser_id', this.userid);
     formData.append('date', this.dateSelect);
-    formData.append('data', JSON.stringify(this.customer));
+    formData.append('data', JSON.stringify(customers));
     formData.append('comment', this.comment);
 
     this.http.post(this.url + 'adddmrtdata', formData, { headers }).subscribe(async (data: any) => {

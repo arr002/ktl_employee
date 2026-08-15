@@ -1,0 +1,75 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="home"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Orders</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="orderlist-page" color="light">
+  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <div class="page-wrap">
+    <p class="hint">Tap a picture to view full size</p>
+
+    <div class="table-card" *ngIf="orders?.length">
+      <table class="order-table">
+        <thead>
+          <tr>
+            <th>Client Name</th>
+            <th>Order Date</th>
+            <th>Picture</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of orders">
+            <td class="client">{{ row.clientName }}</td>
+            <td class="date">
+              <span class="date-main">{{ row.orderDate }}</span>
+            </td>
+            <td class="pic">
+              <button
+                type="button"
+                class="thumb-btn"
+                *ngIf="row.imageUrl"
+                (click)="openImage(row)"
+                aria-label="View order picture">
+                <img [src]="row.imageUrl" alt="Order" (error)="onThumbError($event, row)">
+                <span class="view-tag">
+                  <ion-icon name="expand-outline"></ion-icon>
+                  View
+                </span>
+              </button>
+              <span class="no-pic" *ngIf="!row.imageUrl">No photo</span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="empty" *ngIf="!isLoading && (!orders || orders.length === 0)">
+      <ion-icon name="document-outline"></ion-icon>
+      <h3>No orders found</h3>
+      <p>Pull down to refresh.</p>
+    </div>
+  </div>
+</ion-content>
+
+<!-- Full-screen image viewer -->
+<div class="preview-overlay" *ngIf="previewUrl" (click)="closePreview()">
+  <div class="preview-panel" (click)="$event.stopPropagation()">
+    <div class="preview-bar">
+      <div class="preview-title">{{ previewTitle }}</div>
+      <button type="button" class="preview-close" (click)="closePreview()" aria-label="Close">
+        <ion-icon name="close-outline"></ion-icon>
+      </button>
+    </div>
+    <div class="preview-body">
+      <img [src]="previewUrl" alt="Order picture" (error)="onPreviewError($event)">
+    </div>
+    <p class="preview-hint">Tap outside or Close to go back</p>
+  </div>
+</div>

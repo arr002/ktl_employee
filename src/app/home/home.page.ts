@@ -189,7 +189,7 @@ navigateRoute(id:any, route:any) {
 getHomescreen(value:any, forceRefresh = false) {
 
   const applyMenu = (items: any[]) => {
-    this.homescreendata = items;
+    this.homescreendata = this.ensureOrdersMenuItem(items || []);
     this.groupedmenu = this.buildGroups(this.homescreendata);
   };
 
@@ -206,7 +206,7 @@ getHomescreen(value:any, forceRefresh = false) {
 
       if (data.status) {
 
-        this.homescreendata = (data.result || []).map((item: any) => {
+        this.homescreendata = this.ensureOrdersMenuItem((data.result || []).map((item: any) => {
           const name = (item.itemname || '').toString().trim().toLowerCase().replace(/\s+/g, '');
           if (name === 'allattendance' || name === 'allattandance') {
             return { ...item, itemname: 'All Attendance' };
@@ -220,7 +220,7 @@ getHomescreen(value:any, forceRefresh = false) {
           const route = (item.route || '').toString().trim().toLowerCase();
           // Logout and My Profile live in the side panel — hide menu tile duplicates
           return item.id != 31 && name !== 'logout' && name !== 'my profile' && route !== 'profile';
-        });
+        }));
 
         this.groupedmenu = this.buildGroups(this.homescreendata);
         this.apiCache.set(this.apiCache.homescreenKey(value), this.homescreendata);
@@ -249,7 +249,7 @@ buildGroups(items: any[]) {
     { title: 'Attendance', routes: ['allattendance', 'markattendance', 'myattendance', 'buddyattendance', 'viewattendance', 'editattendance', 'attandence'] },
     { title: 'Reports & DSR', routes: ['dsrupload', 'industrial', 'dsrdrtrview', 'drtrupload', 'ccsreportupload', 'opn-clsdailyseal'] },
     { title: 'Payroll & TADA', routes: ['payroll', 'tada', 'tadaupload', 'mytada'] },
-    { title: 'Sales & Clients', routes: ['newsetclient', 'newsetclientemp', 'newsetstate', 'vanupadddata', 'scancode', 'shopbanner', 'courier'] }
+    { title: 'Sales & Clients', routes: ['newsetclient', 'newsetclientemp', 'newsetstate', 'vanupadddata', 'scancode', 'shopbanner', 'courier', 'orderlist', 'order', 'orderstatus'] }
   ];
 
   const used = new Set<any>();
@@ -269,6 +269,31 @@ buildGroups(items: any[]) {
   groups.push({ title: 'General', items: rest });
 
   return groups.filter(g => g.items.length > 0);
+}
+
+/** Always show Orders tile (client name / date / picture table). */
+ensureOrdersMenuItem(items: any[]) {
+  const list = Array.isArray(items) ? [...items] : [];
+  const existing = list.find((item: any) => {
+    const route = (item.route || '').toString().trim().toLowerCase();
+    const name = (item.itemname || '').toString().trim().toLowerCase();
+    return route === 'orderlist' || name === 'orders';
+  });
+  if (existing) {
+    existing.route = 'orderlist';
+    existing.itemname = existing.itemname || 'Orders';
+    existing.iconname = 'courier.png';
+    existing.ionicon = 'receipt-outline';
+    return list;
+  }
+  list.push({
+    id: 99901,
+    itemname: 'Orders',
+    route: 'orderlist',
+    iconname: 'courier.png',
+    ionicon: 'receipt-outline'
+  });
+  return list;
 }
 
 async presentModal() {

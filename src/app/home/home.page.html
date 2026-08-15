@@ -62,7 +62,8 @@
               *ngFor="let homedata of group.items"
               (click)="navigateRoute(homedata.id, homedata.route)">
               <span class="menu-icon">
-                <img [src]="'assets/' + homedata.iconname" [alt]="homedata.itemname">
+                <ion-icon *ngIf="homedata.ionicon" [name]="homedata.ionicon"></ion-icon>
+                <img *ngIf="!homedata.ionicon" [src]="'assets/' + homedata.iconname" [alt]="homedata.itemname">
               </span>
               <span class="menu-label">{{homedata.itemname}}</span>
             </button>

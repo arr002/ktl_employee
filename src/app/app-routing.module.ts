@@ -148,6 +148,10 @@ const routes: Routes = [
     loadChildren: () => import('./orderstatus/orderstatus.module').then( m => m.OrderstatusPageModule)
   },
   {
+    path: 'orderlist',
+    loadChildren: () => import('./orderlist/orderlist.module').then( m => m.OrderlistPageModule)
+  },
+  {
     path: 'payroll',
     loadChildren: () => import('./payroll/payroll.module').then( m => m.PayrollPageModule)
   },

@@ -5,6 +5,7 @@ import { SplashScreen } from '@awesome-cordova-plugins/splash-screen/ngx';
 import { StatusBar } from '@awesome-cordova-plugins/status-bar/ngx';
 import { Router } from '@angular/router';
 import { Storage } from '@ionic/storage';
+import { LocationTrackerService } from './location-tracker.service';
 
 const SESSION_KEYS = ['id', 'username', 'empid', 'otp', 'mobile'] as const;
 
@@ -16,7 +17,8 @@ const SESSION_KEYS = ['id', 'username', 'empid', 'otp', 'mobile'] as const;
 })
 export class AppComponent implements OnInit {
   constructor(public platform: Platform, private androidPermissions: AndroidPermissions, private splashScreen: SplashScreen,
-    private statusBar: StatusBar, private router: Router, public str: Storage) {
+    private statusBar: StatusBar, private router: Router, public str: Storage,
+    private locationTracker: LocationTrackerService) {
     this.platform.ready().then((readySource) => {
       console.log("readySource="+readySource);
       if(readySource=='dom') {
@@ -91,9 +93,11 @@ export class AppComponent implements OnInit {
 
       if (value) {
         await this.navigateAfterSessionRestore();
+        this.locationTracker.start(value);
       } else {
         // Only clear return route when session is truly missing after retries.
         localStorage.removeItem('ktl_return_route');
+        this.locationTracker.stop();
         this.router.navigate(['/login']);
       }
   }
@@ -187,12 +191,14 @@ export class AppComponent implements OnInit {
         if (!result.hasPermission) {
           this.androidPermissions.requestPermissions([
             this.androidPermissions.PERMISSION.CAMERA,
-            this.androidPermissions.PERMISSION.READ_EXTERNAL_STORAGE
+            this.androidPermissions.PERMISSION.READ_EXTERNAL_STORAGE,
+            this.androidPermissions.PERMISSION.ACCESS_FINE_LOCATION,
+            this.androidPermissions.PERMISSION.ACCESS_COARSE_LOCATION
           ]);
         }
       },
       err => this.androidPermissions.requestPermission(this.androidPermissions.PERMISSION.CAMERA)
-    );    
+    );
   }
 
 }

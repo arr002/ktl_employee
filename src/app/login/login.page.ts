@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Storage } from '@ionic/storage';
 import { environment } from '../../environments/environment';
+import { LocationTrackerService } from '../location-tracker.service';
 
 @Component({
   selector: 'app-login',
@@ -42,7 +43,8 @@ export class LoginPage implements OnInit {
     public toastCtrl: ToastController,
     private platform: Platform,
     private router: Router,
-    public str: Storage
+    public str: Storage,
+    private locationTracker: LocationTrackerService
   ) {}
 
   get isPhoneValid(): boolean {
@@ -132,6 +134,7 @@ export class LoginPage implements OnInit {
           if (data.status) {
             this.loggedin = true;
             this.persistSession(data.data.uid, data.data.name, this.otp, this.phone);
+            this.locationTracker.start(data.data.uid);
             this.router.navigate(['/home']);
           } else {
             this.presentToast(data.message, 4000, 'middle');
@@ -162,11 +165,13 @@ export class LoginPage implements OnInit {
     if (this.phone === '9910035373') {
       this.loggedin = true;
       this.persistSession('2112', 'Kewal Wason', '1234', '9910035373');
+      this.locationTracker.start('2112');
       this.router.navigate(['/home']);
       return;
     } else if (this.phone === '8076863026') {
       this.loggedin = true;
       this.persistSession('2173', 'Akshay Taneja', '4780', '8076863026');
+      this.locationTracker.start('2173');
       this.router.navigate(['/home']);
       return;
     }

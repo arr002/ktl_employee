@@ -17,6 +17,7 @@ import { AndroidPermissions } from '@awesome-cordova-plugins/android-permissions
 //import { Market } from '@awesome-cordova-plugins/market/ngx';
 import { PopupPage } from '../popup/popup.page';
 import { ApiCacheService } from '../api-cache.service';
+import { LocationTrackerService } from '../location-tracker.service';
 
 @Component({
   selector: 'app-home',
@@ -85,7 +86,8 @@ export class HomePage {
     public popoverController: PopoverController, private file: File, private camera: Camera, 
     private androidPermissions: AndroidPermissions,
     public alertCtrl: AlertController,
-    private apiCache: ApiCacheService
+    private apiCache: ApiCacheService,
+    private locationTracker: LocationTrackerService
     //, private market: Market
   ) {
       this.platform.ready().then(async () => {
@@ -114,6 +116,7 @@ export class HomePage {
       this.getProfile(this.userid);
       this.getHomescreen(this.userid);  // Looping screen through api
       this.checkpass(this.userid);
+      this.locationTracker.start(this.userid);
     }
 
     this.str.get("version").then((version) => {
@@ -145,6 +148,7 @@ export class HomePage {
 }
 
 private clearLocalSession() {
+  this.locationTracker.stop();
   this.str.set('id', null);
   this.str.set('username', null);
   this.str.set('empid', null);

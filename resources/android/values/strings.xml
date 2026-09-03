@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <!-- Required by cordova-background-geolocation -->
+    <string name="plugin_bgloc_account_name">Background location</string>
+    <string name="plugin_bgloc_account_type">plus.ktl.in.bgloc.account</string>
+    <string name="plugin_bgloc_content_authority">plus.ktl.in.bgloc</string>
+    <string name="plugin_bgloc_notification_time_label">Time</string>
+    <string name="plugin_bgloc_notification_distance_label">Distance</string>
+</resources>

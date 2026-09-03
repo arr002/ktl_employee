@@ -33,6 +33,7 @@
     "@ionic/angular": "^8.0.0",
     "@ionic/cordova-builders": "^12.2.0",
     "@ionic/storage": "^4.0.0",
+    "@josuelmm/cordova-background-geolocation": "^5.0.3",
     "ionicons": "^7.0.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
@@ -100,7 +101,18 @@
       "cordova-plugin-file": {
         "ANDROIDX_WEBKIT_VERSION": "1.4.0"
       },
-      "cordova-plugin-file-transfer": {}
+      "cordova-plugin-file-transfer": {},
+      "cordova-background-geolocation": {
+        "GOOGLE_PLAY_SERVICES_VERSION": "21+",
+        "ALWAYS_USAGE_DESCRIPTION": "KTL Plus needs your location to sync staff position for field work.",
+        "MOTION_USAGE_DESCRIPTION": "KTL Plus uses motion detection to save battery while tracking location.",
+        "ICON": "@mipmap/ic_launcher",
+        "SMALL_ICON": "@mipmap/ic_launcher",
+        "ACCOUNT_NAME": "@string/app_name",
+        "ACCOUNT_LABEL": "@string/app_name",
+        "ACCOUNT_TYPE": "$PACKAGE_NAME.account",
+        "CONTENT_AUTHORITY": "$PACKAGE_NAME"
+      }
     },
     "platforms": [
       "android"

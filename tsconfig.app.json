@@ -7,9 +7,15 @@
   },
   "files": [
     "src/main.ts",
-    "src/polyfills.ts"
+    "src/polyfills.ts",
+    "src/app/pendingindent/pendingindent.module.ts",
+    "src/app/pendingindent/pendingindent.page.ts",
+    "src/app/pendingindent/pendingindent-routing.module.ts"
   ],
   "include": [
-    "src/**/*.d.ts"
+    "src/**/*.ts"
+  ],
+  "exclude": [
+    "src/**/*.spec.ts"
   ]
 }

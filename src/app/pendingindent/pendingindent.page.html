@@ -1,0 +1,93 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="home"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Pending Indent</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="pendingindent-page" color="light">
+  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <div class="page-wrap">
+    <div class="filter-card">
+      <div class="date-row">
+        <label>
+          <span>From</span>
+          <input type="date" [(ngModel)]="fromdate">
+        </label>
+        <label>
+          <span>To</span>
+          <input type="date" [(ngModel)]="todate">
+        </label>
+      </div>
+      <div class="action-row">
+        <button type="button" class="get-btn" (click)="loadReport()">Get</button>
+        <button type="button" class="cols-btn" (click)="toggleColumnPicker()" [class.open]="showColumnPicker">
+          <ion-icon name="options-outline"></ion-icon>
+          Columns
+        </button>
+      </div>
+
+      <div class="col-picker" *ngIf="showColumnPicker">
+        <div class="col-picker-head">
+          <span>Show / hide columns</span>
+          <button type="button" class="link-btn" (click)="showAllColumns()">Show all</button>
+        </div>
+        <div class="col-chips">
+          <button
+            type="button"
+            class="col-chip"
+            *ngFor="let col of columns"
+            [class.on]="col.visible"
+            (click)="toggleColumn(col)">
+            {{ col.label }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="empty" *ngIf="unauthorized">
+      <ion-icon name="lock-closed-outline"></ion-icon>
+      <h3>Not authorized</h3>
+      <p>Pending indent is available for Head-1, Head-2 and Head-3.</p>
+    </div>
+
+    <div class="empty" *ngIf="loaded && !unauthorized && !hasRows()">
+      <ion-icon name="document-outline"></ion-icon>
+      <h3>No pending indent</h3>
+      <p>No rows for this date range.</p>
+    </div>
+
+    <div class="section" *ngFor="let tab of tabs">
+      <ng-container *ngIf="tab.rows?.length">
+        <h2 class="section-title">{{ tab.name }} ({{ tab.rows.length }})</h2>
+        <div class="table-scroll">
+          <table class="indent-table">
+            <thead>
+              <tr>
+                <th class="sn">S.No.</th>
+                <th *ngFor="let col of visibleColumns()">{{ col.label }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let row of tab.rows; let i = index">
+                <td class="sn num">{{ i + 1 }}</td>
+                <td
+                  *ngFor="let col of visibleColumns()"
+                  [class.client]="col.key === 'client_name'"
+                  [class.num]="col.numeric"
+                  [class.pending]="col.key === 'total_pending'">
+                  {{ cellValue(row, col.key) }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+</ion-content>

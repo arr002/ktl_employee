@@ -1,0 +1,222 @@
+.pendingindent-page {
+  --background: #eef2f6;
+}
+
+.page-wrap {
+  padding: 14px 12px 28px;
+}
+
+.filter-card {
+  background: #fff;
+  border-radius: 14px;
+  padding: 12px;
+  box-shadow: 0 8px 24px rgba(20, 40, 70, 0.08);
+  margin-bottom: 14px;
+}
+
+.date-row {
+  display: flex;
+  gap: 10px;
+}
+
+.date-row label {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #5b6b7c;
+}
+
+.date-row input {
+  width: 100%;
+  border: 1px solid #d5dee7;
+  border-radius: 10px;
+  padding: 8px 10px;
+  font-size: 14px;
+  color: #1d2a36;
+  background: #f8fafc;
+}
+
+.action-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.get-btn,
+.cols-btn {
+  border: 0;
+  border-radius: 10px;
+  padding: 11px 14px;
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.get-btn {
+  flex: 1;
+  background: #0f4c5c;
+  color: #fff;
+}
+
+.cols-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #e8eef2;
+  color: #0f4c5c;
+}
+
+.cols-btn.open {
+  background: #0f4c5c;
+  color: #fff;
+}
+
+.cols-btn ion-icon {
+  font-size: 18px;
+}
+
+.col-picker {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #e8eef4;
+}
+
+.col-picker-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #5b6b7c;
+}
+
+.link-btn {
+  border: 0;
+  background: none;
+  color: #0f4c5c;
+  font-weight: 700;
+  font-size: 12px;
+  padding: 0;
+}
+
+.col-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.col-chip {
+  border: 1px solid #d5dee7;
+  background: #fff;
+  color: #5b6b7c;
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.col-chip.on {
+  background: #0f4c5c;
+  border-color: #0f4c5c;
+  color: #fff;
+}
+
+.section-title {
+  margin: 8px 0 8px;
+  font-size: 14px;
+  color: #0f4c5c;
+  font-weight: 800;
+}
+
+.table-scroll {
+  overflow-x: auto;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 8px 24px rgba(20, 40, 70, 0.08);
+  margin-bottom: 16px;
+}
+
+.indent-table {
+  min-width: 980px;
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.indent-table th,
+.indent-table td {
+  padding: 10px 8px;
+  text-align: left;
+  font-size: 12px;
+  border-bottom: 1px solid #e8eef4;
+  white-space: nowrap;
+}
+
+.indent-table th {
+  background: #0f4c5c;
+  color: #fff;
+  font-weight: 700;
+  font-size: 11px;
+}
+
+.indent-table .sn {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  min-width: 48px;
+  text-align: center;
+}
+
+.indent-table th.sn {
+  background: #0f4c5c;
+}
+
+.indent-table tbody td.sn {
+  background: #fff;
+}
+
+.indent-table tbody tr:nth-child(even) td.sn {
+  background: #f6f9fc;
+}
+
+.indent-table tbody tr:nth-child(even) td {
+  background: #f6f9fc;
+}
+
+.client {
+  font-weight: 600;
+  color: #1d2a36;
+}
+
+.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.pending {
+  font-weight: 700;
+  color: #b45309;
+}
+
+.empty {
+  margin-top: 36px;
+  text-align: center;
+  color: #6b7c8d;
+}
+
+.empty ion-icon {
+  font-size: 42px;
+  color: #9aa8b5;
+}
+
+.empty h3 {
+  margin: 10px 0 4px;
+  color: #2c3a48;
+}
+
+.empty p {
+  margin: 0;
+  font-size: 13px;
+}

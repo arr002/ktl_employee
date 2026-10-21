@@ -253,7 +253,7 @@ buildGroups(items: any[]) {
     { title: 'Attendance', routes: ['allattendance', 'markattendance', 'myattendance', 'buddyattendance', 'viewattendance', 'editattendance', 'attandence'] },
     { title: 'Reports & DSR', routes: ['dsrupload', 'industrial', 'dsrdrtrview', 'drtrupload', 'ccsreportupload', 'opn-clsdailyseal'] },
     { title: 'Payroll & TADA', routes: ['payroll', 'tada', 'tadaupload', 'mytada'] },
-    { title: 'Sales & Clients', routes: ['newsetclient', 'newsetclientemp', 'newsetstate', 'vanupadddata', 'scancode', 'shopbanner', 'courier', 'orderlist', 'order', 'orderstatus'] }
+    { title: 'Sales & Clients', routes: ['newsetclient', 'newsetclientemp', 'newsetstate', 'vanupadddata', 'scancode', 'shopbanner', 'courier', 'orderlist', 'order', 'orderstatus', 'pendingindent'] }
   ];
 
   const used = new Set<any>();
@@ -288,7 +288,7 @@ ensureOrdersMenuItem(items: any[]) {
     existing.itemname = existing.itemname || 'Orders';
     existing.iconname = 'courier.png';
     existing.ionicon = 'receipt-outline';
-    return list;
+    return this.ensurePendingIndentMenuItem(list);
   }
   list.push({
     id: 99901,
@@ -296,6 +296,31 @@ ensureOrdersMenuItem(items: any[]) {
     route: 'orderlist',
     iconname: 'courier.png',
     ionicon: 'receipt-outline'
+  });
+  return this.ensurePendingIndentMenuItem(list);
+}
+
+/** Always show Pending Indent tile (same report as admin indent-summary Get). */
+ensurePendingIndentMenuItem(items: any[]) {
+  const list = Array.isArray(items) ? [...items] : [];
+  const existing = list.find((item: any) => {
+    const route = (item.route || '').toString().trim().toLowerCase();
+    const name = (item.itemname || '').toString().trim().toLowerCase();
+    return route === 'pendingindent' || name === 'pending indent';
+  });
+  if (existing) {
+    existing.route = 'pendingindent';
+    existing.itemname = 'Pending Indent';
+    existing.iconname = existing.iconname || 'courier.png';
+    existing.ionicon = 'document-text-outline';
+    return list;
+  }
+  list.push({
+    id: 99902,
+    itemname: 'Pending Indent',
+    route: 'pendingindent',
+    iconname: 'courier.png',
+    ionicon: 'document-text-outline'
   });
   return list;
 }

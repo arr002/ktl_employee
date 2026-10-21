@@ -24,6 +24,44 @@
           <input type="date" [(ngModel)]="todate">
         </label>
       </div>
+      <div class="s2-row">
+        <label class="s2-wrap">
+          <span>Branch</span>
+          <button type="button" class="s2-toggle" (click)="toggleBranchSelect()">
+            {{ selectedBranchLabel || 'All branches' }}
+            <ion-icon name="chevron-down-outline"></ion-icon>
+          </button>
+          <div class="s2-drop" *ngIf="branchOpen">
+            <input type="text" placeholder="Search branch" [(ngModel)]="branchSearch" (ngModelChange)="filterBranchOptions()">
+            <button type="button" class="s2-opt" (click)="pickBranch(null)">All branches</button>
+            <button type="button" class="s2-opt" *ngFor="let b of branchOptions" (click)="pickBranch(b)">
+              {{ b.name }}<small *ngIf="b.code && b.code !== b.name"> ({{ b.code }})</small>
+            </button>
+            <div class="s2-empty" *ngIf="!branchOptions.length">No branch found</div>
+          </div>
+        </label>
+        <label class="s2-wrap">
+          <span>Client</span>
+          <button type="button" class="s2-toggle" (click)="toggleClientSelect()">
+            {{ selectedClientLabel || 'All clients' }}
+            <ion-icon name="chevron-down-outline"></ion-icon>
+          </button>
+          <div class="s2-drop" *ngIf="clientOpen">
+            <input type="text" placeholder="Type to search client" [(ngModel)]="clientSearch" (ngModelChange)="onClientSearchChange()">
+            <button type="button" class="s2-opt" (click)="pickClient(null)">All clients</button>
+            <div class="s2-empty" *ngIf="clientLoading">Searching...</div>
+            <button type="button" class="s2-opt" *ngFor="let c of clientOptions" (click)="pickClient(c)">
+              {{ c.name }}
+            </button>
+            <div class="s2-empty" *ngIf="!clientLoading && !clientOptions.length && !selectedBranch && clientSearch.trim().length < 2">
+              Select a branch or type 2 letters
+            </div>
+            <div class="s2-empty" *ngIf="!clientLoading && !clientOptions.length && (selectedBranch || clientSearch.trim().length >= 2)">
+              No client found
+            </div>
+          </div>
+        </label>
+      </div>
       <div class="action-row">
         <button type="button" class="get-btn" (click)="loadReport()">Get</button>
         <button type="button" class="cols-btn" (click)="toggleColumnPicker()" [class.open]="showColumnPicker">

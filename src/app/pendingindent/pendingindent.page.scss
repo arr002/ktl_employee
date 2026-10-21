@@ -1,3 +1,35 @@
+.pi-header ion-toolbar {
+  --min-height: 48px;
+  --background: #0f4c5c;
+  --color: #fff;
+}
+
+.pi-header ion-title {
+  font-size: 17px;
+  font-weight: 700;
+  padding-inline: 0;
+}
+
+.tab-bar {
+  --background: #fff;
+  --min-height: 48px;
+  padding: 0 8px 8px;
+}
+
+.tab-bar ion-segment {
+  --background: #eef2f6;
+}
+
+.tab-bar ion-segment-button {
+  --color: #5b6b7c;
+  --color-checked: #0f4c5c;
+  --indicator-color: #0f4c5c;
+  min-height: 36px;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: none;
+}
+
 .pendingindent-page {
   --background: #eef2f6;
 }
@@ -225,7 +257,8 @@
 }
 
 .table-scroll {
-  overflow-x: auto;
+  overflow: auto;
+  max-height: calc(100vh - 340px);
   background: #fff;
   border-radius: 14px;
   box-shadow: 0 8px 24px rgba(20, 40, 70, 0.08);
@@ -248,6 +281,9 @@
 }
 
 .indent-table th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
   background: #0f4c5c;
   color: #fff;
   font-weight: 700;
@@ -258,11 +294,12 @@
   position: sticky;
   left: 0;
   z-index: 1;
-  min-width: 48px;
+  min-width: 52px;
   text-align: center;
 }
 
 .indent-table th.sn {
+  z-index: 3;
   background: #0f4c5c;
 }
 
@@ -312,4 +349,8 @@
 .empty p {
   margin: 0;
   font-size: 13px;
+}
+
+.tab-empty {
+  margin-top: 20px;
 }

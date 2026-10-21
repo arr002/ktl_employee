@@ -133,9 +133,10 @@ export class LoginPage implements OnInit {
 
           if (data.status) {
             this.loggedin = true;
-            this.persistSession(data.data.uid, data.data.name, this.otp, this.phone);
-            this.locationTracker.start(data.data.uid);
-            this.router.navigate(['/home']);
+            this.persistSession(data.data.uid, data.data.name, this.otp, this.phone).then(() => {
+              this.locationTracker.start(data.data.uid);
+              this.router.navigate(['/home']);
+            });
           } else {
             this.presentToast(data.message, 4000, 'middle');
           }
@@ -148,12 +149,13 @@ export class LoginPage implements OnInit {
   }
 
   /** Keep session in Ionic Storage + localStorage so camera WebView kills don't force re-login. */
-  persistSession(id: any, username: any, otp: any, mobile: any) {
-    this.str.set('id', id);
-    this.str.set('username', username);
-    this.str.set('empid', username);
-    this.str.set('otp', otp);
-    this.str.set('mobile', mobile);
+  async persistSession(id: any, username: any, otp: any, mobile: any) {
+    await this.clearStoredSession();
+    await this.str.set('id', id);
+    await this.str.set('username', username);
+    await this.str.set('empid', username);
+    await this.str.set('otp', otp);
+    await this.str.set('mobile', mobile);
     localStorage.setItem('ktl_id', String(id));
     localStorage.setItem('ktl_username', String(username || ''));
     localStorage.setItem('ktl_empid', String(username || ''));
@@ -161,24 +163,37 @@ export class LoginPage implements OnInit {
     localStorage.setItem('ktl_mobile', String(mobile || ''));
   }
 
+  private async clearStoredSession() {
+    await this.str.create();
+    this.locationTracker.stop();
+    for (const key of ['id', 'username', 'empid', 'otp', 'mobile']) {
+      await this.str.remove(key);
+    }
+    ['ktl_id', 'ktl_username', 'ktl_empid', 'ktl_otp', 'ktl_mobile', 'ktl_return_route']
+      .forEach((key) => localStorage.removeItem(key));
+  }
+
   login() {
     if (this.phone === '9910035373') {
       this.loggedin = true;
-      this.persistSession('2112', 'Kewal Wason', '1234', '9910035373');
-      this.locationTracker.start('2112');
-      this.router.navigate(['/home']);
+      this.persistSession('2112', 'Kewal Wason', '1234', '9910035373').then(() => {
+        this.locationTracker.start('2112');
+        this.router.navigate(['/home']);
+      });
       return;
     } else if (this.phone === '8076863026') {
       this.loggedin = true;
-      this.persistSession('2173', 'Akshay Taneja', '4780', '8076863026');
-      this.locationTracker.start('2173');
-      this.router.navigate(['/home']);
+      this.persistSession('2173', 'Akshay Taneja', '4780', '8076863026').then(() => {
+        this.locationTracker.start('2173');
+        this.router.navigate(['/home']);
+      });
       return;
     }
 
     if (!this.isValidMobile()) {
       this.presentToast(this.msg, 4000, 'middle');
     } else {
+      this.clearStoredSession();
       this.presentLoading();
       const headers = new HttpHeaders();
       headers.append('Accept', 'application/json');
@@ -250,37 +265,6 @@ export class LoginPage implements OnInit {
   async ngOnInit() {
     if (this.loggedin == true) {
       this.router.navigateByUrl('/home', { skipLocationChange: true });
-      return;
-    }
-
-    await this.str.create();
-    let value = await this.str.get('id');
-    if (!value || value === 'null') {
-      // Camera WebView kills can leave Ionic Storage empty briefly; use backup.
-      value = localStorage.getItem('ktl_id');
-      if (value && value !== 'null') {
-        await this.restoreSessionFromLocal();
-      }
-    }
-
-    if (value && value !== 'null') {
-      const returnRoute = localStorage.getItem('ktl_return_route');
-      if (returnRoute && returnRoute !== '/' && returnRoute !== '/login') {
-        localStorage.removeItem('ktl_return_route');
-        this.router.navigateByUrl(returnRoute);
-      } else {
-        this.router.navigateByUrl('/home', { skipLocationChange: true });
-      }
-    }
-  }
-
-  private async restoreSessionFromLocal() {
-    const keys = ['id', 'username', 'empid', 'otp', 'mobile'];
-    for (const key of keys) {
-      const v = localStorage.getItem('ktl_' + key);
-      if (v != null && v !== '' && v !== 'null') {
-        await this.str.set(key, v);
-      }
     }
   }
 }

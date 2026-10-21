@@ -1,9 +1,19 @@
-<ion-header>
+<ion-header class="pi-header">
   <ion-toolbar color="primary">
     <ion-buttons slot="start">
-      <ion-back-button defaultHref="home"></ion-back-button>
+      <ion-back-button defaultHref="home" text=""></ion-back-button>
     </ion-buttons>
     <ion-title>Pending Indent</ion-title>
+  </ion-toolbar>
+  <ion-toolbar class="tab-bar" *ngIf="loaded && !unauthorized">
+    <ion-segment [(ngModel)]="activeTab" mode="md" value="direct">
+      <ion-segment-button value="direct">
+        <ion-label>Direct ({{ tabCount('direct') }})</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="sampling">
+        <ion-label>Sampling ({{ tabCount('sampling') }})</ion-label>
+      </ion-segment-button>
+    </ion-segment>
   </ion-toolbar>
 </ion-header>
 
@@ -100,32 +110,34 @@
       <p>No rows for this date range.</p>
     </div>
 
-    <div class="section" *ngFor="let tab of tabs">
-      <ng-container *ngIf="tab.rows?.length">
-        <h2 class="section-title">{{ tab.name }} ({{ tab.rows.length }})</h2>
-        <div class="table-scroll">
-          <table class="indent-table">
-            <thead>
-              <tr>
-                <th class="sn">S.No.</th>
-                <th *ngFor="let col of visibleColumns()">{{ col.label }}</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let row of tab.rows; let i = index">
-                <td class="sn num">{{ i + 1 }}</td>
-                <td
-                  *ngFor="let col of visibleColumns()"
-                  [class.client]="col.key === 'client_name'"
-                  [class.num]="col.numeric"
-                  [class.pending]="col.key === 'total_pending'">
-                  {{ cellValue(row, col.key) }}
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </ng-container>
+    <div class="section" *ngIf="loaded && !unauthorized && hasRows()">
+      <div class="empty tab-empty" *ngIf="!tabRows(activeTab).length">
+        <ion-icon name="document-outline"></ion-icon>
+        <h3>No {{ activeTab === 'sampling' ? 'sampling' : 'direct' }} rows</h3>
+        <p>Try the other tab or change filters.</p>
+      </div>
+      <div class="table-scroll" *ngIf="tabRows(activeTab).length">
+        <table class="indent-table">
+          <thead>
+            <tr>
+              <th class="sn">S.No.</th>
+              <th *ngFor="let col of visibleColumns()">{{ col.label }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of tabRows(activeTab); let i = index">
+              <td class="sn num">{{ i + 1 }}</td>
+              <td
+                *ngFor="let col of visibleColumns()"
+                [class.client]="col.key === 'client_name'"
+                [class.num]="col.numeric"
+                [class.pending]="col.key === 'total_pending'">
+                {{ cellValue(row, col.key) }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 </ion-content>

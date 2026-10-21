@@ -147,13 +147,13 @@ export class HomePage {
   });
 }
 
-private clearLocalSession() {
+private async clearLocalSession() {
   this.locationTracker.stop();
-  this.str.set('id', null);
-  this.str.set('username', null);
-  this.str.set('empid', null);
-  this.str.set('otp', null);
-  this.str.set('mobile', null);
+  await this.str.create();
+  for (const key of ['id', 'username', 'empid', 'otp', 'mobile']) {
+    await this.str.remove(key);
+    await this.str.set(key, null);
+  }
   ['ktl_id', 'ktl_username', 'ktl_empid', 'ktl_otp', 'ktl_mobile', 'ktl_return_route', 'ktl_att_draft', 'ktl_att_preview', 'ktl_camera_pending', 'ktl_pending_image']
     .forEach((key) => localStorage.removeItem(key));
 }
@@ -421,8 +421,9 @@ async logout() {
       buttons: [
         { text: 'Yes', handler: () => {
           this.apiCache.clearApiCaches();
-          this.clearLocalSession();
-          this.router.navigateByUrl('/login', { skipLocationChange: true });
+          this.clearLocalSession().then(() => {
+            this.navctrl.navigateRoot('/login');
+          });
         } },
         { text: 'No', role: 'cancel' }
       ]

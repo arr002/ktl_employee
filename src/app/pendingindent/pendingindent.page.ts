@@ -34,6 +34,7 @@ export class PendingindentPage implements OnInit {
   loaded = false;
   unauthorized = false;
   showColumnPicker = false;
+  activeTab: 'direct' | 'sampling' = 'direct';
   url = environment.SERVER_URL;
   private readonly COLS_KEY = 'ktl_pending_indent_cols';
 
@@ -331,6 +332,16 @@ export class PendingindentPage implements OnInit {
 
   hasRows(): boolean {
     return this.tabs.some((t) => t.rows && t.rows.length > 0);
+  }
+
+  tabCount(kind: 'direct' | 'sampling'): number {
+    return this.tabRows(kind).length;
+  }
+
+  tabRows(kind: 'direct' | 'sampling'): any[] {
+    const name = kind === 'sampling' ? 'LAPDIP/SAMPLE' : 'Direct';
+    const tab = this.tabs.find((t) => t.name === name);
+    return tab?.rows || [];
   }
 
   doRefresh(event: any) {

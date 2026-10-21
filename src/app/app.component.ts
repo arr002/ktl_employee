@@ -103,14 +103,16 @@ export class AppComponent implements OnInit {
   }
 
   private async recoverSessionAfterResume() {
+    const url = this.router.url || '';
+    // Stay on login so a new mobile number can be used (do not restore old account).
+    if (url === '/login' || url === '/' || url === '') {
+      return;
+    }
     const value = await this.resolveSessionId();
     if (!value) {
       return;
     }
-    const url = this.router.url || '';
-    if (url === '/login' || url === '/' || url === '') {
-      await this.navigateAfterSessionRestore();
-    }
+    await this.navigateAfterSessionRestore();
   }
 
   /** Resolve staff id from Ionic Storage (with retry) or localStorage backup. */

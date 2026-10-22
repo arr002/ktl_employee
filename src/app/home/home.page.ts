@@ -253,7 +253,7 @@ buildGroups(items: any[]) {
     { title: 'Attendance', routes: ['allattendance', 'markattendance', 'myattendance', 'buddyattendance', 'viewattendance', 'editattendance', 'attandence'] },
     { title: 'Reports & DSR', routes: ['dsrupload', 'industrial', 'dsrdrtrview', 'drtrupload', 'ccsreportupload', 'opn-clsdailyseal'] },
     { title: 'Payroll & TADA', routes: ['payroll', 'tada', 'tadaupload', 'mytada'] },
-    { title: 'Sales & Clients', routes: ['newsetclient', 'newsetclientemp', 'newsetstate', 'vanupadddata', 'scancode', 'shopbanner', 'courier', 'orderlist', 'order', 'orderstatus', 'pendingindent'] }
+    { title: 'Sales & Clients', routes: ['newsetclient', 'newsetclientemp', 'newsetstate', 'vanupadddata', 'scancode', 'shopbanner', 'courier', 'orderlist', 'order', 'orderstatus', 'pendingindent', 'pendingorder'] }
   ];
 
   const used = new Set<any>();
@@ -313,7 +313,7 @@ ensurePendingIndentMenuItem(items: any[]) {
     existing.itemname = 'Pending Indent';
     existing.iconname = existing.iconname || 'courier.png';
     existing.ionicon = 'document-text-outline';
-    return list;
+    return this.ensurePendingOrderMenuItem(list);
   }
   list.push({
     id: 99902,
@@ -321,6 +321,31 @@ ensurePendingIndentMenuItem(items: any[]) {
     route: 'pendingindent',
     iconname: 'courier.png',
     ionicon: 'document-text-outline'
+  });
+  return this.ensurePendingOrderMenuItem(list);
+}
+
+/** Always show Pending Order tile (Karnal pending-by-branch for Head-1/2/3 clients). */
+ensurePendingOrderMenuItem(items: any[]) {
+  const list = Array.isArray(items) ? [...items] : [];
+  const existing = list.find((item: any) => {
+    const route = (item.route || '').toString().trim().toLowerCase();
+    const name = (item.itemname || '').toString().trim().toLowerCase();
+    return route === 'pendingorder' || name === 'pending order';
+  });
+  if (existing) {
+    existing.route = 'pendingorder';
+    existing.itemname = 'Pending Order';
+    existing.iconname = existing.iconname || 'courier.png';
+    existing.ionicon = 'file-tray-full-outline';
+    return list;
+  }
+  list.push({
+    id: 99903,
+    itemname: 'Pending Order',
+    route: 'pendingorder',
+    iconname: 'courier.png',
+    ionicon: 'file-tray-full-outline'
   });
   return list;
 }

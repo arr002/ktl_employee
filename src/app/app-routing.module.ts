@@ -156,6 +156,10 @@ const routes: Routes = [
     loadChildren: () => import('./pendingindent/pendingindent.module').then( m => m.PendingindentPageModule)
   },
   {
+    path: 'pendingorder',
+    loadChildren: () => import('./pendingorder/pendingorder.module').then( m => m.PendingorderPageModule)
+  },
+  {
     path: 'payroll',
     loadChildren: () => import('./payroll/payroll.module').then( m => m.PayrollPageModule)
   },

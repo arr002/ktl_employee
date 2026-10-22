@@ -1,0 +1,144 @@
+<ion-header class="po-header">
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="home" text=""></ion-back-button>
+    </ion-buttons>
+    <ion-title>Pending Order</ion-title>
+  </ion-toolbar>
+  <ion-progress-bar
+    *ngIf="isLoading || isLoadingMore"
+    [type]="total ? 'determinate' : 'indeterminate'"
+    [value]="loadProgress">
+  </ion-progress-bar>
+</ion-header>
+
+<ion-content class="pendingorder-page" color="light">
+  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <div class="page-wrap">
+    <div class="filter-card">
+      <div class="date-row">
+        <label>
+          <span>From</span>
+          <input type="date" [(ngModel)]="fromdate">
+        </label>
+        <label>
+          <span>To</span>
+          <input type="date" [(ngModel)]="todate">
+        </label>
+      </div>
+      <div class="s2-row">
+        <label class="s2-wrap">
+          <span>Branch</span>
+          <button type="button" class="s2-toggle" (click)="toggleBranchSelect()">
+            {{ selectedBranchLabel || 'All branches' }}
+            <ion-icon name="chevron-down-outline"></ion-icon>
+          </button>
+          <div class="s2-drop" *ngIf="branchOpen">
+            <input type="text" placeholder="Search branch" [(ngModel)]="branchSearch" (ngModelChange)="filterBranchOptions()">
+            <button type="button" class="s2-opt" (click)="pickBranch(null)">All branches</button>
+            <button type="button" class="s2-opt" *ngFor="let b of branchOptions" (click)="pickBranch(b)">
+              {{ b.name }}<small *ngIf="b.code && b.code !== b.name"> ({{ b.code }})</small>
+            </button>
+            <div class="s2-empty" *ngIf="!branchOptions.length">No branch found</div>
+          </div>
+        </label>
+        <label class="s2-wrap">
+          <span>Client</span>
+          <button type="button" class="s2-toggle" (click)="toggleClientSelect()">
+            {{ selectedClientLabel || 'All clients' }}
+            <ion-icon name="chevron-down-outline"></ion-icon>
+          </button>
+          <div class="s2-drop" *ngIf="clientOpen">
+            <input type="text" placeholder="Type to search client" [(ngModel)]="clientSearch" (ngModelChange)="onClientSearchChange()">
+            <button type="button" class="s2-opt" (click)="pickClient(null)">All clients</button>
+            <div class="s2-empty" *ngIf="clientLoading">Searching...</div>
+            <button type="button" class="s2-opt" *ngFor="let c of clientOptions" (click)="pickClient(c)">
+              {{ c.name }}
+            </button>
+            <div class="s2-empty" *ngIf="!clientLoading && !clientOptions.length && !selectedBranch && clientSearch.trim().length < 2">
+              Select a branch or type 2 letters
+            </div>
+            <div class="s2-empty" *ngIf="!clientLoading && !clientOptions.length && (selectedBranch || clientSearch.trim().length >= 2)">
+              No client found
+            </div>
+          </div>
+        </label>
+      </div>
+      <div class="action-row">
+        <button type="button" class="get-btn" (click)="loadReport()" [disabled]="isLoading">
+          {{ isLoading ? 'Loading...' : 'Get' }}
+        </button>
+        <button type="button" class="cols-btn" (click)="toggleColumnPicker()" [class.open]="showColumnPicker">
+          <ion-icon name="options-outline"></ion-icon>
+          Columns
+        </button>
+      </div>
+
+      <div class="col-picker" *ngIf="showColumnPicker">
+        <div class="col-picker-head">
+          <span>Show / hide columns</span>
+          <button type="button" class="link-btn" (click)="showAllColumns()">Show all</button>
+        </div>
+        <div class="col-chips">
+          <button
+            type="button"
+            class="col-chip"
+            *ngFor="let col of columns"
+            [class.on]="col.visible"
+            (click)="toggleColumn(col)">
+            {{ col.label }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="empty" *ngIf="unauthorized">
+      <ion-icon name="lock-closed-outline"></ion-icon>
+      <h3>Not authorized</h3>
+      <p>Pending order is available for Head-1, Head-2 and Head-3.</p>
+    </div>
+
+    <div class="status-line" *ngIf="isLoading || (loaded && !unauthorized && total)">
+      <span *ngIf="isLoading && !rows.length">Loading pending orders...</span>
+      <span *ngIf="rows.length">Showing {{ rows.length }} of {{ total }}</span>
+    </div>
+
+    <div class="empty" *ngIf="loaded && !unauthorized && !hasRows() && !isLoading">
+      <ion-icon name="document-outline"></ion-icon>
+      <h3>No pending order</h3>
+      <p>No rows for this date range.</p>
+    </div>
+
+    <div class="section" *ngIf="loaded && !unauthorized && hasRows()">
+      <div class="table-scroll" (scroll)="onTableScroll($event)">
+        <table class="order-table">
+          <thead>
+            <tr>
+              <th class="sn">S.No.</th>
+              <th *ngFor="let col of visibleColumns()">{{ col.label }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of rows; let i = index">
+              <td class="sn num">{{ i + 1 }}</td>
+              <td
+                *ngFor="let col of visibleColumns()"
+                [class.client]="col.key === 'client_name'"
+                [class.num]="col.numeric"
+                [class.pending]="col.key === 'pending'">
+                {{ cellValue(row, col.key) }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="page-foot" *ngIf="hasMore || isLoadingMore">
+          <ion-spinner *ngIf="isLoadingMore" name="crescent"></ion-spinner>
+          <span>{{ isLoadingMore ? 'Loading more...' : 'Scroll for more' }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</ion-content>

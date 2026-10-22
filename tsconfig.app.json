@@ -10,7 +10,10 @@
     "src/polyfills.ts",
     "src/app/pendingindent/pendingindent.module.ts",
     "src/app/pendingindent/pendingindent.page.ts",
-    "src/app/pendingindent/pendingindent-routing.module.ts"
+    "src/app/pendingindent/pendingindent-routing.module.ts",
+    "src/app/pendingorder/pendingorder.module.ts",
+    "src/app/pendingorder/pendingorder.page.ts",
+    "src/app/pendingorder/pendingorder-routing.module.ts"
   ],
   "include": [
     "src/**/*.ts"
